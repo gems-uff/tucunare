@@ -1,11 +1,18 @@
 package control;
+
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+
+import org.jongo.Jongo;
+import org.jongo.MongoCursor;
 
 import util.Connect;
 
@@ -15,10 +22,10 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 
 public class Commits {
-	//Retorna o n�mero de commits de um pull request
-	//
+
 	public static long getCommits(String shaHead, String shaBase){
 		long numCommits = 1L;
 		DB db = new Connect().getDB();
@@ -40,7 +47,6 @@ public class Commits {
 		}
 		return numCommits;
 	}
-
 	//retorna a estatistica dos commits
 	public static String getCommitStats(String shaHead, String shaBase){
 		long totalLines = 0L, additions = 0L, deletions = 0L;
@@ -74,133 +80,98 @@ public class Commits {
 		return (totalLines+totalTemp)+", "+(additions+additionsTemp)+", "+(deletions+deletionsTemp);
 	}
 
-	public static String getCommitsFiles(String shaHead, String shaBase){
-		DB db = new Connect().getDB();
+	public static String getCommitsFilesPath(String shaHead, String shaBase, Integer commits) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("commits");
 		BasicDBObject queryHead = new BasicDBObject("sha",shaHead); //consulta com query
 		DBObject commit = dbc.findOne(queryHead);
-
-
+		BasicDBList listCommit = (BasicDBList) commit.get("parents");
 		BasicDBList list = (BasicDBList) commit.get("files");
-		//Iterator<Object> arq = list.listIterator();
-		String files = "";
-		long countFiles = 0L;
+		List<String> files = new ArrayList<String>();
+		String shaTemp = shaHead;
+		while(!shaTemp.equals(shaBase) && commits>0){
+			commits--;
+			queryHead = new BasicDBObject("sha",shaTemp);
+			commit = dbc.findOne(queryHead);
+			listCommit = (BasicDBList) commit.get("parents");
+			list = (BasicDBList) commit.get("files");
+			for (Object object : list) {
+				if(!files.contains((String) ((BasicDBObject) object).get("filename")) && listCommit.size()==1)
+					files.add((String) ((BasicDBObject) object).get("filename"));
+			}
+			shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
+		}
+		//return files.size()+"; "+files.toString();
+		return files.toString();
+	}
+
+	public static String getCommitsFiles(String shaHead, String shaBase) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection dbc = db.getCollection("commits");
+		BasicDBObject queryHead = new BasicDBObject("sha",shaHead); //consulta com query
+		DBObject commit = dbc.findOne(queryHead);
+		BasicDBList list = (BasicDBList) commit.get("files");
+		String filesTemp="", files = "";
+		long countFilesTemp = 0L, countFiles = 0L;
 		for (Object object : list) {
 			String [] temp = ((String) ((BasicDBObject) object).get("filename")).split("/");
-			files += temp[temp.length-1]+"; ";
+			filesTemp += temp[temp.length-1]+"; ";
 		}
-
-		countFiles = list.size();
+		countFilesTemp = list.size();
 		BasicDBList listCommit = (BasicDBList) commit.get("parents");
 		String shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
-
 		while(!shaTemp.equals(shaBase)){
 			queryHead = new BasicDBObject("sha",shaTemp);
 			commit = dbc.findOne(queryHead);
 			listCommit = (BasicDBList) commit.get("parents");
 			if(listCommit.isEmpty()){
-				return countFiles+"; "+files;
+				return countFilesTemp+"; "+filesTemp;
 			}
 			list = (BasicDBList) commit.get("files");
 			for (Object object : list) {
 				String [] temp = ((String) ((BasicDBObject) object).get("filename")).split("/");
-				files += temp[temp.length-1]+"; ";
+				files += filesTemp+temp[temp.length-1]+"; ";
 			}
-			countFiles += list.size();
+			countFiles += countFilesTemp+list.size();
 			shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
 		}
-		return countFiles+"; "+files;
+		//Connect.getInstance().close();
+		return (countFilesTemp+countFiles)+"; "+files+filesTemp;
+		
 	}
 
-	public static String getCommitsFilesPath(String shaHead, String shaBase){
-		DB db = new Connect().getDB();
-		DBCollection dbc = db.getCollection("commits");
-		BasicDBObject queryHead = new BasicDBObject("sha",shaHead); //consulta com query
-		DBObject commit = dbc.findOne(queryHead);
 
-
-		BasicDBList list = (BasicDBList) commit.get("files");
-		//Iterator<Object> arq = list.listIterator();
-		String files="";
-		long countFiles = 0L;
-		
-		for (Object object : list) {
-			files += (String) ((BasicDBObject) object).get("filename")+"; ";
-		}
-		
-		countFiles = list.size();
-		BasicDBList listCommit = (BasicDBList) commit.get("parents");
-		String shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
-
-		while(!shaTemp.equals(shaBase)){
-			queryHead = new BasicDBObject("sha",shaTemp);
-			commit = dbc.findOne(queryHead);
-			listCommit = (BasicDBList) commit.get("parents");
-			if(listCommit.isEmpty()){
-				return countFiles+"; "+files;
-			}
-			list = (BasicDBList) commit.get("files");
-			for (Object object : list) {
-				files += (String) ((BasicDBObject) object).get("filename") +"; ";
-			}
-			countFiles += list.size();			
-			shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
-		}
-		return countFiles+"; "+files;
-	}
-	
-	public static String getCommitsByFiles (String filesNames, String pullRequestDate){
-		//String mapArquivosCommits = "";
-		
-		//removendo espaços em branco
-		filesNames = filesNames.replaceAll(" ", "");  
-		
-		String files[] = filesNames.split(";");
-		
+	public static String getCommitsByFiles (String filesNames, String pullRequestDate) throws UnknownHostException{
+		String files[] = filesNames.split(", ");
 		long numCommitsNoArquivo = 0L;
-
-		DB db = new Connect().getDB();
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
-		DBCursor dbc = commitsC.find();
-		
+		BasicDBObject queryHead = new BasicDBObject("commit.author.date",new BasicDBObject("$lt",pullRequestDate)); //consulta com data menor que a data do pull request
+		DBCursor dbc = commitsC.find(queryHead);
 		String result="";
-
-		System.out.println("Qtd. arquivos "+files[0]+" ");
-		//Na posi��o 0 est� armazenada a quantidade de arquivos do commit
-		for (int i=1 ; i<files.length ; i++) {
-			System.out.println(files[i]);
+		for (int i=0 ; i<files.length ; i++) {
 			numCommitsNoArquivo = 0L;
 			for (DBObject dbo: dbc){
 				BasicDBObject authorCommit = (BasicDBObject) dbo.get("commit");
 				authorCommit = (BasicDBObject) authorCommit.get("author");
-
 				List<String> filesTemp = new ArrayList<String>();
-
 				//Se a data est� dentro dos �ltimos 3 meses.
-				if (dataValida(authorCommit.getString("date"), pullRequestDate)){
-					
+				if (dataValida(authorCommit.getString("date"), pullRequestDate) ){
 					BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
-
 					//Acredito que o ideal seja fazer a valida��o pelo SHA do arquivo.
 					for (Object object : commitFilesList) {
 						filesTemp.add(((String) ((BasicDBObject) object).get("filename")));
 					}
-					
-					for (String file : filesTemp) {
-						
+					for (String file : filesTemp) {//Acho que tem como eliminar esse for
 						if (file.equals(files[i])){
 							numCommitsNoArquivo++;
-							//mapArquivosCommits += dbo.get("sha").toString() +" : " + files[i]+"\n";
 							break;
 						}
 					}
 				}
-				
 			}
-			
 			result += numCommitsNoArquivo+"; ";
 		}
-		//System.out.println(mapArquivosCommits);
 		return result;
 	}
 
@@ -216,11 +187,9 @@ public class Commits {
 		} catch (ParseException e){
 			System.err.println("Erro na conversão de data do autor do commit.");
 		}
-
 		if (commitDate != null && pullRequestDate != null){
 			Calendar c2 = Calendar.getInstance();
 			c2.setTime(commitDate);
-			
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
 			pastDate.add(Calendar.MONTH, -3);			
@@ -229,19 +198,6 @@ public class Commits {
 			else
 				return false;
 		}
-
 		return false;
 	}
-	/*
-	//teste
-	public static void main(String [] args){
-		DB db = new Connect().getDB();
-		DBCollection dbc = db.getCollection("commits");
-		BasicDBObject queryHead = new BasicDBObject("sha","d7d52aaef2b034f5507209640f073fd575ae073a"); //consulta com query
-
-		DBObject commit = dbc.findOne(queryHead);
-		BasicDBList list = (BasicDBList) commit.get("parents");
-		System.out.println(((BasicDBObject) list.get("0")).get("sha"));
-	}
-	 */
 }

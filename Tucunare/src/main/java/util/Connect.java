@@ -24,8 +24,8 @@ public class Connect {
             try {
             	instance = new MongoClient(HOST, PORT);
                 db = instance.getDB(DB_NAME);
-            } catch (Exception e) {
-                //e.printStackTrace();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
             }
         }
         return db;

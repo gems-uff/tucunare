@@ -1,4 +1,7 @@
 package control;
+
+import java.net.UnknownHostException;
+
 import util.Connect;
 
 import com.mongodb.BasicDBObject;
@@ -8,19 +11,14 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class PullRequests {
-
-	public static void main(String[] args) {
-		DB db = new Connect().getDB();
-		
+	public static void main(String[] args) throws UnknownHostException {
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("pull_requests");
 		BasicDBObject query = new BasicDBObject("repo","angular"); //consulta com query
 		DBCursor cursor = dbc.find(query);
-		int total = cursor.count(), atual = 0;
-		
+		System.out.println(cursor.count());
 //		Consulta toda a collection
-//
 		for (DBObject dbObject : cursor) {
-			atual++;
 			
 			//alocação
 			String assignee = "";
@@ -31,21 +29,19 @@ public class PullRequests {
 			//comentários
 			long comments = PullRequestsComments.getPullComments(dbObject.get("number").toString());
 			//commits
-			long commits = Commits.getCommits(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString());
+			//long commits = Commits.getCommits(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString());
 			//estatisticas
-			String statistics = Commits.getCommitStats(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString());
+			//String statistics = Commits.getCommitStats(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString());
 			//arquivos
-			String files = Commits.getCommitsFiles(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString());
+			//String files = Commits.getCommitsFiles(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString());
 			//arquivos
-			String filesPath = Commits.getCommitsFilesPath(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString());
+			String filesPath = Commits.getCommitsFilesPath(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString(), Integer.parseInt(dbObject.get("commits").toString()));
 			//commitsNosArquivos nos últimos 3 meses.
-			String commitsPorArquivos = Commits.getCommitsByFiles(filesPath, dbObject.get("created_at").toString());
-			
-			System.out.println(atual+"º de "+total+" "+
-					dbObject.get("id")+", "+
-					dbObject.get("number")+", "+
+			String files = filesPath.substring(1, filesPath.length()-1);
+			String commitsPorArquivos = Commits.getCommitsByFiles(files, dbObject.get("created_at").toString());
+			System.out.println(dbObject.get("id")+", "+
+					dbObject.get("number")+", "+commitsPorArquivos+", "+
 					((BasicDBObject)dbObject.get("user")).get("login")+", "+
-					
 					dbObject.get("state")+", "+
 					dbObject.get("title")+", "+
 					dbObject.get("created_at")+", "+
@@ -57,16 +53,19 @@ public class PullRequests {
 					((BasicDBObject)dbObject.get("base")).get("sha")+", "+
 					assignee+", "+
 					dbObject.get("owner")+"/"+dbObject.get("repo")+", "+
-					comments+", "+
-					commits+", "+
-					statistics+", "+
-					files	+", "+
-					filesPath +", "+
-					commitsPorArquivos
+					comments+", commits:"+
+					dbObject.get("commits")+", "+
+					dbObject.get("changed_files")+"= "+
+					files+", "+
+					dbObject.get("additions")+", "+
+					dbObject.get("deletions")//+", "+
+					//files//+", "+
+					//commitsPorArquivos
+					
 			);
-			
+				
 		}
-
+		Connect.getInstance().close();
 	}
 
 }
