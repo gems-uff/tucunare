@@ -18,6 +18,7 @@ public class PullRequests {
 		int total = cursor.count(), atual = 0;
 		
 //		Consulta toda a collection
+//
 		for (DBObject dbObject : cursor) {
 			atual++;
 			

@@ -18,7 +18,7 @@ import com.mongodb.DBObject;
 
 public class Commits {
 	//Retorna o n�mero de commits de um pull request
-	
+	//
 	public static long getCommits(String shaHead, String shaBase){
 		long numCommits = 1L;
 		DB db = new Connect().getDB();

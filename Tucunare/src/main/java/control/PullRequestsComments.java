@@ -18,18 +18,4 @@ public class PullRequestsComments {
 			return comments;
 				
 		}
-//	public static void main(String [] args){
-//		DB db = new Connect().getDB();
-//		
-//		DBCollection dbc = db.getCollection("pull_request_comments");
-//		BasicDBObject query = new BasicDBObject("pullreq_id",44); //consulta com query
-//		DBCursor cursor = dbc.find(query);
-////		System.out.println(cursor);
-//		System.out.println(cursor.count());
-//		for (DBObject dbObject : cursor) {
-//			System.out.println(dbObject.get("pullreq_id"));
-//		}
-////		System.out.println(comments);
-////		return comments;
-//	}
 }
