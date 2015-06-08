@@ -1,0 +1,89 @@
+1)instalar devkit (D:\devkit)
+--------------------------------------------------------------
+2)instalar ruby (D:\Ruby200)
+--------------------------------------------------------------
+3)executar msys.bat em devkit
+--------------------------------------------------------------
+4)no prompt digitar:
+$ gem install ghtorrent
+--------------------------------------------------------------
+5)Vai gerar o seguinte erro:
+Fetching: bson_ext-1.12.1.gem (100%)
+Building native extensions.  This could take a while...
+ERROR:  Error installing ghtorrent:
+        ERROR: Failed to build gem native extension.
+
+    d:/Ruby200/bin/ruby.exe extconf.rb
+checking for asprintf()... no
+checking for ruby/st.h... yes
+checking for ruby/regex.h... yes
+checking for ruby/encoding.h... yes
+creating Makefile
+
+make "DESTDIR="
+generating cbson-i386-mingw32.def
+compiling bson_buffer.c
+compiling cbson.c
+cbson.c:25:23: fatal error: arpa/inet.h: No such file or directory
+compilation terminated.
+make: *** [cbson.o] Error 1
+--------------------------------------------------------------
+6)Correção do erro bson
+no prompt de comando do devkit, navegar até a pasta que tem o arquivo bson_ext-1.12.1.gem (por exemplo, cd d:/ghtorrent)
+obs: vou enviar este arquivo por email, foi aqui que erramos ontem de tarde.
+digitar: gem install bson_ext-1.12.1.gem --local
+deverá aparecer esta mensagem: 
+Installing ri documentation for bson_ext-1.12.1
+1 gem installed
+--------------------------------------------------------------
+7)digitar no prommpt: gem install ghtorrent
+deverá aparecer esta mensagem: 5 gems installed
+--------------------------------------------------------------
+8)digitar no prommpt: gem install mysql2
+deverá aparecer esta mensagem: 1 gem installed
+--------------------------------------------------------------
+9)copie o arquivo config.yaml
+para a pasta de instalação do ghtorrent
+D:\Ruby200\lib\ruby\gems\2.0.0\gems\ghtorrent-0.10
+obs:verificar as configurações do mysql (senha) e do mongodb (usuario e senha) e do github
+--------------------------------------------------------------
+10)no mongo
+Instalar o mongo 2.4 (D:\mongodb)
+criar uma pasta data\db abaixo de mongodb
+iniciar o servico do mongodb
+Executar o mongod.exe --dbpath="d:\mongodb\data\db" no prompt de comando do windows na pasta bin da instalação do mongo
+Executar o mongo.exe no prompt de comando do windows na pasta bin da instalação do mongo
+criar um banco: use ghtorrent
+db.addUser({user: "admin",pwd: "admin",roles: [ "dbAdmin" ]})
+No mongodb3
+db.createUser({user: "admin",pwd: "admin",roles: [ "dbAdmin" ]})
+--------------------------------------------------------------
+11)no mysql executar o script ghtorrent.sql em um banco com nome ghtorrent
+mudar a config
++transaction-isolation = READ-COMMITTED no mysqld.ini
+habilitar acesso do usuario root com privilégios para todos os bancos
+--------------------------------------------------------------
+12)Colocar o arquivo 
+cacert.pem na pasta d:\ruby200
+Configurar uma variável de ambiente SSL_CERT_FILE como o valor d:\ruby200
+Fechar e abrir o prompt msys.bat em devkit
+--------------------------------------------------------------
+13)Respira fundo...
+--------------------------------------------------------------
+14)Executar o ghtorrent
+cd d:/Ruby200/lib/ruby/gems/2.0.0/gems/ghtorrent-0.10
+ght-retrieve-repo [dono do projeto] [nome do projeto]
+exemplo: ght-retrieve-repo juniorlimeira bugpredict
+
+15)Atualização
+Executar o arquivo ghtorrent2.sql no mysql 
+opcional: excluir e recriar o banco no mongodb com o usuario
+Copiar e Substituir os arquivos das pastas bin e lib do arquivo github-mirror-master.zip
+na pasta de instalação "D:\Ruby200\lib\ruby\gems\2.0.0\gems\ghtorrent-0.10"
+Copiar tbm a pasta fixes
+
+//backup do mongo com os projetos angular e katello 01/06/2015
+D:\mongodb\bin>
+mongodump.exe -db ghtorrent
+//restaurando o banco da versão 2.4 para a versão 3.03
+mongorestore D:\mongodb\bin\dump\ghtorrent -d ghtorrent

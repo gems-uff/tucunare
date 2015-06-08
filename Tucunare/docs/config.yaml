@@ -1,0 +1,57 @@
+#amqp:
+#  host:   127.0.0.1 # Queue's IP address
+#  port:   5672
+#  username: github   # Username to connect to the queue
+#  password: github   # password
+#  exchange: github
+
+  # Number of messages to retrieve from the queue. On very busy queues,
+  # this should be increased, to decrease the load on the queue.
+#  prefetch: 1
+
+sql:
+  # Configuration URL for the SQL database subsystem.
+  # Examples:
+  # - MySQL:     mysql2://user:password@host/github
+  # - Postgres:  postgres://user:password@host/github
+  #
+  # On JRuby, you can use the JDBC-mysql driver that comes with JRuby
+  #     jdbc:mysql://localhost/github?user=github&password=github
+  #
+  # see http://sequel.rubyforge.org/rdoc/files/doc/opening_databases_rdoc.html
+  # for details
+  url: mysql2://root:password@localhost/nomedobanco
+
+mirror:
+  urlbase: "https://api.github.com/"
+  persister: mongo #or noop
+  uniq_id: 'ext_ref_id' # Field that links persister entries to SQL entries
+
+  # How many pages of historical content to retrieve when doing multi-page
+  # API calls.
+  history_pages_back: 5
+
+  # On a machine with multiple IP addresses, select the one to send the
+  # HTTP requests from.
+  # attach_ip: 0.0.0.0
+
+  # Github credentials to use for requests. If the value is not set,
+  # no authentication information will be sent as part of the request.
+  username: user
+  passwd: password
+
+  # Use either a user name/password or an API key
+  #token: a valid github API key
+
+  # Number of reqs/hour to do with the provided key
+  req_limit: 4990
+
+  # User agent to use for requests. You must use a unique name per client program
+  user_agent: ghtorrent
+
+mongo:
+  host: 127.0.0.1      # Mongo's IP addr
+  port: 27017          # Mongo's port
+  db: ghtorrent           # DB name to store commits to
+  username: admin     # User name to connect to Mongo
+  password: admin     # Password for mongo
