@@ -100,7 +100,6 @@ public class Commits {
 			}
 			shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
 		}
-		//return files.size()+"; "+files.toString();
 		return files.toString();
 	}
 
@@ -140,33 +139,26 @@ public class Commits {
 	}
 
 
-	public static String getCommitsByFiles (String filesNames, String pullRequestDate, String author) throws UnknownHostException{
+	public static String getCommitsByFiles (String filesNames, String pullRequestDate, String repo) throws UnknownHostException{
 		String files[] = filesNames.split(", ");
-		List<String> filesList = Arrays.asList(files);
 		long numCommitsNoArquivo = 0L;
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		String data = dataLimit(pullRequestDate);
 		BasicDBObject queryHead = new BasicDBObject("commit.author.date", new BasicDBObject("$lt",pullRequestDate).append("$gt", data)); //consulta com data menor que a data do pull request
-		queryHead.append("html_url", new BasicDBObject("$regex", "(angular)"));
-		//queryHead.append("files", new BasicDBObject("$in", filesList));
-
+		queryHead.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
 		DBCursor dbc = commitsC.find(queryHead);
-		System.out.println("Quantidade de commits: "+dbc.count());
-		String result="";
 		for (int i=0 ; i<files.length ; i++) {
 			numCommitsNoArquivo = 0L;
 			for (DBObject dbo: dbc){
 				BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
-				//Acredito que o ideal seja fazer a valida��o pelo SHA do arquivo.
-				for (Object object : commitFilesList) {
+				for (Object object : commitFilesList)
 					if(((String) ((BasicDBObject) object).get("filename")).equals(files[i]))
 						numCommitsNoArquivo++;
-				}
 			}
-			result += numCommitsNoArquivo+"; ";
+			numCommitsNoArquivo += numCommitsNoArquivo;
 		}
-		return result;
+		return ""+numCommitsNoArquivo;
 	}
 
 	private static String dataLimit(String pullRequestDateString){
