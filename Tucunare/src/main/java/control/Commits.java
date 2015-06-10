@@ -1,18 +1,17 @@
 package control;
 
 import java.net.UnknownHostException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-
-import org.jongo.Jongo;
-import org.jongo.MongoCursor;
 
 import util.Connect;
 
@@ -141,33 +140,28 @@ public class Commits {
 	}
 
 
-	public static String getCommitsByFiles (String filesNames, String pullRequestDate) throws UnknownHostException{
+	public static String getCommitsByFiles (String filesNames, String pullRequestDate, String author) throws UnknownHostException{
 		String files[] = filesNames.split(", ");
+		List<String> filesList = Arrays.asList(files);
 		long numCommitsNoArquivo = 0L;
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
-		BasicDBObject queryHead = new BasicDBObject("commit.author.date",new BasicDBObject("$lt",pullRequestDate)); //consulta com data menor que a data do pull request
+		String data = dataLimit(pullRequestDate);
+		BasicDBObject queryHead = new BasicDBObject("commit.author.date", new BasicDBObject("$lt",pullRequestDate).append("$gt", data)); //consulta com data menor que a data do pull request
+		queryHead.append("html_url", new BasicDBObject("$regex", "(angular)"));
+		//queryHead.append("files", new BasicDBObject("$in", filesList));
+
 		DBCursor dbc = commitsC.find(queryHead);
+		System.out.println("Quantidade de commits: "+dbc.count());
 		String result="";
 		for (int i=0 ; i<files.length ; i++) {
 			numCommitsNoArquivo = 0L;
 			for (DBObject dbo: dbc){
-				BasicDBObject authorCommit = (BasicDBObject) dbo.get("commit");
-				authorCommit = (BasicDBObject) authorCommit.get("author");
-				List<String> filesTemp = new ArrayList<String>();
-				//Se a data est� dentro dos �ltimos 3 meses.
-				if (dataValida(authorCommit.getString("date"), pullRequestDate) ){
-					BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
-					//Acredito que o ideal seja fazer a valida��o pelo SHA do arquivo.
-					for (Object object : commitFilesList) {
-						filesTemp.add(((String) ((BasicDBObject) object).get("filename")));
-					}
-					for (String file : filesTemp) {//Acho que tem como eliminar esse for
-						if (file.equals(files[i])){
-							numCommitsNoArquivo++;
-							break;
-						}
-					}
+				BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
+				//Acredito que o ideal seja fazer a valida��o pelo SHA do arquivo.
+				for (Object object : commitFilesList) {
+					if(((String) ((BasicDBObject) object).get("filename")).equals(files[i]))
+						numCommitsNoArquivo++;
 				}
 			}
 			result += numCommitsNoArquivo+"; ";
@@ -175,6 +169,23 @@ public class Commits {
 		return result;
 	}
 
+	private static String dataLimit(String pullRequestDateString){
+		//data 3 meses atrás.
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		Date pullRequestDate = null;
+		String beforeDate="";
+		try {
+			pullRequestDate = formatter.parse(pullRequestDateString);
+			GregorianCalendar pastDate = new GregorianCalendar();
+			pastDate.setTime(pullRequestDate);
+			pastDate.add(Calendar.DAY_OF_WEEK, -7);
+			Date d = pastDate.getTime();
+			beforeDate = formatter.format(d);
+		} catch (ParseException e){
+			System.err.println("Erro na conversão de data do autor do commit.");
+		}
+		return beforeDate;	
+	}
 	private static boolean dataValida(String commitDateString, String pullRequestDateString){
 		//data 3 meses atrás.
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -192,7 +203,7 @@ public class Commits {
 			c2.setTime(commitDate);
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
-			pastDate.add(Calendar.MONTH, -3);			
+			pastDate.add(Calendar.DAY_OF_MONTH, -1);			
 			if (pastDate.before(c2))
 				return true;
 			else

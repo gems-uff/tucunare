@@ -38,7 +38,7 @@ public class PullRequests {
 			String filesPath = Commits.getCommitsFilesPath(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString(), Integer.parseInt(dbObject.get("commits").toString()));
 			//commitsNosArquivos nos últimos 3 meses.
 			String files = filesPath.substring(1, filesPath.length()-1);
-			String commitsPorArquivos = Commits.getCommitsByFiles(files, dbObject.get("created_at").toString());
+			String commitsPorArquivos = Commits.getCommitsByFiles(files, dbObject.get("created_at").toString(), ((BasicDBObject)dbObject.get("user")).getString("login").toString());
 			System.out.println(dbObject.get("id")+", "+
 					dbObject.get("number")+", "+commitsPorArquivos+", "+
 					((BasicDBObject)dbObject.get("user")).get("login")+", "+
