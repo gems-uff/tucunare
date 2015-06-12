@@ -1,3 +1,5 @@
+0)DOWNLOADS
+http://rubyinstaller.org/downloads/
 1)instalar devkit (D:\devkit)
 --------------------------------------------------------------
 2)instalar ruby (D:\Ruby200)
@@ -28,31 +30,31 @@ cbson.c:25:23: fatal error: arpa/inet.h: No such file or directory
 compilation terminated.
 make: *** [cbson.o] Error 1
 --------------------------------------------------------------
-6)Correção do erro bson
-no prompt de comando do devkit, navegar até a pasta que tem o arquivo bson_ext-1.12.1.gem (por exemplo, cd d:/ghtorrent)
+6)Correï¿½ï¿½o do erro bson
+no prompt de comando do devkit, navegar atï¿½ a pasta que tem o arquivo bson_ext-1.12.1.gem (por exemplo, cd d:/ghtorrent)
 obs: vou enviar este arquivo por email, foi aqui que erramos ontem de tarde.
 digitar: gem install bson_ext-1.12.1.gem --local
-deverá aparecer esta mensagem: 
+deverï¿½ aparecer esta mensagem: 
 Installing ri documentation for bson_ext-1.12.1
 1 gem installed
 --------------------------------------------------------------
 7)digitar no prommpt: gem install ghtorrent
-deverá aparecer esta mensagem: 5 gems installed
+deverï¿½ aparecer esta mensagem: 5 gems installed
 --------------------------------------------------------------
 8)digitar no prommpt: gem install mysql2
-deverá aparecer esta mensagem: 1 gem installed
+deverï¿½ aparecer esta mensagem: 1 gem installed
 --------------------------------------------------------------
 9)copie o arquivo config.yaml
-para a pasta de instalação do ghtorrent
+para a pasta de instalaï¿½ï¿½o do ghtorrent
 D:\Ruby200\lib\ruby\gems\2.0.0\gems\ghtorrent-0.10
-obs:verificar as configurações do mysql (senha) e do mongodb (usuario e senha) e do github
+obs:verificar as configuraï¿½ï¿½es do mysql (senha) e do mongodb (usuario e senha) e do github
 --------------------------------------------------------------
 10)no mongo
 Instalar o mongo 2.4 (D:\mongodb)
 criar uma pasta data\db abaixo de mongodb
 iniciar o servico do mongodb
-Executar o mongod.exe --dbpath="d:\mongodb\data\db" no prompt de comando do windows na pasta bin da instalação do mongo
-Executar o mongo.exe no prompt de comando do windows na pasta bin da instalação do mongo
+Executar o mongod.exe --dbpath="d:\mongodb\data\db" no prompt de comando do windows na pasta bin da instalaï¿½ï¿½o do mongo
+Executar o mongo.exe no prompt de comando do windows na pasta bin da instalaï¿½ï¿½o do mongo
 criar um banco: use ghtorrent
 db.addUser({user: "admin",pwd: "admin",roles: [ "dbAdmin" ]})
 No mongodb3
@@ -61,11 +63,11 @@ db.createUser({user: "admin",pwd: "admin",roles: [ "dbAdmin" ]})
 11)no mysql executar o script ghtorrent.sql em um banco com nome ghtorrent
 mudar a config
 +transaction-isolation = READ-COMMITTED no mysqld.ini
-habilitar acesso do usuario root com privilégios para todos os bancos
+habilitar acesso do usuario root com privilï¿½gios para todos os bancos
 --------------------------------------------------------------
 12)Colocar o arquivo 
 cacert.pem na pasta d:\ruby200
-Configurar uma variável de ambiente SSL_CERT_FILE como o valor d:\ruby200
+Configurar uma variï¿½vel de ambiente SSL_CERT_FILE como o valor d:\ruby200
 Fechar e abrir o prompt msys.bat em devkit
 --------------------------------------------------------------
 13)Respira fundo...
@@ -75,15 +77,15 @@ cd d:/Ruby200/lib/ruby/gems/2.0.0/gems/ghtorrent-0.10
 ght-retrieve-repo [dono do projeto] [nome do projeto]
 exemplo: ght-retrieve-repo juniorlimeira bugpredict
 
-15)Atualização
+15)Atualizaï¿½ï¿½o
 Executar o arquivo ghtorrent2.sql no mysql 
 opcional: excluir e recriar o banco no mongodb com o usuario
 Copiar e Substituir os arquivos das pastas bin e lib do arquivo github-mirror-master.zip
-na pasta de instalação "D:\Ruby200\lib\ruby\gems\2.0.0\gems\ghtorrent-0.10"
+na pasta de instalaï¿½ï¿½o "D:\Ruby200\lib\ruby\gems\2.0.0\gems\ghtorrent-0.10"
 Copiar tbm a pasta fixes
 
 //backup do mongo com os projetos angular e katello 01/06/2015
 D:\mongodb\bin>
 mongodump.exe -db ghtorrent
-//restaurando o banco da versão 2.4 para a versão 3.03
+//restaurando o banco da versï¿½o 2.4 para a versï¿½o 3.03
 mongorestore D:\mongodb\bin\dump\ghtorrent -d ghtorrent

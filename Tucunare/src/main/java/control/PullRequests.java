@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import util.Connect;
+import util.FormatDate;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -75,16 +76,21 @@ public class PullRequests {
 		DBCollection dbc = db.getCollection("pull_requests");
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
 		File dir =  new File("D:\\files");
-		File file = new File(dir, repo+".csv");
+		File file = new File(dir, repo+"7.csv");
 		try{
 			FileWriter fw = new FileWriter(file, false);
-			fw.write("id,number,login,state,title,created_at,closed_at,merged_at,commit_head_sha,"
-					+ "commit_base_sha,assignee,owner/repo,comments,commits,commitsbyFiles,"
-					+ "additions,deletions,changed_files,files\n");
+			fw.write("owner/repo;ageRepoDays;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;"
+					+ "id;number;login;state;title;created_at;closed_at;merged_at;lifetimeDays;lifetimeHours;lifetimeMinutes;closed_by;merged_by;commit_head_sha;"
+					+ "commit_base_sha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
+					+ "additions;deletions;changed_files;files\n");
 			DBCursor cursor = dbc.find(query);
 			//Estimar o tempo para terminar a consulta
 			System.out.println(cursor.count());
 			for (DBObject dbObject : cursor) {
+				//Dados do projeto
+				String dataRepo = Repos.getRepoData(dbObject.get("owner")+"/"+dbObject.get("repo"));//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count
+				
+				//Dados do Pull Request
 				String assignee = "";
 				if(dbObject.get("assignee")==null)
 					assignee = "null";
@@ -97,24 +103,44 @@ public class PullRequests {
 				String files = filesPath.substring(1, filesPath.length()-1);
 				//commitsNosArquivos na última semana.
 				String commitsPorArquivos = Commits.getCommitsByFiles(files, dbObject.get("created_at").toString(), dbObject.get("repo").toString());
-				fw.write((Integer) dbObject.get("id")+", "+
-						(Integer) dbObject.get("number")+", "+
-						((BasicDBObject)dbObject.get("user")).get("login")+", "+
-						dbObject.get("state")+", "+
-						dbObject.get("title")+", "+
-						dbObject.get("created_at")+", "+
-						dbObject.get("closed_at")+", "+
-						dbObject.get("merged_at")+", "+
-						((BasicDBObject)dbObject.get("head")).get("sha")+", "+
-						((BasicDBObject)dbObject.get("base")).get("sha")+", "+
-						assignee+", "+
-						dbObject.get("owner")+"/"+dbObject.get("repo")+", "+
-						comments+", "+
-						dbObject.get("commits")+", "+
-						commitsPorArquivos+", "+
-						dbObject.get("additions")+", "+
-						dbObject.get("deletions")+", "+
-						dbObject.get("changed_files")+", "+
+				//Desenvolvedor com mais commits na última semana.
+				String authorMoreCommits = Commits.getAuthorCommits(files, ((BasicDBObject)dbObject.get("base")).get("sha").toString(), dbObject.get("repo").toString());
+				System.out.println((Integer) dbObject.get("number")+", "+authorMoreCommits);
+				//Tempo de vida de um pull request
+				String lifetime = "",closed_by = "", merged_by = "";
+				if((dbObject.get("closed_at")!=null)){
+					lifetime = FormatDate.getLifetime(dbObject.get("closed_at").toString(), dbObject.get("created_at").toString());
+					closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), dbObject.get("repo").toString());
+				}else{
+					lifetime = ";;"; 
+				}
+				//Desenvolvedor que integrou ou rejeitou o código do pull request
+				if((dbObject.get("merged_by"))!=null)
+					merged_by = ((BasicDBObject)dbObject.get("merged_by")).get("login").toString();
+				
+				fw.write(dbObject.get("owner")+"/"+dbObject.get("repo")+"; "+
+						dataRepo+"; "+
+						(Integer) dbObject.get("id")+"; "+
+						(Integer) dbObject.get("number")+"; "+
+						((BasicDBObject)dbObject.get("user")).get("login")+"; "+
+						dbObject.get("state")+"; "+
+						dbObject.get("title").toString().replace('\n', ' ').replace(';', ' ')+"; "+
+						dbObject.get("created_at")+"; "+
+						dbObject.get("closed_at")+"; "+
+						dbObject.get("merged_at")+"; "+
+						lifetime+"; "+
+						closed_by+"; "+
+						merged_by+"; "+
+						((BasicDBObject)dbObject.get("head")).get("sha")+"; "+
+						((BasicDBObject)dbObject.get("base")).get("sha")+"; "+
+						assignee+"; "+
+						comments+"; "+
+						dbObject.get("commits")+"; "+
+						commitsPorArquivos+"; "+
+						authorMoreCommits+"; "+
+						dbObject.get("additions")+"; "+
+						dbObject.get("deletions")+"; "+
+						dbObject.get("changed_files")+"; "+
 						files+"\n");
 			}
 			fw.close();
