@@ -49,26 +49,26 @@ public class FormatDate {
 		return ""+diferencaDias+"; "+diferencaHoras+"; "+diferencaMinutos;	
 	}
 	
-	public static String getAgeRepo(String repoData){
+	public static String getAge(String data){
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		Date repoDate;
-		long diferencaDias = 0L;
+		Date date;
+		long diferenceDays = 0L;
 		try {
-			repoDate = formatter.parse(repoData);
-			Calendar repocDate = Calendar.getInstance();
-			repocDate.setTime(repoDate);
+			date = formatter.parse(data);
+			Calendar dateCalendar = Calendar.getInstance();
+			dateCalendar.setTime(date);
 			
 			
 			Calendar currentDate = Calendar.getInstance();
 			currentDate.getTime();
 			
-			long lifetime = currentDate.getTimeInMillis() - repocDate.getTimeInMillis();
-			int tempoDia = 1000*60*60*24;
-			diferencaDias = lifetime/tempoDia;
+			long lifetime = currentDate.getTimeInMillis() - dateCalendar.getTimeInMillis();
+			int timeDay = 1000*60*60*24;
+			diferenceDays = lifetime/timeDay;
 			
 		} catch (ParseException e){
 			System.err.println("Erro na conversão de data do autor do commit.");
 		}
-		return ""+diferencaDias;	
+		return ""+diferenceDays;	
 	}
 }

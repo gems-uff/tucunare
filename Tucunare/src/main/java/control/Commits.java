@@ -18,20 +18,29 @@ import com.mongodb.DBObject;
 public class Commits {
 	public static String getCommitsFilesPath(String shaHead, String shaBase, Integer commits) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
-		DBCollection dbc = db.getCollection("commits");
-		BasicDBObject queryHead = new BasicDBObject("sha",shaHead); //consulta com query
-		DBObject commit = dbc.findOne(queryHead);
-		BasicDBList listCommit = (BasicDBList) commit.get("parents");
-		BasicDBList list = (BasicDBList) commit.get("files");
+		DBCollection dbcCommits = db.getCollection("commits");
+		//BasicDBObject queryHead = new BasicDBObject("sha",shaHead); //consulta com query
+		//DBObject commit = dbcCommits.findOne(queryHead);
+		//BasicDBList listCommit = (BasicDBList) commit.get("parents");
+		//BasicDBList list;// = (BasicDBList) commit.get("files");
 		List<String> files = new ArrayList<String>();
 		String shaTemp = shaHead;
 		while(!shaTemp.equals(shaBase) && commits>0){
 			commits--;
-			queryHead = new BasicDBObject("sha",shaTemp);
-			commit = dbc.findOne(queryHead);
-			listCommit = (BasicDBList) commit.get("parents");
-			list = (BasicDBList) commit.get("files");
-			for (Object object : list) {
+			BasicDBObject queryHead = new BasicDBObject("sha",shaTemp);
+			DBObject commit = null;
+			BasicDBList listCommit = null, listFiles = null;
+			
+			try {
+				commit = dbcCommits.findOne(queryHead);
+				listCommit = (BasicDBList) commit.get("parents");
+				listFiles = (BasicDBList) commit.get("files");	
+			} catch (NullPointerException npe) {
+				System.err.println("erro ao consultar o pull de commit Head "+shaHead +" no commit "+shaTemp);
+				return "";
+			}
+			
+			for (Object object : listFiles) {
 				if(!files.contains((String) ((BasicDBObject) object).get("filename")))// && listCommit.size()==1)
 					files.add((String) ((BasicDBObject) object).get("filename"));
 			}
@@ -54,7 +63,7 @@ public class Commits {
 		DBCursor dbcCommits = commitsC.find(queryHead);
 		int count=0,max=Integer.MIN_VALUE;
 		String a="";
-		System.out.println("arquivos: "+files.length);
+		//System.out.println("arquivos: "+files.length);
 		for (int i=0 ; i<files.length ; i++) {
 			for (DBObject dbo: dbcCommits){
 				BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
@@ -63,8 +72,12 @@ public class Commits {
 						try{
 							authors.add(((BasicDBObject) dbo.get("author")).get("login").toString());
 						}catch(NullPointerException npe){
-							String emailAuthor = ((BasicDBObject) ((BasicDBObject) dbo.get("commit")).get("author")).get("email").toString();
-							String nameAuthor = emailAuthor.substring(0, emailAuthor.lastIndexOf("@"));
+							String emailAuthor = "", nameAuthor = "";
+							if(   ((BasicDBObject) ((BasicDBObject) dbo.get("commit")).get("author")).get("email") != null   ){
+								emailAuthor = ((BasicDBObject) ((BasicDBObject) dbo.get("commit")).get("author")).get("email").toString();
+								if(emailAuthor.lastIndexOf("@")>0)
+									nameAuthor = emailAuthor.substring(0, emailAuthor.lastIndexOf("@"));
+							}
 							authors.add(nameAuthor);
 						}
 					}
@@ -79,8 +92,8 @@ public class Commits {
                 }   
             } 
 		}
-		if(a.equals(""))
-			a = "None";
+//		if(a.equals(""))
+//			a = "None";
 		return a;
 		
 	}

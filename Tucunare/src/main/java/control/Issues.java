@@ -1,6 +1,7 @@
 package control;
 
 import java.net.UnknownHostException;
+
 import util.Connect;
 
 import com.mongodb.BasicDBObject;
@@ -16,7 +17,19 @@ public class Issues {
 		queryIssue.append("repo", repo);
 		DBObject issue = dbcIssues.findOne(queryIssue);
 		String closedbyPull="";
-		closedbyPull = ((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString() ;
+		if( ((BasicDBObject) issue).get("closed_by") != null)
+			closedbyPull = ((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString() ;
 		return closedbyPull;
 	}
+	
+	public static int getIssueComments(String idPullRequest, String repo) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection dbc = db.getCollection("issue_comments");
+		BasicDBObject query = new BasicDBObject("pullreq_id",Integer.parseInt(idPullRequest)); //consulta com query
+		query.append("repo", repo);
+		int comments = dbc.find(query).count();
+		return comments;
+	}
+	
+	
 }
