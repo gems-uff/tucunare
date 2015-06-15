@@ -16,7 +16,7 @@ public class FormatDate {
 			pullRequestDate = formatter.parse(pullRequestDateString);
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
-			pastDate.add(Calendar.DAY_OF_WEEK, -1);
+			pastDate.add(Calendar.DAY_OF_WEEK, -7);
 			Date d = pastDate.getTime();
 			beforeDate = formatter.format(d);
 		} catch (ParseException e){
@@ -70,5 +70,22 @@ public class FormatDate {
 			System.err.println("Erro na conversão de data do autor do commit.");
 		}
 		return ""+diferenceDays;	
+	}
+	
+	public static String getDate(String data){
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Date date;
+		Calendar dateCalendar = null;
+		String d="";
+		try {
+			date = formatter.parse(data);
+			dateCalendar = Calendar.getInstance();
+			dateCalendar.setTime(date);
+			d = formatter2.format(date);
+		} catch (ParseException e){
+			System.err.println("Erro na conversão de data do autor do commit.");
+		}
+		return d;	
 	}
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Date;
 
 import util.Connect;
 import util.FormatDate;
@@ -19,75 +20,98 @@ public class PullRequests {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
-		//File dirTemp =  new File(dir);
 		int i = file.lastIndexOf("\\");
 		File dir = new File(file.substring(0, i)); 
 		File fileTemp = new File(dir, file.substring(i, file.length()));
 		try{
 			FileWriter fw = new FileWriter(fileTemp, false);
-			fw.write("owner/repo;ageRepoDays;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;"
-					+ "followers;following;ageUser;"
-					+ "id;number;login;state;title;created_at;closed_at;merged_at;lifetimeDays;lifetimeHours;lifetimeMinutes;closed_by;"
-					+ "merged_by;commit_head_sha;commit_base_sha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
-					+ "additions;deletions;changed_files;files\n");
+			fw.write("owner/repo;ageRepoDays;stargazersCount;watchersCount;language;forksCount;openIssuesCount;subscribersCount;contributors;"
+					+ "followers;following;ageUser;typeDeveloper;totalPullDeveloper;acceptanceDeveloper;"
+					+ "idPull;numberPull;login;state;title;createdDate;closedDate;mergedDate;lifetimeDays;lifetimeHours;lifetimeMinutes;closedBy;"
+					+ "mergedBy;commitHeadSha;commitBaseSha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
+					+ "additions;deletions;changedFiles;files\n");
 			DBCursor cursor = dbcPullRequest.find(query);
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
 			//Estimar o tempo para terminar a consulta
 			//System.out.println(cursor.count());
 			for (DBObject dbObject : cursor) {
+				//Variváveis
+				String owner = dbObject.get("owner").toString();
+				String rep = dbObject.get("repo").toString();
+				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
+				String created = dbObject.get("created_at").toString();
+				String followers = Users.getFollowersUser(user); 
+				String following = Users.getFollowingUser(user);
+				String ageUser = Users.getAgeUser(user);
+				String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
+				String shaBase = ((BasicDBObject)dbObject.get("base")).get("sha").toString();
+				String number = dbObject.get("number").toString();
+				
 				if(dbObject!=null){
 				//Dados do projeto
-				String dataRepo = Repos.getRepoData(dbObject.get("owner")+"/"+dbObject.get("repo"));//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count
+				String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count
 				
 				//Dados do requester
-				String followers = Users.getFollowersUser(((BasicDBObject)dbObject.get("user")).get("login").toString()); 
-				String following = Users.getFollowingUser(((BasicDBObject)dbObject.get("user")).get("login").toString());
-				String ageUser = Users.getAgeUser(((BasicDBObject)dbObject.get("user")).get("login").toString());
-				
-				BasicDBObject queryUser = new BasicDBObject("user.login", ((BasicDBObject)dbObject.get("user")).get("login").toString());
-				int totalPullUser = dbcPullRequest.find(queryUser).count();
-				queryUser.append("merged_at", null);
-				int mergedPullUser = dbcPullRequest.find(queryUser).count();
-				double acceptanceUser = ((double) mergedPullUser*100)/totalPullUser;
-
+				int totalPullUser = Users.getPullUserTotal(user, created, rep, owner);
+				int mergedPullUser = Users.getPullUserMerged(user, created, rep, owner);
+				String acceptanceUser="";
+				if(totalPullUser==0)
+					acceptanceUser = "FirstPull";
+				else
+					acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
+				String contributors = Commits.getContributors(shaHead, rep, owner);
+				String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
 				
 				//Dados do Pull Request
 				String assignee = "";
 				if(dbObject.get("assignee")!=null)
 					assignee = (String) ((BasicDBObject)dbObject.get("assignee")).get("login");
+				
 				//comentários
-				int commentsPull = PullRequestsComments.getPullComments(dbObject.get("number").toString(), dbObject.get("repo").toString()); 
-				int commentsIssue = Issues.getIssueComments(dbObject.get("number").toString(), dbObject.get("repo").toString());
+				int commentsPull = PullRequestsComments.getPullComments(number, rep); 
+				int commentsIssue = Issues.getIssueComments(number, dbObject.get("repo").toString());
 				long comments = commentsPull + commentsIssue;
+				
 				//arquivos
-				String filesPath = Commits.getCommitsFilesPath(((BasicDBObject)dbObject.get("head")).get("sha").toString(), ((BasicDBObject)dbObject.get("base")).get("sha").toString(), Integer.parseInt(dbObject.get("commits").toString()));
+				String filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()));
 				String files="", commitsPorArquivos="", authorMoreCommits="";
 				if(!filesPath.equals("")){
 					files = filesPath.substring(1, filesPath.length()-1);
 					//commitsNosArquivos na última semana.
-					commitsPorArquivos = Commits.getCommitsByFiles(files, dbObject.get("created_at").toString(), dbObject.get("repo").toString());
+					commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep);
 					//Desenvolvedor com mais commits na última semana.
-					authorMoreCommits = Commits.getAuthorCommits(files, ((BasicDBObject)dbObject.get("base")).get("sha").toString(), dbObject.get("repo").toString());
+					authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep);
 				}
 					
 				System.out.println((Integer) dbObject.get("number"));
 				//Tempo de vida de um pull request
 				String lifetime = "",closed_by = "", merged_by = "";
 				if((dbObject.get("closed_at")!=null)){
-					lifetime = FormatDate.getLifetime(dbObject.get("closed_at").toString(), dbObject.get("created_at").toString());
-					closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), dbObject.get("repo").toString());
+					lifetime = FormatDate.getLifetime(dbObject.get("closed_at").toString(), created);
+					closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
 				}else{
 					lifetime = ";;"; 
 				}
 				//Desenvolvedor que integrou ou rejeitou o código do pull request
 				if((dbObject.get("merged_by"))!=null)
 					merged_by = ((BasicDBObject)dbObject.get("merged_by")).get("login").toString();
+				//Datas
+				String closedDate = "";
+				if(dbObject.get("closed_at")!=null)
+					closedDate = FormatDate.getDate(dbObject.get("closed_at").toString());
+				String mergedDate = "";
+				if(dbObject.get("merged_at")!=null)
+					mergedDate = FormatDate.getDate(dbObject.get("merged_at").toString());
+				
+				
 				//Escrevendo no arquivo
-				fw.write(dbObject.get("owner")+"/"+dbObject.get("repo")+"; "+
+				fw.write(owner+"/"+rep+"; "+
 						dataRepo+"; "+
+						contributors+"; "+
 						followers+"; "+
 						following+"; "+
 						ageUser+"; "+
+						typeDeveloper+"; "+
 						totalPullUser+"; "+
 						acceptanceUser+"; "+
 						(Integer) dbObject.get("id")+"; "+
@@ -95,9 +119,9 @@ public class PullRequests {
 						((BasicDBObject)dbObject.get("user")).get("login")+"; "+
 						dbObject.get("state")+"; "+
 						dbObject.get("title").toString().replace('\n', ' ').replace(';', ' ')+"; "+
-						dbObject.get("created_at")+"; "+
-						dbObject.get("closed_at")+"; "+
-						dbObject.get("merged_at")+"; "+
+						FormatDate.getDate(dbObject.get("created_at").toString())+"; "+
+						closedDate+"; "+
+						mergedDate+"; "+
 						lifetime+"; "+
 						closed_by+"; "+
 						merged_by+"; "+
@@ -112,9 +136,12 @@ public class PullRequests {
 						dbObject.get("deletions")+"; "+
 						dbObject.get("changed_files")+"; "+
 						files+"\n");
+				//System.out.println(contributors);
 				}else
 					fw.write("\n");
+				
 			}
+			
 			fw.close();
 			Connect.getInstance().close();
 		}catch(IOException ioe){
