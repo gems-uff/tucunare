@@ -1,5 +1,6 @@
 package view;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.UnknownHostException;
@@ -18,50 +19,44 @@ public class RetrievePullRequest implements ActionListener{
 	private JPanel jPanel;
 	private JFrame jFrame;
 	private JLabel jLabelRepo;
-//	private JLabel jLabelFile;
 	private JTextField jFilePath;
 	private JTextField jTextRepo;
 //	private JTextField jTextFile;
 	private JButton jButtonSave;
 	private JButton jButtonStop;
 	private JButton jButtonFile;
+	private JLabel jLabelPulls;
 	
-	RetrievePullRequest(){
+	RetrievePullRequest() throws UnknownHostException{
 		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
 		jFrame.setBounds(100, 200, 300, 400);
 		jPanel = new JPanel();
+		GridLayout grid = new GridLayout(0,2);
+		jPanel.setLayout(grid);
 		jFrame.add(jPanel);
 		jLabelRepo = new JLabel("Nome do repositório:");
-		jTextRepo = new JTextField(20);
-		
-//		jLabelFile = new JLabel("File:");
-//		jTextFile = new JTextField(20);
-		
+		jTextRepo = new JTextField(10);
 		jButtonFile = new JButton("File...");
-		
 		jButtonSave = new JButton("Save");
-		
-//		jButtonStop = new JButton("Exit");
-		
 		jPanel.add(jLabelRepo);
 		jPanel.add(jTextRepo);
-//		jPanel.add(jLabelFile);
-//		jPanel.add(jTextFile);
+
 		jButtonFile.addActionListener(this);
 		jPanel.add(jButtonFile);
 		
 		jButtonSave.addActionListener(this);
 		jPanel.add(jButtonSave);
 		
-//		jButtonStop.addActionListener(this);
-//		jPanel.add(jButtonStop);
-		jFilePath = new JTextField(20);
+		jFilePath = new JTextField(10);
 		jFilePath.setEditable(false);
 		jPanel.add(jFilePath);
+		jLabelPulls = new JLabel("");
+		jPanel.add(jLabelPulls);
+		
 		jFrame.pack();
 		jFrame.setVisible(true);
 		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+		jFrame.setLocationRelativeTo(null);
 	}
 	public void actionPerformed(ActionEvent evt){
 		String file="";

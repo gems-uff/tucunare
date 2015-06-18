@@ -1,6 +1,7 @@
 package control;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import util.Connect;
 import util.FormatDate;
@@ -26,6 +27,17 @@ public class Users {
 		BasicDBObject query = new BasicDBObject("login", user);
 		DBObject dboUser = users.findOne(query);
 		return dboUser.get("following").toString();
+	}
+	
+	public static String getLocationUser (String user) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection users = db.getCollection("users");
+		BasicDBObject query = new BasicDBObject("login", user);
+		DBObject dboUser = users.findOne(query);
+		String location="";
+		if(dboUser.get("location")!=null)
+			location = dboUser.get("location").toString();
+		return location; 
 	}
 	
 	public static String getAgeUser (String user) throws UnknownHostException{
@@ -71,5 +83,16 @@ public class Users {
 			return false;
 	}
 	
-	
+	public static boolean getFollowersTeam (String user, String repo, String owner) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection followers = db.getCollection("followers");
+		BasicDBObject query = new BasicDBObject("login", user);
+		DBCursor cursor = followers.find(query);
+		ArrayList<String> listContributors = Commits.getContributorsList(repo, owner);
+		for (DBObject dbFollower : cursor) {
+			if(listContributors.contains(dbFollower.get("follows").toString()))
+				return true;
+		}
+		return false;
+	}
 }

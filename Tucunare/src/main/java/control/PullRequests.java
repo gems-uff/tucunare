@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Date;
 
 import util.Connect;
 import util.FormatDate;
@@ -15,7 +14,14 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-public class PullRequests {
+public class PullRequests extends Thread{
+	public static int getPulls(String repo) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection dbcPullRequest = db.getCollection("pull_requests");
+		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
+		return dbcPullRequest.find(query).count();
+	}
+	
 	public void saveFile(String repo, String file) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
@@ -26,7 +32,7 @@ public class PullRequests {
 		try{
 			FileWriter fw = new FileWriter(fileTemp, false);
 			fw.write("owner/repo;ageRepoDays;stargazersCount;watchersCount;language;forksCount;openIssuesCount;subscribersCount;has_wiki;contributors;acceptanceRepo;"
-					+ "followers;following;ageUser;typeDeveloper;totalPullDeveloper;acceptanceDeveloper;watchRepo;"
+					+ "followers;following;ageUser;typeDeveloper;totalPullDeveloper;acceptanceDeveloper;watchRepo;followContributors;location;"
 					+ "idPull;numberPull;login;state;title;createdDate;closedDate;mergedDate;lifetimeDays;lifetimeHours;lifetimeMinutes;closedBy;"
 					+ "mergedBy;commitHeadSha;commitBaseSha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
 					+ "additionsLines;deletionsLines;totalLines;changedFiles;files\n");
@@ -70,6 +76,8 @@ public class PullRequests {
 				String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
 				
 				boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
+				boolean followContributors = Users.getFollowersTeam(user, rep, owner);
+				String location = Users.getLocationUser(user);
 				
 				//Dados do Pull Request
 				String assignee = "";
@@ -125,6 +133,8 @@ public class PullRequests {
 						totalPullUser+"; "+
 						acceptanceUser+"; "+
 						watchRepo+"; "+
+						followContributors+"; "+
+						location+"; "+
 						(Integer) dbObject.get("id")+"; "+
 						(Integer) dbObject.get("number")+"; "+
 						((BasicDBObject)dbObject.get("user")).get("login")+"; "+

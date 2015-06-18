@@ -25,6 +25,23 @@ public class FormatDate {
 		return beforeDate;	
 	}
 	
+	public static String dataLimitMonth(String pullRequestDateString){
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		Date pullRequestDate = null;
+		String beforeDate="";
+		try {
+			pullRequestDate = formatter.parse(pullRequestDateString);
+			GregorianCalendar pastDate = new GregorianCalendar();
+			pastDate.setTime(pullRequestDate);
+			pastDate.add(Calendar.MONTH, -3);
+			Date d = pastDate.getTime();
+			beforeDate = formatter.format(d);
+		} catch (ParseException e){
+			System.err.println("Erro na conversão de data do autor do commit.");
+		}
+		return beforeDate;	
+	}
+	
 	public static String getLifetime(String closedData, String createdData){
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		Date cloDate, creDate;
