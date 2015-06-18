@@ -141,6 +141,20 @@ public class Commits {
 		return ""+listCommitters.size();
 	}
 	
+	public static ArrayList<String> getContributorsList(String repo, String owner) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection commitsC = db.getCollection("commits");
+		BasicDBObject queryCommit = new BasicDBObject("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
+		System.out.println("Executando...");
+		DBCursor cursor = commitsC.find(queryCommit);
+		ArrayList<String> listCommitters = new ArrayList<String>();
+		for (DBObject dbObject : cursor) {
+			if(!listCommitters.contains( ((BasicDBObject) dbObject.get("author")).get("login").toString()))
+				listCommitters.add(((BasicDBObject) dbObject.get("author")).get("login").toString());
+		}
+		return listCommitters;
+	}
+	
 	//type developer
 	public static String getTypeDeveloper(String user, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");

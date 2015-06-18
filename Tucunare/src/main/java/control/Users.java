@@ -56,4 +56,20 @@ public class Users {
 		int numberPull = pulls.find(query).count();
 		return numberPull;
 	}
+	
+	public static boolean getWatcherRepo (String user, String date, String repo, String owner) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection watchers = db.getCollection("watchers");
+		BasicDBObject query = new BasicDBObject("login", user);
+		query.append("created_at", new BasicDBObject("$lt", date));
+		query.append("repo", repo);
+		query.append("owner", owner);
+		int numberWachter = watchers.find(query).count();
+		if(numberWachter>0)
+			return true;
+		else
+			return false;
+	}
+	
+	
 }

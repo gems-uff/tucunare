@@ -25,11 +25,11 @@ public class PullRequests {
 		File fileTemp = new File(dir, file.substring(i, file.length()));
 		try{
 			FileWriter fw = new FileWriter(fileTemp, false);
-			fw.write("owner/repo;ageRepoDays;stargazersCount;watchersCount;language;forksCount;openIssuesCount;subscribersCount;contributors;"
-					+ "followers;following;ageUser;typeDeveloper;totalPullDeveloper;acceptanceDeveloper;"
+			fw.write("owner/repo;ageRepoDays;stargazersCount;watchersCount;language;forksCount;openIssuesCount;subscribersCount;has_wiki;contributors;acceptanceRepo;"
+					+ "followers;following;ageUser;typeDeveloper;totalPullDeveloper;acceptanceDeveloper;watchRepo;"
 					+ "idPull;numberPull;login;state;title;createdDate;closedDate;mergedDate;lifetimeDays;lifetimeHours;lifetimeMinutes;closedBy;"
 					+ "mergedBy;commitHeadSha;commitBaseSha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
-					+ "additions;deletions;changedFiles;files\n");
+					+ "additionsLines;deletionsLines;totalLines;changedFiles;files\n");
 			DBCursor cursor = dbcPullRequest.find(query);
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
 			//Estimar o tempo para terminar a consulta
@@ -40,7 +40,7 @@ public class PullRequests {
 				String rep = dbObject.get("repo").toString();
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
 				String created = dbObject.get("created_at").toString();
-				String followers = Users.getFollowersUser(user); 
+				String followers = Users.getFollowersUser(user);
 				String following = Users.getFollowingUser(user);
 				String ageUser = Users.getAgeUser(user);
 				String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
@@ -49,7 +49,14 @@ public class PullRequests {
 				
 				if(dbObject!=null){
 				//Dados do projeto
-				String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count
+				String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
+				String acceptanceRepo="";
+				int totalPullRepoClosed = Repos.getPullRepoClosed(created, rep, owner);
+				int mergedPullRepo = Repos.getPullRepoMerged(created, rep, owner);
+				if(totalPullRepoClosed==0)
+					acceptanceRepo = "FirstPull";
+				else
+					acceptanceRepo = String.valueOf(((mergedPullRepo*100)/totalPullRepoClosed));
 				
 				//Dados do requester
 				int totalPullUser = Users.getPullUserTotal(user, created, rep, owner);
@@ -61,6 +68,8 @@ public class PullRequests {
 					acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
 				String contributors = Commits.getContributors(shaHead, rep, owner);
 				String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
+				
+				boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
 				
 				//Dados do Pull Request
 				String assignee = "";
@@ -108,12 +117,14 @@ public class PullRequests {
 				fw.write(owner+"/"+rep+"; "+
 						dataRepo+"; "+
 						contributors+"; "+
+						acceptanceRepo+"; "+
 						followers+"; "+
 						following+"; "+
 						ageUser+"; "+
 						typeDeveloper+"; "+
 						totalPullUser+"; "+
 						acceptanceUser+"; "+
+						watchRepo+"; "+
 						(Integer) dbObject.get("id")+"; "+
 						(Integer) dbObject.get("number")+"; "+
 						((BasicDBObject)dbObject.get("user")).get("login")+"; "+
@@ -134,6 +145,7 @@ public class PullRequests {
 						authorMoreCommits+"; "+
 						dbObject.get("additions")+"; "+
 						dbObject.get("deletions")+"; "+
+						(Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString()))+"; "+
 						dbObject.get("changed_files")+"; "+
 						files+"\n");
 				//System.out.println(contributors);
