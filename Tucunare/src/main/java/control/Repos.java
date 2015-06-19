@@ -12,7 +12,7 @@ import com.mongodb.DBObject;
 
 public class Repos {
 	public static String getRepoData(String repo) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection dbcRepos = db.getCollection("repos");
 		BasicDBObject queryRepos = new BasicDBObject("full_name",repo);
 		DBObject repoObject = dbcRepos.findOne(queryRepos);
@@ -27,7 +27,7 @@ public class Repos {
 	}
 	
 	public static int getPullRepoClosed (String date, String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection pulls = db.getCollection("pull_requests");
 		BasicDBObject query = new BasicDBObject("created_at", new BasicDBObject("$lt", date));
 		query.append("state", "closed");
@@ -37,7 +37,7 @@ public class Repos {
 	}
 	
 	public static int getPullRepoMerged (String date, String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection pulls = db.getCollection("pull_requests");
 		BasicDBObject query = new BasicDBObject("created_at", new BasicDBObject("$lt", date));
 		query.append("merged", true);

@@ -14,7 +14,7 @@ import com.mongodb.DBObject;
 
 public class Users {
 	public static String getFollowersUser (String user) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
 		DBObject dboUser = users.findOne(query);
@@ -22,7 +22,7 @@ public class Users {
 	}
 	
 	public static String getFollowingUser (String user) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
 		DBObject dboUser = users.findOne(query);
@@ -30,7 +30,7 @@ public class Users {
 	}
 	
 	public static String getLocationUser (String user) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
 		DBObject dboUser = users.findOne(query);
@@ -41,7 +41,7 @@ public class Users {
 	}
 	
 	public static String getAgeUser (String user) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
 		DBObject dboUser = users.findOne(query);
@@ -49,7 +49,7 @@ public class Users {
 	}
 	
 	public static int getPullUserTotal (String user, String date, String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection pulls = db.getCollection("pull_requests");
 		BasicDBObject query = new BasicDBObject("user.login", user);
 		query.append("created_at", new BasicDBObject("$lt", date));
@@ -59,7 +59,7 @@ public class Users {
 	}
 	
 	public static int getPullUserMerged (String user, String date, String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection pulls = db.getCollection("pull_requests");
 		BasicDBObject query = new BasicDBObject("user.login", user);
 		query.append("created_at", new BasicDBObject("$lt", date));
@@ -70,7 +70,7 @@ public class Users {
 	}
 	
 	public static boolean getWatcherRepo (String user, String date, String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection watchers = db.getCollection("watchers");
 		BasicDBObject query = new BasicDBObject("login", user);
 		query.append("created_at", new BasicDBObject("$lt", date));
@@ -84,7 +84,7 @@ public class Users {
 	}
 	
 	public static boolean getFollowersTeam (String user, String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection followers = db.getCollection("followers");
 		BasicDBObject query = new BasicDBObject("login", user);
 		DBCursor cursor = followers.find(query);

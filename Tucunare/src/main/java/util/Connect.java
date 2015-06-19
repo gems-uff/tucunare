@@ -8,7 +8,7 @@ public class Connect {
 
 	private static final String HOST = "localhost";
     private static final int PORT = 27017;
-    private static final String DB_NAME = "ghtorrent";
+    private static final String DB_NAME = "ghtorrent2";
     private static MongoClient instance;
 	private DB db;
 	

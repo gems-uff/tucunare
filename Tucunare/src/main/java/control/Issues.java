@@ -11,7 +11,7 @@ import com.mongodb.DBObject;
 
 public class Issues {
 	public static String getClosedbyPull(Integer numberPull, String repo) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection dbcIssues = db.getCollection("issues");
 		BasicDBObject queryIssue = new BasicDBObject("number",numberPull); 
 		queryIssue.append("repo", repo);
@@ -23,7 +23,7 @@ public class Issues {
 	}
 	
 	public static int getIssueComments(String idPullRequest, String repo) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent");
+		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection dbc = db.getCollection("issue_comments");
 		BasicDBObject query = new BasicDBObject("pullreq_id",Integer.parseInt(idPullRequest)); //consulta com query
 		query.append("repo", repo);
