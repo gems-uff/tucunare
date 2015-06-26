@@ -16,7 +16,38 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class Commits {
-	public static String getCommitsFilesPath(String shaHead, String shaBase, Integer commits) throws UnknownHostException{
+	public static String getCommitsFilesPath(String shaHead, String shaBase, Integer commits, Integer filesPull) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection dbcCommits = db.getCollection("commits");
+		List<String> files = new ArrayList<String>();
+		String shaTemp = shaHead;
+		while(!shaTemp.equals(shaBase) && commits!=0){
+			commits--;
+			BasicDBObject queryHead = new BasicDBObject("sha",shaTemp);
+			DBObject commit = null;
+			BasicDBList listCommit = null, listFiles = null;
+			try {
+				commit = dbcCommits.findOne(queryHead);
+				listCommit = (BasicDBList) commit.get("parents");
+				listFiles = (BasicDBList) commit.get("files");	
+			} catch (NullPointerException npe) {
+				System.err.println("erro ao consultar o pull de commit Head "+shaHead +" no commit "+shaTemp);
+				return "";
+			}
+
+			for (Object object : listFiles) {
+				if(!files.contains((String) ((BasicDBObject) object).get("filename")) && listCommit.size()==1 && files.size() < filesPull)
+					files.add((String) ((BasicDBObject) object).get("filename"));
+			}
+			if(listCommit.get("0")!=null)
+				shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
+			else
+				break;
+		}
+		return files.toString();
+	}
+	
+	public static List getCommitsFilesPathList(String shaHead, String shaBase, Integer commits) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcCommits = db.getCollection("commits");
 		List<String> files = new ArrayList<String>();
@@ -32,7 +63,7 @@ public class Commits {
 				listFiles = (BasicDBList) commit.get("files");	
 			} catch (NullPointerException npe) {
 				System.err.println("erro ao consultar o pull de commit Head "+shaHead +" no commit "+shaTemp);
-				return "";
+				return files;
 			}
 			
 			for (Object object : listFiles) {
@@ -41,7 +72,7 @@ public class Commits {
 			}
 			shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
 		}
-		return files.toString();
+		return files;
 	}
 
 	public static String getAuthorCommits(String filesNames, String shaBase, String repo) throws UnknownHostException{
@@ -86,8 +117,6 @@ public class Commits {
                 }   
             } 
 		}
-//		if(a.equals(""))
-//			a = "None";
 		return a;
 		
 	}
@@ -114,13 +143,13 @@ public class Commits {
 		return ""+numCommitsNoArquivo;
 	}
 
-	//recent contributors (3 months)
+	//recent contributors (1 mont)
 	public static String getContributors(String shaBase, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
 		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
-		String data = FormatDate.dataLimitMonth(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString());
+		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString());
 		BasicDBObject query = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("author")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
 		query.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
 		DBCursor cursor = commitsC.find(query);
@@ -140,7 +169,6 @@ public class Commits {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryCommit = new BasicDBObject("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
-		//System.out.println("Executando...");
 		DBCursor cursor = commitsC.find(queryCommit);
 		ArrayList<String> listCommitters = new ArrayList<String>();
 		for (DBObject dbObject : cursor) {

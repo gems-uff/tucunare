@@ -21,7 +21,6 @@ public class RetrievePullRequest implements ActionListener{
 	private JLabel jLabelRepo;
 	private JTextField jFilePath;
 	private JTextField jTextRepo;
-//	private JTextField jTextFile;
 	private JButton jButtonSave;
 	private JButton jButtonStop;
 	private JButton jButtonFile;

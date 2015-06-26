@@ -33,7 +33,7 @@ public class FormatDate {
 			pullRequestDate = formatter.parse(pullRequestDateString);
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
-			pastDate.add(Calendar.MONTH, -3);
+			pastDate.add(Calendar.MONTH, -1);
 			Date d = pastDate.getTime();
 			beforeDate = formatter.format(d);
 		} catch (ParseException e){
@@ -63,7 +63,7 @@ public class FormatDate {
 		} catch (ParseException e){
 			System.err.println("Erro na conversão de data do autor do commit.");
 		}
-		return ""+diferencaDias+"; "+diferencaHoras+"; "+diferencaMinutos;	
+		return ""+diferencaDias+", "+diferencaHoras+", "+diferencaMinutos;	
 	}
 	
 	public static String getAge(String data){
