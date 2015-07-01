@@ -24,7 +24,7 @@ public class PullRequests extends Thread{
 		return dbcPullRequest.find(query).count();
 	}
 
-	public void saveFile(String repo, String file,
+	public String saveFile(String repo, String file,
 			List<String> selectedFields, Map<String, Integer> txtFieldsDays) throws UnknownHostException {
 
 		DB db = Connect.getInstance().getDB("ghtorrent2");
@@ -41,6 +41,11 @@ public class PullRequests extends Thread{
 					+ "mergedBy;commitHeadSha;commitBaseSha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
 					+ "additionsLines;deletionsLines;totalLines;changedFiles;files\n");
 			DBCursor cursor = dbcPullRequest.find(query);
+			if (cursor==null){
+				fw.close();
+				Connect.getInstance().close();
+				return "couldn't find the repository "+repo;
+			}
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
 			//Estimar o tempo para terminar a consulta
 			//System.out.println(cursor.count());
@@ -176,8 +181,9 @@ public class PullRequests extends Thread{
 			}
 			fw.close();
 			Connect.getInstance().close();
+			return "sucess!";
 		}catch(IOException ioe){
-			System.err.println("Erro na escrita do arquivo!");
+			return "Erro na escrita do arquivo";
 		}
 
 	}	
