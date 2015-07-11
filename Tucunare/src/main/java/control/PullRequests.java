@@ -17,6 +17,15 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class PullRequests extends Thread{
+	
+	@SuppressWarnings("unchecked")
+	public static List<String> getAllRepos() throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent2");
+		DBCollection dbcPullRequest = db.getCollection("pull_requests");
+		return dbcPullRequest.distinct("repo");
+		
+	}
+	
 	public static int getPulls(String repo) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent2");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");

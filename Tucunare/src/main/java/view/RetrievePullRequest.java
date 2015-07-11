@@ -14,20 +14,32 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import control.PullRequests;
+import control.SaveFile;
 
-public class RetrievePullRequest implements ActionListener, ItemListener{
+import javax.swing.JProgressBar;
+
+import teste.DialogStatus;
+
+public class RetrievePullRequest implements ActionListener, ItemListener, ListSelectionListener {
+
 	private JPanel topPanel;
 	private JPanel bottomPanel;
 	private JPanel centerPanel;
@@ -41,8 +53,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 	private JPanel centerPanelBotAuthorPR;
 
 	private JFrame jFrame;
-
-	private JLabel jLabelRepo;
 	private JLabel jLabelContributor;
 	private JLabel jLabelCommByFiles;
 	private JLabel jLabelAuthorMoreComm;
@@ -96,8 +106,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 	private JCheckBox jcbChangedFilePR;
 	private JCheckBox jcbDeveloperType;
 	private JCheckBox jcbTitlePR;
+	private JButton jButtonRepositories;
 
-	RetrievePullRequest(){
+	private JList<String> repositoryList;
+	private List<String> selectedRepositories = new ArrayList<String>();
+	public RetrievePullRequest() throws UnknownHostException{
+		loadRepositories();
 		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
 		jFrame.setBounds(100, 100, 1000, 480);
 		addTopPanel();
@@ -107,8 +121,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 		jFrame.pack();
 		jFrame.setVisible(true);
 		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
 	}
+
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource() == jcbCommitsByFilesPR){
 			if (jcbCommitsByFilesPR.isSelected()){
@@ -175,13 +189,14 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 			}
 		}
 	}
+
 	public void actionPerformed(ActionEvent evt) {
 		getSelectedFields();
 		String file="";
 		if(evt.getSource()==jButtonSave){
 			if (hasCheckBoxSelected()){
 				if (jTextRepo==null || jTextRepo.equals("") || jTextRepo.getText().length()<1){
-					jTextArea.setText("Entre com um repositório válido.\n\n\n");
+					jTextArea.setText("Clique no botão \"Repositories\" e escolha pelo menos 1 repositório.\n\n\n");
 					return;
 				}
 				if (jTxtFePath == null || jTxtFePath.equals("") || jTxtFePath.getText().length()<1){
@@ -189,13 +204,21 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 					return;
 				}
 				else{
-					String repo = jTextRepo.getText();
-					PullRequests pull = new PullRequests();
+					//PullRequests pull = new PullRequests();
 					file = jTxtFePath.getText();
-					jTextArea.setText("Caminho: "+file+"\n"+"Repositório: "+repo+"\n\n");
 					try {
-						jTextArea.setText(pull.saveFile(repo, file, getSelectedFields(), getTxtFields()));
-						JOptionPane.showMessageDialog(jFrame, "Fim");
+						jTextArea.setText("Processando dados.");
+						boolean entrou=false;
+						int total=0;
+						for (String repository : selectedRepositories) {
+							entrou = true;
+							total++;
+							new Thread(new SaveFile(repository, file, getSelectedFields(), getTxtFields()), "Thread-"+repository).start();	
+						}
+						if (entrou){
+							new DialogStatus(jFrame, total).show();
+							
+						}
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}
@@ -224,18 +247,27 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 				else
 					if (evt.getSource() == jButtonDeselectAll)
 						loadComponents(false);
+					else
+						if (evt.getSource() == jButtonRepositories){
+							JOptionPane.showMessageDialog(
+									null, new JScrollPane(repositoryList), "Seleção de repositórios:", JOptionPane.PLAIN_MESSAGE);
+							String result = "";
+							for (String s : selectedRepositories) {
+								result += s+"; ";
+							}
+							jTextRepo.setText(result);
+						}
 
 		if(evt.getSource()==jButtonStop){
 			System.exit(0);
 		}	
 	}
 
+
 	public void addTopPanel(){
 		topPanel = new JPanel();
-
-		jLabelRepo = new JLabel("Repository name:");
 		jTextRepo = new JTextField(20);
-		jTextRepo.setText("angular");
+		jTextRepo.setEditable(false);
 
 		jButtonFile = new JButton("File...");
 
@@ -245,7 +277,9 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 		jButtonDeselectAll = new JButton("Deselect all");
 
-		topPanel.add(jLabelRepo);
+		jButtonRepositories = new JButton("Repositories:");
+		jButtonRepositories.addActionListener(this);
+		topPanel.add(jButtonRepositories);
 		topPanel.add(jTextRepo);
 
 		jButtonFile.addActionListener(this);
@@ -266,7 +300,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 
 
-		jFrame.add(topPanel, BorderLayout.NORTH);
+		jFrame.getContentPane().add(topPanel, BorderLayout.NORTH);
 
 	}
 
@@ -385,6 +419,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 		centerPanelMidDates.add(jcbCreatedAtPR);
 		centerPanelMidDates.add(jcbClosedAtPR);
 		centerPanelMidDates.add(jcbMergedAtPR);
+		
 		centerPanelMidDates.add(new JLabel());
 		centerPanelMidDates.add(new JLabel());
 
@@ -425,7 +460,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 		centerPanelMid.add(centerPanelMidIn);
 		centerPanel.add(centerPanelMid, BorderLayout.CENTER);
 		centerPanel.add(centerPanelNorth, BorderLayout.NORTH);
-		jFrame.add(centerPanel, BorderLayout.CENTER);
+		jFrame.getContentPane().add(centerPanel, BorderLayout.CENTER);
 	}
 
 	private void addBottomPanel() {
@@ -435,7 +470,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 		bottomPanel = new JPanel(new BorderLayout());
 		bottomPanel.add(jTextArea);
 		bottomPanel.setEnabled(false);
-		jFrame.add(bottomPanel, BorderLayout.SOUTH);
+		jFrame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 
 	private void loadComponents(boolean value){
@@ -551,11 +586,24 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 		return false;
 	}
 
-	public static void main(String[] args) throws UnknownHostException {
-		new RetrievePullRequest();
-
+	public void loadRepositories() throws UnknownHostException{
+		DefaultListModel<String> listModel = new DefaultListModel<String>();
+		List<String> result = PullRequests.getAllRepos();
+		for (String s : result) {
+			listModel.addElement(s);
+		}
+		repositoryList = new JList<String>(listModel);
+		repositoryList.addListSelectionListener(this);
 	}
 
+	public void valueChanged(ListSelectionEvent e) {
+		final List<String> selectedValuesList = repositoryList.getSelectedValuesList();
+		selectedRepositories = selectedValuesList;
+	}
 
+	public static void main(String[] args) throws UnknownHostException {
+		RetrievePullRequest window = new RetrievePullRequest();
+		window.jFrame.setVisible(true);
+	}
 
 }
