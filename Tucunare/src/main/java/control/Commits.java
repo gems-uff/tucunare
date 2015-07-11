@@ -30,30 +30,30 @@ public class Commits {
 				commit = dbcCommits.findOne(queryHead);
 				listCommit = (BasicDBList) commit.get("parents");
 				listFiles = (BasicDBList) commit.get("files");	
+				for (Object object : listFiles) {
+					if(!files.contains((String) ((BasicDBObject) object).get("filename")) && files.size() < filesPull)
+						files.add((String) ((BasicDBObject) object).get("filename"));
+				}
+				if(listCommit.get("0")!=null)
+					shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
+				else
+					break;
 			} catch (NullPointerException npe) {
 				System.err.println("erro ao consultar o pull de commit Head "+shaHead +" no commit "+shaTemp);
 				return "";
 			}
-
-			for (Object object : listFiles) {
-				if(!files.contains((String) ((BasicDBObject) object).get("filename")) && listCommit.size()==1 && files.size() < filesPull)
-					files.add((String) ((BasicDBObject) object).get("filename"));
-			}
-			if(listCommit.get("0")!=null)
-				shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
-			else
-				break;
 		}
 		return files.toString();
 	}
 	
-	public static List getCommitsFilesPathList(String shaHead, String shaBase, Integer commits) throws UnknownHostException{
+	
+	public static String getCommitsFilesPath2(String shaHead, String shaBase) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcCommits = db.getCollection("commits");
 		List<String> files = new ArrayList<String>();
 		String shaTemp = shaHead;
-		while(!shaTemp.equals(shaBase) && commits>0){
-			commits--;
+		while(!shaTemp.equals(shaBase)){
+			//commits--;
 			BasicDBObject queryHead = new BasicDBObject("sha",shaTemp);
 			DBObject commit = null;
 			BasicDBList listCommit = null, listFiles = null;
@@ -61,20 +61,23 @@ public class Commits {
 				commit = dbcCommits.findOne(queryHead);
 				listCommit = (BasicDBList) commit.get("parents");
 				listFiles = (BasicDBList) commit.get("files");	
+				for (Object object : listFiles) {
+					if(!files.contains((String) ((BasicDBObject) object).get("filename")) && listCommit.size()==1)
+						files.add((String) ((BasicDBObject) object).get("filename"));
+				}
+				if(listCommit.get("0")!=null)
+					shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
+				else
+					break;
 			} catch (NullPointerException npe) {
 				System.err.println("erro ao consultar o pull de commit Head "+shaHead +" no commit "+shaTemp);
-				return files;
+				return "";
 			}
-			
-			for (Object object : listFiles) {
-				if(!files.contains((String) ((BasicDBObject) object).get("filename")))// && listCommit.size()==1)
-					files.add((String) ((BasicDBObject) object).get("filename"));
-			}
-			shaTemp = (String) ((BasicDBObject) listCommit.get("0")).get("sha");
 		}
-		return files;
+		return files.size()+"; "+files.toString();
 	}
-
+	
+	
 	public static String getAuthorCommits(String filesNames, String shaBase, String repo) throws UnknownHostException{
 		ArrayList<String> authors = new ArrayList<String>();
 		String files[] = filesNames.split(", ");

@@ -30,6 +30,7 @@ public class PullRequests extends Thread{
 		
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
 		query.append("state", "closed"); //Apenas pull requests encerrados
+		//query.append("number", new BasicDBObject("$gt", Integer.parseInt("705")));//maiores que number
 		int i = file.lastIndexOf("\\");
 		File dir = new File(file.substring(0, i)); 
 		File fileTemp = new File(dir, file.substring(i, file.length()));
@@ -39,7 +40,7 @@ public class PullRequests extends Thread{
 					+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,followContributors,location,"
 					+ "idPull,numberPull,login,state,title,createdDate,closedDate,mergedDate,lifetimeDays,lifetimeHours,lifetimeMinutes,closedBy,"
 					+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,"
-					+ "additionsLines,deletionsLines,totalLines,changedFiles,files");
+					+ "additionsLines,deletionsLines,totalLines,changedFiles,check_files,dirFinal,files");
 //			for (int j = 1; j <= maxNumberFiles; j++) {
 //				fw.write(",file"+j);
 //			}
@@ -60,15 +61,16 @@ public class PullRequests extends Thread{
 				String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
 				String shaBase = ((BasicDBObject)dbObject.get("base")).get("sha").toString();
 				String number = dbObject.get("number").toString();
-
-				if(dbObject!=null){
+				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
+				
+				if(dbObject!=null && !closed_by.equals(user)){
 					//Dados do projeto
 					String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String acceptanceRepo="";
 					int totalPullRepoClosed = Repos.getPullRepoClosed(created, rep, owner);
 					int mergedPullRepo = Repos.getPullRepoMerged(created, rep, owner);
 					if(totalPullRepoClosed==0)
-						acceptanceRepo = "FirstPull";
+						acceptanceRepo = "0";
 					else
 						acceptanceRepo = String.valueOf(((mergedPullRepo*100)/totalPullRepoClosed));
 
@@ -80,8 +82,8 @@ public class PullRequests extends Thread{
 					String rejectUser;
 					String acceptanceUser="";
 					if(totalPullUser==0){
-						acceptanceUser = "FirstPull";
-						rejectUser = "FirstPull";
+						acceptanceUser = "0";
+						rejectUser = "0";
 					}else{
 						acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
 						rejectUser = String.valueOf(((closedPullUser*100)/totalPullUser));
@@ -104,22 +106,53 @@ public class PullRequests extends Thread{
 					long comments = commentsPull + commentsIssue;
 
 					//arquivos
-					String filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
+					String filesPath = "";
+					filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
+//					filesPath = Commits.getCommitsFilesPath2(shaHead, shaBase);
 					String files="", commitsPorArquivos="", authorMoreCommits="";
+					
 					if(!filesPath.equals("")){
+						//int j = filesPath.lastIndexOf(";");
 						files = filesPath.substring(1, filesPath.length()-1);
 						//commitsNosArquivos na última semana.
 						commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep);
 						//Desenvolvedor com mais commits na última semana.
 						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep);
 					}
-
+					
+					//tratamento para caminho dos arquivos para buscar o último diretório
+					String dirFinal = "";
+					String [] path = files.split(", ");
+					for(int x=0; x < path.length; x++){
+						int lastBarIndex = 0, secondLastIndex = 0;
+						lastBarIndex = path[x].lastIndexOf("/");
+						if(lastBarIndex<0 && x == 0){
+							dirFinal += "root";
+							continue;
+						}else 
+							if(lastBarIndex<0){
+								dirFinal += "|root";
+							continue;
+						}
+						String str = path[x];
+						secondLastIndex = str.lastIndexOf("/", lastBarIndex-1);
+						if(secondLastIndex<0){
+							if(!str.equals(""))
+								dirFinal += "|"+str.substring(0, lastBarIndex);
+							else
+								dirFinal += "root|";
+							continue;
+						}	
+						dirFinal += "|"+path[x].substring(secondLastIndex+1, lastBarIndex);
+					}
+					
+					
 					System.out.println((Integer) dbObject.get("number"));
 					//Tempo de vida de um pull request
-					String lifetime = "",closed_by = "", merged_by = "";
+					String lifetime = "", merged_by = "";
 					if((dbObject.get("closed_at")!=null)){
 						lifetime = FormatDate.getLifetime(dbObject.get("closed_at").toString(), created);
-						closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
+						
 					}else{
 						lifetime = ",,"; 
 					}
@@ -149,7 +182,7 @@ public class PullRequests extends Thread{
 							acceptanceUser+","+
 							watchRepo+","+
 							followContributors+","+
-							location.replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ')+","+
+							location.replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ').replace('/', ' ')+","+
 							(Integer) dbObject.get("id")+","+
 							(Integer) dbObject.get("number")+","+
 							((BasicDBObject)dbObject.get("user")).get("login")+","+
@@ -172,7 +205,8 @@ public class PullRequests extends Thread{
 							dbObject.get("deletions")+","+
 							(Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString()))+","+
 							dbObject.get("changed_files")+","+
-							files.replace(", ", "|"));
+							dirFinal+","+
+							filesPath.replace(", ", "|").replace(";", ","));
 //					String [] f = files.split(",");
 //					int fTemp = f.length;
 //					for (int j = 1; j <= (maxNumberFiles-fTemp); j++) {
