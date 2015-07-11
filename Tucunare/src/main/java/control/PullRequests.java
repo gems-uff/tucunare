@@ -19,14 +19,6 @@ public class PullRequests extends Thread{
 	public void saveFile(String repo, String file) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
-		//int maxNumberFiles = 1;
-//		DBCursor pullMaxNumberFiles = dbcPullRequest.find(new BasicDBObject("repo", repo)).sort(new BasicDBObject("changed_files", -1)).limit(1);
-//		System.out.println(pullMaxNumberFiles.next());
-//		for (DBObject dbObject : pullMaxNumberFiles) {
-//			maxNumberFiles = (Integer) dbObject.get("changed_files");
-//			pullMaxNumberFiles.close();
-//			break;
-//		}
 		
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
 		query.append("state", "closed"); //Apenas pull requests encerrados
@@ -39,11 +31,8 @@ public class PullRequests extends Thread{
 			fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,contributors,acceptanceRepo,"
 					+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,followContributors,location,"
 					+ "idPull,numberPull,login,state,title,createdDate,closedDate,mergedDate,lifetimeDays,lifetimeHours,lifetimeMinutes,closedBy,"
-					+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,"
+					+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants"
 					+ "additionsLines,deletionsLines,totalLines,changedFiles,check_files,dirFinal,files");
-//			for (int j = 1; j <= maxNumberFiles; j++) {
-//				fw.write(",file"+j);
-//			}
 			fw.write("\n");
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
@@ -119,12 +108,15 @@ public class PullRequests extends Thread{
 						//Desenvolvedor com mais commits na última semana.
 						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep);
 					}
+
+					String participants = Users.getParticipants(number, rep);
+					participants += participants.substring(1, participants.length()-1).replaceAll(", ", "|");
 					
 					//tratamento para caminho dos arquivos para buscar o último diretório
 					String dirFinal = "";
 					String [] path = files.split(", ");
 					for(int x=0; x < path.length; x++){
-						int lastBarIndex = 0, secondLastIndex = 0;
+						int lastBarIndex = 0;
 						lastBarIndex = path[x].lastIndexOf("/");
 						if(lastBarIndex<0 && x == 0){
 							dirFinal += "root";
@@ -134,28 +126,22 @@ public class PullRequests extends Thread{
 								dirFinal += "|root";
 							continue;
 						}
-						String str = path[x];
-						secondLastIndex = str.lastIndexOf("/", lastBarIndex-1);
-						if(secondLastIndex<0){
-							if(!str.equals(""))
-								dirFinal += "|"+str.substring(0, lastBarIndex);
-							else
-								dirFinal += "root|";
-							continue;
-						}	
-						dirFinal += "|"+path[x].substring(secondLastIndex+1, lastBarIndex);
+						String str = path[x].substring(0, lastBarIndex);
+						if (x>=1) 	
+							dirFinal += "|"+str;
+						else
+							dirFinal += str;
 					}
-					
 					
 					System.out.println((Integer) dbObject.get("number"));
 					//Tempo de vida de um pull request
 					String lifetime = "", merged_by = "";
 					if((dbObject.get("closed_at")!=null)){
 						lifetime = FormatDate.getLifetime(dbObject.get("closed_at").toString(), created);
-						
 					}else{
 						lifetime = ",,"; 
 					}
+
 					//Desenvolvedor que integrou ou rejeitou o código do pull request
 					if((dbObject.get("merged_by"))!=null)
 						merged_by = ((BasicDBObject)dbObject.get("merged_by")).get("login").toString();
@@ -207,18 +193,10 @@ public class PullRequests extends Thread{
 							dbObject.get("changed_files")+","+
 							dirFinal+","+
 							filesPath.replace(", ", "|").replace(";", ","));
-//					String [] f = files.split(",");
-//					int fTemp = f.length;
-//					for (int j = 1; j <= (maxNumberFiles-fTemp); j++) {
-//						fw.write(",");
-//					}	
 					fw.write("\n");
-					//System.out.println(contributors);
 				}else
-					continue;//fw.write("\r\n");
-
+					continue;
 			}
-
 			fw.close();
 			Connect.getInstance().close();
 		}catch(IOException ioe){

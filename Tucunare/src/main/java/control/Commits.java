@@ -46,7 +46,6 @@ public class Commits {
 		return files.toString();
 	}
 	
-	
 	public static String getCommitsFilesPath2(String shaHead, String shaBase) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcCommits = db.getCollection("commits");

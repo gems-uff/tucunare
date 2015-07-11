@@ -95,4 +95,55 @@ public class Users {
 		}
 		return false;
 	}
+	
+	//implementar a busca de participantes
+	public static String getParticipants(String idPullRequest, String repo) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		
+		DBCollection dbcIssueComment = db.getCollection("issue_comments");
+		BasicDBObject queryIssueComment = new BasicDBObject("issue_id",Integer.parseInt(idPullRequest)); //consulta com query
+		queryIssueComment.append("repo", repo);
+		DBCursor cursorIssueComment = dbcIssueComment.find(queryIssueComment);
+		ArrayList<String> participants = new ArrayList<String>();
+		for (DBObject issueComment : cursorIssueComment) {
+			if(!participants.contains(((BasicDBObject) issueComment.get("user")).get("login").toString()))
+				participants.add(((BasicDBObject) issueComment.get("user")).get("login").toString());
+		}
+		
+		DBCollection dbcPullComment = db.getCollection("pull_request_comments");
+		BasicDBObject queryPullComment = new BasicDBObject("pullreq_id",Integer.parseInt(idPullRequest)); //consulta com query
+		queryPullComment.append("repo", repo);
+		DBCursor cursorPullComment = dbcPullComment.find(queryPullComment);
+		for (DBObject pullComments : cursorPullComment) {
+			if(!participants.contains(((BasicDBObject) pullComments.get("user")).get("login").toString()))
+				participants.add(((BasicDBObject) pullComments.get("user")).get("login").toString());
+		}
+		
+		DBCollection dbcIssueEvent = db.getCollection("issue_events");
+		BasicDBObject queryIssueEvent = new BasicDBObject("issue_id",Integer.parseInt(idPullRequest)); //consulta com query
+		queryIssueEvent.append("repo", repo);
+		DBCursor cursorIssueEvent = dbcIssueEvent.find(queryIssueEvent);
+		for (DBObject issueEvent : cursorIssueEvent) {
+			if(!participants.contains(((BasicDBObject) issueEvent.get("actor")).get("login").toString()))
+				participants.add(((BasicDBObject) issueEvent.get("actor")).get("login").toString());
+		}
+		
+		DBCollection dbcIssues = db.getCollection("issues");
+		BasicDBObject queryIssue = new BasicDBObject("number",Integer.parseInt(idPullRequest)); 
+		queryIssue.append("repo", repo);
+		DBObject issue = dbcIssues.findOne(queryIssue);
+		if( ((BasicDBObject) issue).get("closed_by") != null)
+			if(!participants.contains(((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString()))
+				participants.add(((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString());
+		
+		DBCollection dbcPull = db.getCollection("pull_requests");
+		BasicDBObject queryPull = new BasicDBObject("number",Integer.parseInt(idPullRequest)); //consulta com query
+		queryPull.append("repo", repo);
+		DBObject pull = dbcPull.findOne(queryPull);
+			if(!participants.contains(((BasicDBObject) pull.get("user")).get("login").toString()))
+				participants.add(((BasicDBObject) pull.get("user")).get("login").toString());
+		
+		return participants.toString();
+	}
+
 }
