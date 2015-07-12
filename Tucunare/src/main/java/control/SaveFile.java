@@ -24,8 +24,9 @@ public class SaveFile implements Runnable {
 	private List<String> selectedFields; 
 	private Map<String, Integer> txtFieldsDays;
 	public static int finalizedThreads = 0;
-	private static String result;
+	private static String result="";
 
+	@SuppressWarnings("static-access")
 	public SaveFile(String repo, String file,
 			List<String> selectedFields, Map<String, Integer> txtFieldsDays) throws UnknownHostException{
 		this.repo = repo; 
@@ -64,6 +65,8 @@ public class SaveFile implements Runnable {
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
 			//Estimar o tempo para terminar a consulta
 			System.out.println(cursor.count());
+			//Variável que guarda o conteúdo que está sendo concatenado, seu valor será repassado para a variável static result; 
+			String resultTemp="";
 			for (DBObject dbObject : cursor) {
 				//Variváveis
 				String owner = dbObject.get("owner").toString();
@@ -150,51 +153,52 @@ public class SaveFile implements Runnable {
 					mergedDate = FormatDate.getDate(dbObject.get("merged_at").toString());
 
 				//Não gostei de ter que fazer isso.
-				result +=  selectedFields.contains("owner")? (owner+"/"):"";
-				result += selectedFields.contains("repository")? (rep+"; \n"):"\n";
-				result += selectedFields.contains("others")? (dataRepo+"; "):""; //dados gerais do repositório
-				result += selectedFields.contains("contributors")? (contributors+"; "):"";
-				result += selectedFields.contains("acceptance average")? (acceptanceUser+"; "):"";
-				result += selectedFields.contains("followers")? (followers+"; "):"";
-				result += selectedFields.contains("following")? (following+"; "):"";
-				result += selectedFields.contains("age user")? (ageUser+"; "):"";
-				result += selectedFields.contains("type")? (typeDeveloper+"; "):"";
-				result += selectedFields.contains("total PR by user")? (totalPullUser+"; "):"";
-				result += selectedFields.contains("acceptance average")? (acceptanceUser+"; "):"";
-				result += selectedFields.contains("watch repo")? (watchRepo+"; "):"";
-				result += selectedFields.contains("follow contributors")? followContributors+"; ":"";
-				result += selectedFields.contains("location")? location+"; ":"";
-				result += selectedFields.contains("id")? ((Integer) dbObject.get("id")+"; "):"";
-				result += selectedFields.contains("number")? ((Integer) dbObject.get("number")+"; "):"";
-				result += selectedFields.contains("author")? (((BasicDBObject)dbObject.get("user")).get("login")+"; "):"";
-				result += selectedFields.contains("state")? (dbObject.get("state")+"; "):"";
-				result += selectedFields.contains("title")? (dbObject.get("title").toString().replace('\n', ' ').replace(';', ' ')+"; "):"";
-				result += selectedFields.contains("created at")? (FormatDate.getDate(dbObject.get("created_at").toString())+"; "):"";
-				result += selectedFields.contains("closed at")? (closedDate+"; "):"";
-				result += selectedFields.contains("merged at")? mergedDate+"; ":"";
-				result += selectedFields.contains("lifetime")? (lifetime+"; "):"";
-				result += selectedFields.contains("closed by")? (closed_by+"; "):"";
-				result += selectedFields.contains("merged by")? merged_by+"; ":"";
+				resultTemp +=  selectedFields.contains("owner")? (owner+"/"):"";				
+				resultTemp += selectedFields.contains("repository")? (rep+", "):",";
+				resultTemp += selectedFields.contains("others")? (dataRepo+", "):""; //dados gerais do repositório
+				resultTemp += selectedFields.contains("contributors")? (contributors+", "):"";
+				resultTemp += selectedFields.contains("acceptance average")? (acceptanceUser+", "):"";
+				resultTemp += selectedFields.contains("followers")? (followers+", "):"";
+				resultTemp += selectedFields.contains("following")? (following+", "):"";
+				resultTemp += selectedFields.contains("age user")? (ageUser+", "):"";
+				resultTemp += selectedFields.contains("type")? (typeDeveloper+", "):"";
+				resultTemp += selectedFields.contains("total PR by user")? (totalPullUser+", "):"";
+				resultTemp += selectedFields.contains("acceptance average")? (acceptanceUser+", "):"";
+				resultTemp += selectedFields.contains("watch repo")? (watchRepo+", "):"";
+				resultTemp += selectedFields.contains("follow contributors")? followContributors+", ":"";
+				resultTemp += selectedFields.contains("location")? location+", ":"";
+				resultTemp += selectedFields.contains("id")? ((Integer) dbObject.get("id")+", "):"";
+				resultTemp += selectedFields.contains("number")? ((Integer) dbObject.get("number")+", "):"";
+				resultTemp += selectedFields.contains("author")? (((BasicDBObject)dbObject.get("user")).get("login")+"; "):"";
+				resultTemp += selectedFields.contains("state")? (dbObject.get("state")+", "):"";
+				resultTemp += selectedFields.contains("title")? (dbObject.get("title").toString().replace('\n', ' ').replace(';', ' ')+", "):"";
+				resultTemp += selectedFields.contains("created at")? (FormatDate.getDate(dbObject.get("created_at").toString())+", "):"";
+				resultTemp += selectedFields.contains("closed at")? (closedDate+", "):"";
+				resultTemp += selectedFields.contains("merged at")? mergedDate+", ":"";
+				resultTemp += selectedFields.contains("lifetime")? (lifetime+", "):"";
+				resultTemp += selectedFields.contains("closed by")? (closed_by+", "):"";
+				resultTemp += selectedFields.contains("merged by")? merged_by+", ":"";
 				if (selectedFields.contains("sha (head e base)")){
-					result += ((BasicDBObject)dbObject.get("head")).get("sha")+"; ";
-					result += ((BasicDBObject)dbObject.get("base")).get("sha")+"; ";
+					resultTemp += ((BasicDBObject)dbObject.get("head")).get("sha")+", ";
+					resultTemp += ((BasicDBObject)dbObject.get("base")).get("sha")+", ";
 				}
-				result += selectedFields.contains("assignee")? (assignee+"; "):"";
-				result += selectedFields.contains("comments")? (comments+"; "):"";
-				result += selectedFields.contains("commits")? (dbObject.get("commits")+"; "):"";
-				result += selectedFields.contains("commits by files")? (commitsPorArquivos+"; "):"";
-				result += selectedFields.contains("author more commits")? (authorMoreCommits+"; "):"";
-				result += selectedFields.contains("lines added")? (dbObject.get("additions")+"; "):"";
-				result += selectedFields.contains("deleted lines")? (dbObject.get("deletions")+"; "):"";
+				resultTemp += selectedFields.contains("assignee")? (assignee+", "):"";
+				resultTemp += selectedFields.contains("comments")? (comments+", "):"";
+				resultTemp += selectedFields.contains("commits")? (dbObject.get("commits")+", "):"";
+				resultTemp += selectedFields.contains("commits by files")? (commitsPorArquivos+", "):"";
+				resultTemp += selectedFields.contains("author more commits")? (authorMoreCommits+", "):"";
+				resultTemp += selectedFields.contains("lines added")? (dbObject.get("additions")+", "):"";
+				resultTemp += selectedFields.contains("deleted lines")? (dbObject.get("deletions")+"; "):";";
 
 				if (selectedFields.contains("lines added") && selectedFields.contains("deleted lines"))
-					result += Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString())+"; ";
+					resultTemp += Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString())+", ";
 
-				result += selectedFields.contains("changed files")? (dbObject.get("changed_files")+"; "):"";		
-				result += selectedFields.contains("files")? (files):"";
-				result += "\n";
+				resultTemp += selectedFields.contains("changed files")? (dbObject.get("changed_files")+", "):"";		
+				resultTemp += selectedFields.contains("files")? (files):"";
+				resultTemp += "\r\n";
 			}
 
+			result += resultTemp;
 			//Esse método fechava as conexões das outras threads.
 			//Connect.getInstance().close();
 
@@ -218,7 +222,8 @@ public class SaveFile implements Runnable {
 					+ "followers;following;ageUser;typeDeveloper;totalPullDeveloper;acceptanceDeveloper;watchRepo;followContributors;location;"
 					+ "idPull;numberPull;login;state;title;createdDate;closedDate;mergedDate;lifetimeDays;lifetimeHours;lifetimeMinutes;closedBy;"
 					+ "mergedBy;commitHeadSha;commitBaseSha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
-					+ "additionsLines;deletionsLines;totalLines;changedFiles;files\n");
+					+ "additionsLines;deletionsLines;totalLines;changedFiles;files");
+			fw.write("\r\n");
 			fw.write(result);
 
 		} catch (IOException e) {

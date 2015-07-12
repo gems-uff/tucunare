@@ -217,8 +217,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 							total++;
 							new Thread(new SaveFile(repository, file, getSelectedFields(), getTxtFields()), "Thread-"+repository).start();	
 						}
-						if (entrou)
-							new DialogStatus(jFrame, total).show();
+						if (entrou){
+							DialogStatus ds = new DialogStatus(jFrame, total);
+							ds.setVisible(true);
+							ds.setModal(true);
+						}
+						
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}
