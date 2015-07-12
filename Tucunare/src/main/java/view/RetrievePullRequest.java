@@ -110,6 +110,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 	private JList<String> repositoryList;
 	private List<String> selectedRepositories = new ArrayList<String>();
+	public static int total=0;
+	
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
 		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
@@ -209,16 +211,14 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					try {
 						jTextArea.setText("Processando dados.");
 						boolean entrou=false;
-						int total=0;
+						total=0;
 						for (String repository : selectedRepositories) {
 							entrou = true;
 							total++;
 							new Thread(new SaveFile(repository, file, getSelectedFields(), getTxtFields()), "Thread-"+repository).start();	
 						}
-						if (entrou){
+						if (entrou)
 							new DialogStatus(jFrame, total).show();
-							
-						}
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}
