@@ -37,6 +37,10 @@ import control.SaveFile;
 import javax.swing.JProgressBar;
 
 import teste.DialogStatus;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.ButtonGroup;
 
 public class RetrievePullRequest implements ActionListener, ItemListener, ListSelectionListener {
 
@@ -111,6 +115,14 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JList<String> repositoryList;
 	private List<String> selectedRepositories = new ArrayList<String>();
 	public static int total=0;
+	private JMenuBar menuBar;
+	private JMenu mnFile;
+	private JMenu mnHelp;
+	private JMenuItem mntmSobre;
+	private JMenuItem mntmLoadConfiguration;
+	private JMenuItem mntmSave;
+	private JMenuItem mntmExit;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
 	
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
@@ -123,6 +135,38 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jFrame.pack();
 		jFrame.setVisible(true);
 		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		menuBar = new JMenuBar();
+		jFrame.setJMenuBar(menuBar);
+		
+		mnFile = new JMenu("File");
+		menuBar.add(mnFile);
+		
+		mntmLoadConfiguration = new JMenuItem("Load configuration");
+		mnFile.add(mntmLoadConfiguration);
+		
+		mntmSave = new JMenuItem("Save");
+		mnFile.add(mntmSave);
+		
+		mntmExit = new JMenuItem("Exit");
+		mntmExit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				System.exit(0);
+			}
+		});
+		buttonGroup.add(mntmExit);
+		mnFile.add(mntmExit);
+		
+		mnHelp = new JMenu("Help");
+		menuBar.add(mnHelp);
+		
+		mntmSobre = new JMenuItem("Sobre");
+		mntmSobre.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//Mostrar janela "Sobre".
+			}
+		});
+		mnHelp.add(mntmSobre);
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -222,7 +266,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 							ds.setVisible(true);
 							ds.setModal(true);
 						}
-						
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
 					}

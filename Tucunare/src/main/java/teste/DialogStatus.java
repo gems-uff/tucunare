@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -13,6 +14,9 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import control.SaveFile;
+import util.Connect;
 
 public class DialogStatus extends JDialog{
 	private static final long serialVersionUID = 6446402150733028773L;
@@ -78,6 +82,13 @@ public class DialogStatus extends JDialog{
 			jLabel.setText("Concluído. ("+atual+" de "+max+")");
 			txtOperaoFinalizada.setVisible(true);
 			btnSair.setVisible(true);
+			System.out.println("Tempo em segundos do fim da recuperação dos dados: "+SaveFile.tempo);
+			try {
+				Connect.getInstance().close();
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+				System.err.println("erro ao tentar finalizar a conexão com o banco de dados.");
+			}
 		}
 		else
 			jLabel.setText("Carregando... ("+atual+" de "+max+")");

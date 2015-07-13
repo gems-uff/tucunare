@@ -25,6 +25,7 @@ public class SaveFile implements Runnable {
 	private Map<String, Integer> txtFieldsDays;
 	public static int finalizedThreads = 0;
 	private static String result="";
+	public static String tempo="";
 
 	@SuppressWarnings("static-access")
 	public SaveFile(String repo, String file,
@@ -37,8 +38,10 @@ public class SaveFile implements Runnable {
 
 	public void run() {
 		System.out.println("Processando dados do Pull Request "+ repo+"\nThread utilizada: "+ Thread.currentThread().getId());
+		long tempoInicial = System.currentTimeMillis(); 
 		try {
-			System.out.println("Resultado da recuperação do repositório "+repo+"\n"+retrieveData(repo, selectedFields, txtFieldsDays));
+			retrieveData(repo, selectedFields, txtFieldsDays);
+			tempo += Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ";
 			if (finalizedThreads==RetrievePullRequest.total){
 				System.out.println(saveFile());
 			}
@@ -58,7 +61,8 @@ public class SaveFile implements Runnable {
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);
 			if (cursor==null){
-				Connect.getInstance().close();
+				//Se ao finalizar a instancia tiver outra thread recuperando dados dará erro.
+				//Connect.getInstance().close();
 				finalizedThreads++;
 				return "couldn't find the repository "+repo;
 			}
@@ -204,9 +208,9 @@ public class SaveFile implements Runnable {
 
 			finalizedThreads++;
 			return "sucess!";
-		}catch(IOException ioe){
+		}catch(Exception ioe){
 			finalizedThreads++;
-			return "Erro na escrita do arquivo";
+			return "Erro ao recuperar dados.";
 		}
 	}	
 
