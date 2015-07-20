@@ -2,69 +2,71 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.UnknownHostException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import model.Settings;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import teste.DialogStatus;
 import control.PullRequests;
 import control.SaveFile;
 
-import javax.swing.JProgressBar;
-
-import teste.DialogStatus;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.ButtonGroup;
+import javax.swing.JTextField;
 
 public class RetrievePullRequest implements ActionListener, ItemListener, ListSelectionListener {
 
+	private Settings settings;
 	private JPanel topPanel;
 	private JPanel bottomPanel;
 	private JPanel centerPanel;
 	private JPanel centerPanelNorth;
 	private JPanel centerPanelMid;
 	private JPanel centerPanelMidIn;
-	private JPanel panelContributor;
 	private JPanel panelCommByFiles;
 	private JPanel panelAuthorMoreCommitsPR;
-	private JPanel centerPanelMidDates;
 	private JPanel centerPanelBotAuthorPR;
 
 	private JFrame jFrame;
-	private JLabel jLabelContributor;
 	private JLabel jLabelCommByFiles;
 	private JLabel jLabelAuthorMoreComm;
 
 	private JTextField jTxtFePath;
 	private JTextField jTextRepo;
 	private JTextField jTxtAuthorMoreCommitsPR;
-	private JTextField jTxtContributor;
 	private JTextField jTxtCommByFiles;
 
 	private JTextArea jTextArea;
@@ -75,46 +77,42 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JButton jButtonSelectAll;
 	private JButton jButtonDeselectAll;
 
-	private JCheckBox jcbRepoCreatedDate;
-	private JCheckBox jcbRepoOthers;
-	private JCheckBox jcbRepo;
-	private JCheckBox jcbOwner;
-	private JCheckBox jcbAgeUser;
-	private JCheckBox jcbUserFollowers;
-	private JCheckBox jcbUserFollowing;
-	private JCheckBox jcbWatchRepo;
-	private JCheckBox jcbFollowContributors;
-	private JCheckBox jcbUserLocation;
-	private JCheckBox jcbTotalPRUser;
-	private JCheckBox jcbAcceptanceUser;
-	private JCheckBox jcbCreatedAtPR;
-	private JCheckBox jcbClosedAtPR;
-	private JCheckBox jcbMergedAtPR;
-	private JCheckBox jcbIdPR;
-	private JCheckBox jcbAuthorPR;
+	private JCheckBox jcbAllRepoData;
+
 	private JCheckBox jcbNumPR;
-	private JCheckBox jcbContributorsPR;
 	private JCheckBox jcbStatePR;
-	private JCheckBox jcbLifetimePR;
-	private JCheckBox jcbClosedByPR;
-	private JCheckBox jcbMergedByPR;
+	private JCheckBox jcbTitlePR;
 	private JCheckBox jcbShaHeadBasePR;
+	private JCheckBox jcbDates;
+	private JCheckBox jcbClosedMergedByPR;
+	private JCheckBox jcbLifetimePR;
 	private JCheckBox jcbAssigneePR;
+
 	private JCheckBox jcbCommentsPR;
 	private JCheckBox jcbCommitsPR;
-	private JCheckBox jcbFilesPR;
-	private JCheckBox jcbCommitsByFilesPR;
 	private JCheckBox jcbAuthorMoreCommitsPR;
-	private JCheckBox jcbLinesAddedPR;
-	private JCheckBox jcbLinesDeletedPR;
-	private JCheckBox jcbChangedFilePR;
-	private JCheckBox jcbDeveloperType;
-	private JCheckBox jcbTitlePR;
+	private JCheckBox jcbCommitsByFilesPR;
+	private JCheckBox jcbChangedFilesPR;
+	private JCheckBox jcbFilesPR;
+	private JCheckBox jcbRootDirectory;
+	private JCheckBox jcbModifiedLinesPR;
+	private JTextField jtxtRepoContributors;
+
+	private JCheckBox jcbUser;
+	private JCheckBox jcbAgeUser;
+	private JCheckBox jcbUserType;
+	private JCheckBox jcbUserPulls;
+	private JCheckBox jcbUserAverages;
+	private JCheckBox jcbUserFollowers;
+	private JCheckBox jcbUserFollowing;
+	private JCheckBox jcbUserLocation;
+
 	private JButton jButtonRepositories;
 
 	private JList<String> repositoryList;
 	private List<String> selectedRepositories = new ArrayList<String>();
 	public static int total=0;
+	//Menu
 	private JMenuBar menuBar;
 	private JMenu mnFile;
 	private JMenu mnHelp;
@@ -123,7 +121,16 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JMenuItem mntmSave;
 	private JMenuItem mntmExit;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
-	
+	private JPanel panel;
+	private JComboBox<String> jcbPRType;
+	private JLabel lblPrType;
+	private JPanel panel_1;
+	private JLabel jlbMonthAgo;
+	private JCheckBox jcbContributors;
+	private JPanel panel_2;
+	private JPanel panel_3;
+	private JPanel panel_4;
+
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
 		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
@@ -135,19 +142,19 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jFrame.pack();
 		jFrame.setVisible(true);
 		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		menuBar = new JMenuBar();
 		jFrame.setJMenuBar(menuBar);
-		
+
 		mnFile = new JMenu("File");
 		menuBar.add(mnFile);
-		
+
 		mntmLoadConfiguration = new JMenuItem("Load configuration");
 		mnFile.add(mntmLoadConfiguration);
-		
+
 		mntmSave = new JMenuItem("Save");
 		mnFile.add(mntmSave);
-		
+
 		mntmExit = new JMenuItem("Exit");
 		mntmExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -156,10 +163,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		});
 		buttonGroup.add(mntmExit);
 		mnFile.add(mntmExit);
-		
+
 		mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
-		
+
 		mntmSobre = new JMenuItem("Sobre");
 		mntmSobre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -171,73 +178,39 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource() == jcbCommitsByFilesPR){
-			if (jcbCommitsByFilesPR.isSelected()){
-				jLabelCommByFiles.setVisible(true);
-				jTxtCommByFiles.setVisible(true);
-			}else{
-				jTxtCommByFiles.setVisible(false);
-				jLabelCommByFiles.setVisible(false);
-			}
+			boolean aux = jcbCommitsByFilesPR.isSelected();
+				jLabelCommByFiles.setVisible(aux);
+				jTxtCommByFiles.setVisible(aux);
 		}else
-			if (e.getSource() == jcbContributorsPR){
-				if (jcbContributorsPR.isSelected()){
-					jLabelContributor.setVisible(true);
-					jTxtContributor.setVisible(true);
-				}else{
-					jLabelContributor.setVisible(false);
-					jTxtContributor.setVisible(false);
-				}
-			}else 
-				if (e.getSource() == jcbAuthorMoreCommitsPR){
-					if (jcbAuthorMoreCommitsPR.isSelected()){
-						jLabelAuthorMoreComm.setVisible(true);
-						jTxtAuthorMoreCommitsPR.setVisible(true);
-					}else{
-						jLabelAuthorMoreComm.setVisible(false);
-						jTxtAuthorMoreCommitsPR.setVisible(false);
-					}
+			if (e.getSource() == jcbAuthorMoreCommitsPR){
+				jLabelAuthorMoreComm.setVisible(jcbAuthorMoreCommitsPR.isSelected());
+				jTxtAuthorMoreCommitsPR.setVisible(jcbAuthorMoreCommitsPR.isSelected());
+			}else
+				if (e.getSource() == jcbCommitsPR){
+					boolean aux = jcbCommitsPR.isSelected();
+					jcbFilesPR.setEnabled(aux);
+					jcbCommitsByFilesPR.setEnabled(aux);
+					jcbAuthorMoreCommitsPR.setEnabled(aux);
+
+					jcbFilesPR.setSelected(aux);
+					jcbCommitsByFilesPR.setSelected(aux); 
+					jcbAuthorMoreCommitsPR.setSelected(aux);
 				}else
-					if (e.getSource() == jcbCommitsPR){
-						if (jcbCommitsPR.isSelected()){
-							jcbFilesPR.setEnabled(true);
-							jcbCommitsByFilesPR.setEnabled(true);
-							jcbAuthorMoreCommitsPR.setEnabled(true);
+					if (e.getSource() == jcbContributors){						
+						if (jtxtRepoContributors==null)
+							jtxtRepoContributors = new JTextField();
+						if (jlbMonthAgo == null)
+							jlbMonthAgo = new JLabel("Months ago:");
+						jlbMonthAgo.setVisible(jcbContributors.isSelected());
+						jtxtRepoContributors.setVisible(jcbContributors.isSelected());
 
-							jcbFilesPR.setSelected(true);
-							jcbCommitsByFilesPR.setSelected(true); 
-							jcbAuthorMoreCommitsPR.setSelected(true);
-
-						}else{
-							jcbFilesPR.setEnabled(false);
-							jcbCommitsByFilesPR.setEnabled(false);
-							jcbAuthorMoreCommitsPR.setEnabled(false);
-
-							jcbFilesPR.setSelected(false);
-							jcbCommitsByFilesPR.setSelected(false); 
-							jcbAuthorMoreCommitsPR.setSelected(false);
+					}else
+						if (e.getSource() == jcbUserPulls){
+							jcbUserAverages.setSelected(jcbUserPulls.isSelected());
 						}
-					}else 
-						if (e.getSource() == jcbAuthorPR){
-							if (jcbAuthorPR.isSelected())
-								loadAuthorData(true);
-							else
-								loadAuthorData(false);
-						}
-	}
-
-	private void loadAuthorData(boolean value) {
-		Component[] ls = centerPanelBotAuthorPR.getComponents();
-		for (Component comp : ls) {
-			if (comp instanceof JCheckBox){
-				JCheckBox temp =(JCheckBox) comp; 
-				temp.setSelected(value);
-				temp.setEnabled(value);
-			}
-		}
 	}
 
 	public void actionPerformed(ActionEvent evt) {
-		getSelectedFields();
 		String file="";
 		if(evt.getSource()==jButtonSave){
 			if (hasCheckBoxSelected()){
@@ -256,10 +229,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 						jTextArea.setText("Processando dados.");
 						boolean entrou=false;
 						total=0;
+						settings = getSelectedFields();
 						for (String repository : selectedRepositories) {
 							entrou = true;
 							total++;
-							new Thread(new SaveFile(repository, file, getSelectedFields(), getTxtFields()), "Thread-"+repository).start();	
+							new Thread(new SaveFile(repository, file, settings), "Thread-"+repository).start();	
 						}
 						if (entrou){
 							DialogStatus ds = new DialogStatus(jFrame, total);
@@ -360,147 +334,168 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		centerPanelNorth = new JPanel(new GridLayout(1,4));
 		centerPanelNorth.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Repository: ", 
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
-		jcbRepo = new JCheckBox("repository");
-		jcbRepoCreatedDate = new JCheckBox("created date");
-		jcbRepoOthers = new JCheckBox("others");
-		jcbOwner = new JCheckBox("owner");
+		jcbAllRepoData = new JCheckBox("all");
 
-		centerPanelNorth.add(jcbRepo);
-		centerPanelNorth.add(jcbOwner);
-		centerPanelNorth.add(jcbRepoCreatedDate);
-		centerPanelNorth.add(jcbRepoOthers);
+		centerPanelNorth.add(jcbAllRepoData);
+
+		panel_1 = new JPanel();
+		centerPanelNorth.add(panel_1);
+		panel_1.setLayout(new BorderLayout(0, 0));
+
+		jcbContributors = new JCheckBox("contributors");
+		jcbContributors.addItemListener(this);
+		jcbContributors.setSelected(true);
+		panel_1.add(jcbContributors, BorderLayout.NORTH);
+
+		jlbMonthAgo = new JLabel("Months ago:");
+		panel_1.add(jlbMonthAgo, BorderLayout.WEST);
+
+		panel_2 = new JPanel();
+		FlowLayout flowLayout_1 = (FlowLayout) panel_2.getLayout();
+		flowLayout_1.setVgap(0);
+		flowLayout_1.setHgap(0);
+		flowLayout_1.setAlignment(FlowLayout.LEFT);
+		panel_1.add(panel_2, BorderLayout.CENTER);
+
+		jtxtRepoContributors = new JTextField();
+		jtxtRepoContributors.setText("2");
+		jtxtRepoContributors.setColumns(5);
+
+		panel_2.add(jtxtRepoContributors);
 		centerPanelNorth.add(new JLabel());
 
 		//Painel de dados do Pull Request
 		centerPanelMid = new JPanel(new BorderLayout());
 		centerPanelMid.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Pull Request: ", 
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
-		centerPanelMidIn = new JPanel(new GridLayout(4,5));
-
-		jcbIdPR = new JCheckBox("id");
-		jcbAuthorPR = new JCheckBox("author");
-		jcbAuthorPR.addItemListener(this);
+		centerPanelMidIn = new JPanel(new GridLayout(0,4));
 		jcbNumPR = new JCheckBox("number");
-		jcbContributorsPR = new JCheckBox("contributors");
-		jcbContributorsPR.addItemListener(this);
 
 		jcbStatePR = new JCheckBox("state");
-		jcbLifetimePR = new JCheckBox("lifetime");
-		jcbClosedByPR = new JCheckBox("closed by");
-		jcbMergedByPR = new JCheckBox("merged by");
-		jcbShaHeadBasePR = new JCheckBox("sha (head e base)");
+		jcbClosedMergedByPR = new JCheckBox("closed and merged by");
 		jcbAssigneePR = new JCheckBox("assignee");
 		jcbCommentsPR = new JCheckBox("comments");
 		jcbCommitsPR = new JCheckBox("commits");
 		jcbCommitsPR.addItemListener(this);
-		jcbFilesPR = new JCheckBox("files");
 		jcbCommitsByFilesPR = new JCheckBox("commits by files");
 		jcbCommitsByFilesPR.addItemListener(this);
-		jcbAuthorMoreCommitsPR = new JCheckBox("author more commits");
-		jcbAuthorMoreCommitsPR.addItemListener(this);
-		jcbLinesAddedPR = new JCheckBox("lines added");
-		jcbLinesDeletedPR = new JCheckBox("deleted lines");
-		jcbChangedFilePR = new JCheckBox("changed files");
-		jcbTitlePR = new JCheckBox("title");
+		jcbModifiedLinesPR = new JCheckBox("modified lines");
 
-		centerPanelMidIn.add(jcbIdPR);
-		centerPanelMidIn.add(jcbAuthorPR);
+		panel = new JPanel();
+		panel.setToolTipText("choose the type of pull request to be recovered. All = open & closed.");
+		FlowLayout flowLayout = (FlowLayout) panel.getLayout();
+		flowLayout.setVgap(10);
+		flowLayout.setAlignment(FlowLayout.LEFT);
+		flowLayout.setAlignOnBaseline(true);
+		centerPanelMidIn.add(panel);
+
+		lblPrType = new JLabel("PR type: ");
+		panel.add(lblPrType);
+
+		jcbPRType = new JComboBox<String>();
+		jcbPRType.setModel(new DefaultComboBoxModel<String>(new String[] {"all", "open", "closed"}));
+		jcbPRType.setSelectedIndex(0);
+
+		panel.add(jcbPRType);
 		centerPanelMidIn.add(jcbNumPR);
-
-		panelContributor = new JPanel(new BorderLayout());
-		jTxtContributor = new JTextField("10");
-		jLabelContributor = new JLabel(" Dia(s):  ");
-
-		panelContributor.add(jcbContributorsPR, BorderLayout.NORTH);
-		panelContributor.add(jLabelContributor, BorderLayout.WEST);
-		panelContributor.add(jTxtContributor);
-
-		centerPanelMidIn.add(panelContributor);
 		centerPanelMidIn.add(jcbStatePR);
-		centerPanelMidIn.add(jcbLifetimePR);
-		centerPanelMidIn.add(jcbClosedByPR);
-		centerPanelMidIn.add(jcbMergedByPR);
+		jcbTitlePR = new JCheckBox("title");
+		centerPanelMidIn.add(jcbTitlePR);
+		jcbShaHeadBasePR = new JCheckBox("shas (head e base)");
 		centerPanelMidIn.add(jcbShaHeadBasePR);
+
+		//JLabel labelDates = new JLabel("PR dates: ");
+		jcbDates = new JCheckBox("dates");
+		centerPanelMidIn.add(jcbDates);
+		centerPanelMidIn.add(jcbClosedMergedByPR);
+		jcbLifetimePR = new JCheckBox("lifetime");
+		centerPanelMidIn.add(jcbLifetimePR);
 		centerPanelMidIn.add(jcbAssigneePR);
 		centerPanelMidIn.add(jcbCommentsPR);
 		centerPanelMidIn.add(jcbCommitsPR);
-		centerPanelMidIn.add(jcbFilesPR);
-
-		panelCommByFiles = new JPanel(new BorderLayout());
-		jTxtCommByFiles = new JTextField("10");
-		jLabelCommByFiles = new JLabel(" Dia(s):  ");
-		panelCommByFiles.add(jcbCommitsByFilesPR, BorderLayout.NORTH);
-		panelCommByFiles.add(jLabelCommByFiles, BorderLayout.WEST);
-		panelCommByFiles.add(jTxtCommByFiles);
-
-		centerPanelMidIn.add(panelCommByFiles);
+		jcbAuthorMoreCommitsPR = new JCheckBox("author more commits");
+		jcbAuthorMoreCommitsPR.addItemListener(this);
 
 		panelAuthorMoreCommitsPR = new JPanel(new BorderLayout());
-		jTxtAuthorMoreCommitsPR = new JTextField("10");
-		jLabelAuthorMoreComm = new JLabel(" Dia(s):  ");
+		jLabelAuthorMoreComm = new JLabel(" Day(s):  ");
 
 		panelAuthorMoreCommitsPR.add(jcbAuthorMoreCommitsPR, BorderLayout.NORTH);
 		panelAuthorMoreCommitsPR.add(jLabelAuthorMoreComm, BorderLayout.WEST);
-		panelAuthorMoreCommitsPR.add(jTxtAuthorMoreCommitsPR);
 
 		centerPanelMidIn.add(panelAuthorMoreCommitsPR);
-		centerPanelMidIn.add(jcbLinesAddedPR);
-		centerPanelMidIn.add(jcbLinesDeletedPR);
-		centerPanelMidIn.add(jcbChangedFilePR);
-		centerPanelMidIn.add(jcbTitlePR);
+
+		panel_4 = new JPanel();
+		FlowLayout flowLayout_3 = (FlowLayout) panel_4.getLayout();
+		flowLayout_3.setVgap(0);
+		flowLayout_3.setHgap(0);
+		flowLayout_3.setAlignment(FlowLayout.LEFT);
+		panelAuthorMoreCommitsPR.add(panel_4, BorderLayout.CENTER);
+		jTxtAuthorMoreCommitsPR = new JTextField("10");
+		jTxtAuthorMoreCommitsPR.setColumns(5);
+		panel_4.add(jTxtAuthorMoreCommitsPR);
+		jTxtAuthorMoreCommitsPR.setToolTipText("Number in former days the date of creation of the PR to retrieve the author of more commits on the PR.");
+		jTxtAuthorMoreCommitsPR.setHorizontalAlignment(SwingConstants.LEFT);
+
+		panelCommByFiles = new JPanel(new BorderLayout());
+		jLabelCommByFiles = new JLabel(" Day(s):  ");
+		panelCommByFiles.add(jcbCommitsByFilesPR, BorderLayout.NORTH);
+		panelCommByFiles.add(jLabelCommByFiles, BorderLayout.WEST);
+
+		centerPanelMidIn.add(panelCommByFiles);
+
+		panel_3 = new JPanel();
+		FlowLayout flowLayout_2 = (FlowLayout) panel_3.getLayout();
+		flowLayout_2.setVgap(0);
+		flowLayout_2.setHgap(0);
+		flowLayout_2.setAlignment(FlowLayout.LEFT);
+		panelCommByFiles.add(panel_3, BorderLayout.CENTER);
+		jTxtCommByFiles = new JTextField("10");
+		panel_3.add(jTxtCommByFiles);
+		jTxtCommByFiles.setColumns(5);
+		jTxtCommByFiles.setToolTipText("Number of days prior to the date of creation of the PR to recover the amount of commits by PR files.");
+		jcbChangedFilesPR = new JCheckBox("changed files");
+		centerPanelMidIn.add(jcbChangedFilesPR);
+		jcbFilesPR = new JCheckBox("files");
+		centerPanelMidIn.add(jcbFilesPR);
+
+		jcbRootDirectory = new JCheckBox("root directory");
+		jcbRootDirectory.setSelected(true);
+		centerPanelMidIn.add(jcbRootDirectory);
+		centerPanelMidIn.add(jcbModifiedLinesPR);
 
 
-		TitledBorder title = BorderFactory.createTitledBorder( BorderFactory.createEmptyBorder(), "PR dates: ");
-		//TitledBorder title = BorderFactory.createTitledBorder( null, null);
-		//title.setTitlePosition(TitledBorder.TOP);
+		//TitledBorder title = BorderFactory.createTitledBorder( BorderFactory.createEmptyBorder(), "PR dates: ");
 
-		centerPanelMidDates = new JPanel(new GridLayout());
-		centerPanelMidDates.setBorder(title);
-
-		//JLabel labelDates = new JLabel("PR dates: ");
-		jcbCreatedAtPR = new JCheckBox("created at");
-		jcbClosedAtPR = new JCheckBox("closed at");
-		jcbMergedAtPR = new JCheckBox("merged at");
-
-		//centerPanelMidDates.add(labelDates);
-		centerPanelMidDates.add(jcbCreatedAtPR);
-		centerPanelMidDates.add(jcbClosedAtPR);
-		centerPanelMidDates.add(jcbMergedAtPR);
-		
-		centerPanelMidDates.add(new JLabel());
-		centerPanelMidDates.add(new JLabel());
-
-		TitledBorder titleAuthorData = BorderFactory.createTitledBorder( BorderFactory.createEmptyBorder(), "Author data: ");
 		centerPanelBotAuthorPR = new JPanel(new GridLayout(2,5));
-		centerPanelBotAuthorPR.setBorder(titleAuthorData);
-		//centerPanelBotauthorPR.setBorder(title);
-
-		//JLabel labelAuthorData = new JLabel("Author data: ");
-		jcbTotalPRUser = new JCheckBox("total PR by user");
-		jcbDeveloperType = new JCheckBox("type");
+		centerPanelBotAuthorPR.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Author Data: ", 
+				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
 		jcbAgeUser = new JCheckBox("age user");
 		jcbUserFollowers = new JCheckBox("followers");
 		jcbUserFollowing = new JCheckBox("following");
-		jcbWatchRepo = new JCheckBox("watch repo");
-		jcbUserLocation = new JCheckBox("follow contributors");
-		jcbFollowContributors = new JCheckBox("location");
-		jcbAcceptanceUser = new JCheckBox("acceptance average");
+		jcbUserLocation = new JCheckBox("location");
+
+		jcbUser = new JCheckBox("user");
+		jcbUser.setSelected(true);
+		centerPanelBotAuthorPR.add(jcbUser);
 
 
 		//centerPanelBotauthorPR.add(labelAuthorData);
 		centerPanelBotAuthorPR.add(jcbAgeUser);
+		jcbUserType = new JCheckBox("type");
+		centerPanelBotAuthorPR.add(jcbUserType);
+		//centerPanelBotauthorPR.setBorder(title);
+
+		//JLabel labelAuthorData = new JLabel("Author data: ");
+		jcbUserPulls = new JCheckBox("pulls user");
+		jcbUserPulls.addItemListener(this);
+		centerPanelBotAuthorPR.add(jcbUserPulls);
+		jcbUserAverages = new JCheckBox("averages");
+		centerPanelBotAuthorPR.add(jcbUserAverages);
 		centerPanelBotAuthorPR.add(jcbUserFollowers);
 		centerPanelBotAuthorPR.add(jcbUserFollowing);
-		centerPanelBotAuthorPR.add(jcbWatchRepo);
-		centerPanelBotAuthorPR.add(jcbFollowContributors );
-		centerPanelBotAuthorPR.add(jcbUserLocation);
-		centerPanelBotAuthorPR.add(jcbTotalPRUser);
-		centerPanelBotAuthorPR.add(jcbDeveloperType);
-		centerPanelBotAuthorPR.add(jcbAcceptanceUser);
+		centerPanelBotAuthorPR.add(jcbUserLocation );
 
 		JPanel centerPanelMidBot = new JPanel(new BorderLayout());
-
-		centerPanelMidBot.add(centerPanelMidDates, BorderLayout.NORTH);
 		centerPanelMidBot.add(centerPanelBotAuthorPR, BorderLayout.SOUTH);
 
 		centerPanelMid.add(centerPanelMidBot, BorderLayout.SOUTH);
@@ -524,22 +519,14 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbAgeUser.setSelected(value);
 		jcbUserFollowers.setSelected(value);
 		jcbUserFollowing.setSelected(value);
-		jcbFollowContributors.setSelected(value);
 		jcbUserLocation.setSelected(value);
-		jcbWatchRepo.setSelected(value);
-		jcbTotalPRUser.setSelected(value);
-		jcbAcceptanceUser.setSelected(value);
-		jcbCreatedAtPR.setSelected(value);
-		jcbClosedAtPR.setSelected(value);
-		jcbMergedAtPR.setSelected(value);
-		jcbIdPR.setSelected(value);
-		jcbAuthorPR.setSelected(value);
+		jcbUserPulls.setSelected(value);
+		jcbUserAverages.setSelected(value);
+		jcbDates.setSelected(value);
 		jcbNumPR.setSelected(value);
-		jcbContributorsPR.setSelected(value);
 		jcbStatePR.setSelected(value);
 		jcbLifetimePR.setSelected(value);
-		jcbClosedByPR.setSelected(value);
-		jcbMergedByPR.setSelected(value);
+		jcbClosedMergedByPR.setSelected(value);
 		jcbShaHeadBasePR.setSelected(value);
 		jcbAssigneePR.setSelected(value);
 		jcbCommentsPR.setSelected(value);
@@ -547,70 +534,80 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbFilesPR.setSelected(value);
 		jcbCommitsByFilesPR.setSelected(value);
 		jcbAuthorMoreCommitsPR.setSelected(value);
-		jcbLinesAddedPR.setSelected(value);
-		jcbLinesDeletedPR.setSelected(value);
-		jcbChangedFilePR.setSelected(value);
+		jcbModifiedLinesPR.setSelected(value);
+		jcbChangedFilesPR.setSelected(value);
 		jcbTitlePR.setSelected(value);
-		jcbRepo.setSelected(value);
-		jcbOwner.setSelected(value);
-		jcbRepoCreatedDate.setSelected(value);
-		jcbRepoOthers.setSelected(value);
-		jcbDeveloperType.setSelected(value);
-
+		jcbAllRepoData.setSelected(value);
+		jcbUserType.setSelected(value);
+		jcbRootDirectory.setSelected(value);
+		jcbUser.setSelected(value);
+		jcbContributors.setSelected(value);
 	}
 
-	private List<String> getSelectedFields(){
-		List<String> result = new ArrayList<String>();
-		Component[] ls0 = centerPanelNorth.getComponents();
-		Component[] ls1 = centerPanelMidIn.getComponents();
-		Component[] ls2 = panelContributor.getComponents();
-		Component[] ls3 = panelCommByFiles.getComponents();
-		Component[] ls4 = panelAuthorMoreCommitsPR.getComponents();
-		Component[] ls5 = centerPanelMidDates.getComponents();
-		Component[] ls6 = centerPanelBotAuthorPR.getComponents();
+	private Settings getSelectedFields(){
+		Settings s = null;
+		JSONObject jo = new JSONObject();
+		try{
+			//dados do repositório
+			jo.put("repo", jcbAllRepoData.isSelected());
+			//dados core do PR
+			jo.put("number", jcbNumPR.isSelected());
+			jo.put("state", jcbStatePR.isSelected());
+			jo.put("title", jcbTitlePR.isSelected());
+			jo.put("shas", jcbShaHeadBasePR.isSelected());
+			jo.put("dates", jcbDates.isSelected());
+			jo.put("closedmergedby", jcbClosedMergedByPR.isSelected());
+			jo.put("lifetime", jcbLifetimePR.isSelected());
+			jo.put("assignee", jcbAssigneePR.isSelected());
 
-		for (Component comp : ls0) {
-			if (comp instanceof JCheckBox && ((JCheckBox)comp).isSelected())
-				result.add(((JCheckBox) comp).getText());
-		}
-		for (Component comp : ls1) {
-			if (comp instanceof JCheckBox && ((JCheckBox)comp).isSelected())
-				result.add(((JCheckBox) comp).getText());
-		}
-		for (Component comp : ls2) {
-			if (comp instanceof JCheckBox && ((JCheckBox)comp).isSelected())
-				result.add(((JCheckBox) comp).getText());
-		}
-		for (Component comp : ls3) {
-			if (comp instanceof JCheckBox && ((JCheckBox)comp).isSelected())
-				result.add(((JCheckBox) comp).getText());
-		}
-		for (Component comp : ls4) {
-			if (comp instanceof JCheckBox && ((JCheckBox)comp).isSelected())
-				result.add(((JCheckBox) comp).getText());
-		}
-		for (Component comp : ls5) {
-			if (comp instanceof JCheckBox && ((JCheckBox)comp).isSelected())
-				result.add(((JCheckBox) comp).getText());
-		}
-		for (Component comp : ls6) {
-			if (comp instanceof JCheckBox && ((JCheckBox)comp).isSelected())
-				result.add(((JCheckBox) comp).getText());
+			//dados files PR
+			jo.put("comments", jcbCommentsPR.isSelected());
+			jo.put("commits", jcbCommitsPR.isSelected());
+			jo.put("commitsdays", getDaysValues());
+			jo.put("changedfiles", jcbChangedFilesPR.isSelected());
+			jo.put("files", jcbFilesPR.isSelected());
+			jo.put("dirfinal", jcbRootDirectory.isSelected());
+			jo.put("modifiedlines", jcbModifiedLinesPR.isSelected());
+
+			//dados user
+			jo.put("user", jcbUser.isSelected());
+			jo.put("age", jcbAgeUser.isSelected());
+			jo.put("type", jcbUserType.isSelected());
+			jo.put("pullsuser", jcbUserPulls.isSelected());
+			jo.put("averages", jcbUserAverages.isSelected());
+			jo.put("followers", jcbUserFollowers.isSelected());
+			jo.put("following", jcbUserFollowing.isSelected());
+			jo.put("location", jcbUserLocation.isSelected());
+			jo.put("prtype", jcbPRType.getSelectedIndex());
+			jo.put("contributors", jcbContributors.isSelected());
+
+			s = new Settings(jo);
+			System.out.println("Valid settings: "+s.tryParseValues());
+			System.out.println("Settings: "+s);
+		}catch(JSONException je){
+			s = new Settings();
+			System.err.println("erro.");
 		}
 
-		return result;
+		return s;
 	}
 
-	private Map<String, Integer> getTxtFields() throws NumberFormatException {
-		Map<String, Integer> result = new HashMap<String, Integer>();
-		if (jcbContributorsPR.isSelected())
-			result.put("contributorMonths", Integer.parseInt(jTxtContributor.getText()));		
-
+	private List <Integer> getDaysValues() throws NumberFormatException {
+		List <Integer> result = new ArrayList<Integer>();
 		if (jcbAuthorMoreCommitsPR.isSelected())
-			result.put("authorMoreCommDays", Integer.parseInt(jTxtAuthorMoreCommitsPR.getText()));
+			result.add(Integer.parseInt(jTxtAuthorMoreCommitsPR.getText()));
+		else
+			result.add(-1);
 
 		if (jcbCommitsByFilesPR.isSelected())
-			result.put("commByFilesDays", Integer.parseInt(jTxtCommByFiles.getText()));
+			result.add(Integer.parseInt(jTxtCommByFiles.getText()));
+		else
+			result.add(-1);
+
+		if (jcbContributors.isSelected())
+			result.add(Integer.parseInt(jtxtRepoContributors.getText()));
+		else
+			result.add(-1);
 
 		return result;
 	}
@@ -619,10 +616,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		List<Component[]> ls = new ArrayList<Component[]>();
 		ls.add(centerPanelNorth.getComponents());
 		ls.add(centerPanelMidIn.getComponents());
-		ls.add(panelContributor.getComponents());
 		ls.add(panelCommByFiles.getComponents());
 		ls.add(panelAuthorMoreCommitsPR.getComponents());
-		ls.add(centerPanelMidDates.getComponents());
 		ls.add(centerPanelBotAuthorPR.getComponents());
 		for (Component[] comp : ls) {
 			for (Component component : comp) {
@@ -648,9 +643,16 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		selectedRepositories = selectedValuesList;
 	}
 
+
 	public static void main(String[] args) throws UnknownHostException {
-		RetrievePullRequest window = new RetrievePullRequest();
+		RetrievePullRequest window;
+		//try {
+		window = new RetrievePullRequest();
 		window.jFrame.setVisible(true);
+		//} catch (Exception e) {
+		//JOptionPane.showMessageDialog(null, "Servidor de banco de dados não encontrado.","Erro",1);
+		//System.err.println(e.getMessage());
+		//}
 	}
 
 }

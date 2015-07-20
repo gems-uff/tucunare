@@ -9,43 +9,25 @@ import org.json.JSONObject;
 
 public  class Settings {
 
-	private String data;
-	private boolean repoData;
-	private int colaboratorDays;
-	private boolean number, state, title, dates, lifeTime, closedMergedBy, shas; 
-	private boolean assignee, comments, modifiedLines, changedFiles, dirFinal, filesPath;
-	private boolean user, age, type, pullsUser, averages, followers,following, location;
+	private JSONObject data;
+	private boolean repoData, contributors;
+	private int contributorsMonths = -1;
+	private boolean prNumber, prState, title, prDates, prLifeTime, prClosedMergedBy, prShas; 
+	private boolean prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prDirFinal, prFiles;
+	private boolean user, userAge, type, pullsUser, averages, userFollowers, userFollowing, userLocation; 
+	private int prType = 0;
 
-	private JSONObject jo = null;
-
-	private List<Integer> commitsDays;
+	private List<Integer> days;
 
 	public Settings() {
 		setDefaultValues();
 	}
 
-	//{	"repo":["true","10"],
-	//"number":"true","state":"true","title":"true","dates":"true","lifetime":"true","closedmergedby":"true","shas":"true","assignee":"true",
-	//"assignee":"true","comments":"true","commits":["10","5"],"modifiedlines":"true","changedfiles":"true","dirfinal":"true","filespath":"true",
-	//"user":"true","age":"true","type":"true","pullsuser":"true","averages":"true","followers":"true","following":"true","location":"true"
-	//}
-
-	public Settings(String data){
+	public Settings(JSONObject data){
 		this.data = data;
 	}
 
 	public boolean tryParseValues(){
-		if (data==null)
-			return false;
-
-		try {
-			jo = new JSONObject(data);
-		} catch (JSONException e) {
-			setDefaultValues();
-			System.err.println("String em formato errado.\n"+data);
-			return false;
-		}
-
 		try {
 			tryParseRepoData();
 			tryParsePRCore();
@@ -53,93 +35,92 @@ public  class Settings {
 			tryparseAuthorPR();
 			return true;
 		} catch (JSONException e) {
+			System.err.println(e.getMessage());
 			setDefaultValues();
 			return false;
 		}
 	}
 
-	
-	//"user":"true","age":"true","type":"true","pullsuser":"true","averages":"true","followers":"true","following":"true","location":"true"
+
 	private void tryparseAuthorPR() throws JSONException {
-		user = jo.getBoolean("user");
-		age = jo.getBoolean("age");
-		type = jo.getBoolean("type");
-		pullsUser = jo.getBoolean("pullsuser");
-		averages = jo.getBoolean("averages");
-		followers = jo.getBoolean("followers");
-		following = jo.getBoolean("following");
-		location = jo.getBoolean("location");
+			user = data.getBoolean("user");
+			userAge = data.getBoolean("age");
+			type = data.getBoolean("type");
+			pullsUser = data.getBoolean("pullsuser");
+			averages = data.getBoolean("averages");
+			userFollowers = data.getBoolean("followers");
+			userFollowing = data.getBoolean("following");
+			userLocation = data.getBoolean("location");
 	}
 
-	//"comments":"true","commits":["10","5"],"modifiedlines":"true","changedfiles":"true","dirfinal":"true","filespath":"true",
-	private boolean tryParsePRFiles() throws JSONException {
-		JSONArray ja = jo.getJSONArray("commits"); 
-		commitsDays = new ArrayList<Integer>();
+	//"comments":"true","commits":["true","10","5"],"modifiedlines":"true","changedfiles":"true","dirfinal":"true","filespath":"true",
+	private void tryParsePRFiles() throws JSONException {
+			JSONArray ja = data.getJSONArray("commitsdays"); 
+			days = new ArrayList<Integer>();
 
-		comments = jo.getBoolean("comments");
-		
-		commitsDays.add(ja.getInt(0));
-		commitsDays.add(ja.getInt(1));
-		
-		modifiedLines = jo.getBoolean("modifiedlines");
-		changedFiles = jo.getBoolean("changedfiles");
-		dirFinal = jo.getBoolean("dirfinal");
-		filesPath = jo.getBoolean("filespath");
+			prComments = data.getBoolean("comments");
+			prCommits = data.getBoolean("commits");
+			//dias do author, dias dos arquivos e número de meses para recuperar contribuidores.
+			days.add(ja.getInt(0));
+			days.add(ja.getInt(1));
+			contributorsMonths = ja.getInt(2);
 
-		return true;
+			prModifiedLines = data.getBoolean("modifiedlines");
+			prChangedFiles = data.getBoolean("changedfiles");
+			prDirFinal = data.getBoolean("dirfinal");
+			prFiles = data.getBoolean("files");
 	}
 
 	//"number":"true","state":"true","title":"true","dates":"true","lifetime":"true","closedmergedby":"true","shas":"true","assignee":"true",
 	private void tryParsePRCore() throws JSONException {
-
-		number = jo.getBoolean("number");
-		state = jo.getBoolean("state");
-		title = jo.getBoolean("title");
-		dates = jo.getBoolean("dates");
-		lifeTime = jo.getBoolean("lifetime");
-		closedMergedBy = jo.getBoolean("closedmergedby");
-		shas = jo.getBoolean("shas");
-		assignee = jo.getBoolean("assignee");
+			prType = data.getInt("prtype");
+			prNumber = data.getBoolean("number");
+			prState = data.getBoolean("state");
+			title = data.getBoolean("title");
+			prDates = data.getBoolean("dates");
+			prLifeTime = data.getBoolean("lifetime");
+			prClosedMergedBy = data.getBoolean("closedmergedby");
+			prShas = data.getBoolean("shas");
+			prAssignee = data.getBoolean("assignee");
 	}
 
-	//"repo":["true","10"],
+	//"repo":"true",
 	private void tryParseRepoData() throws JSONException {
-		JSONArray ja = null;
-		ja = jo.getJSONArray("repo");
-
-		repoData = ja.getBoolean(0);
-		colaboratorDays = ja.getInt(1);
+			repoData = data.getBoolean("repo");
+			contributors = data.getBoolean("contributors");
 	}
 
 	public void setDefaultValues(){
-		colaboratorDays = 10;
-		commitsDays = new ArrayList<Integer>();
-		commitsDays.add(10);
-		commitsDays.add(10);
-		
+		prType = 0;
+		contributorsMonths = 1;
+		days = new ArrayList<Integer>();
+		days.add(10);
+		days.add(10);
+		days.add(10);
+
 		repoData = true; 
-		number = true; 
-		state = true; 
+		prNumber = true; 
+		prState = true; 
 		title = true; 
-		dates = true; 
-		lifeTime = true; 
-		closedMergedBy = true; 
-		shas = true; 
-		assignee = true; 
-		comments = true; 
-		modifiedLines = true; 
-		changedFiles = true; 
-		dirFinal = true; 
-		filesPath = true; 
+		prDates = true; 
+		prLifeTime = true; 
+		prClosedMergedBy = true; 
+		prShas = true; 
+		prAssignee = true; 
+		prComments = true; 
+		prModifiedLines = true; 
+		prChangedFiles = true; 
+		prDirFinal = true; 
+		prFiles = true; 
 		user = true; 
-		age = true; 
+		userAge = true; 
 		type = true; 
 		pullsUser = true; 
 		averages = true; 
-		followers = true;
-		following = true; 
-		location = true;
-		
+		userFollowers = true;
+		userFollowing = true; 
+		userLocation = true;
+
 	}
 
 	public boolean isRepoData() {
@@ -150,28 +131,36 @@ public  class Settings {
 		this.repoData = repoData;
 	}
 
-	public int getColaboratorDays() {
-		return colaboratorDays;
+	public boolean isContributors() {
+		return contributors;
 	}
 
-	public void setColaboratorDays(int colaboratorDays) {
-		this.colaboratorDays = colaboratorDays;
+	public void setContributors(boolean contributors) {
+		this.contributors = contributors;
 	}
 
-	public boolean isNumber() {
-		return number;
+	public int getContributorsMonths() {
+		return contributorsMonths;
 	}
 
-	public void setNumber(boolean number) {
-		this.number = number;
+	public void setContributorsMonths(int contributorsMonths) {
+		this.contributorsMonths = contributorsMonths;
 	}
 
-	public boolean isState() {
-		return state;
+	public boolean isPrNumber() {
+		return prNumber;
 	}
 
-	public void setState(boolean state) {
-		this.state = state;
+	public void setPrNumber(boolean prNumber) {
+		this.prNumber = prNumber;
+	}
+
+	public boolean isPrState() {
+		return prState;
+	}
+
+	public void setPrState(boolean prState) {
+		this.prState = prState;
 	}
 
 	public boolean isTitle() {
@@ -182,84 +171,92 @@ public  class Settings {
 		this.title = title;
 	}
 
-	public boolean isDates() {
-		return dates;
+	public boolean isPrDates() {
+		return prDates;
 	}
 
-	public void setDates(boolean dates) {
-		this.dates = dates;
+	public void setPrDates(boolean prDates) {
+		this.prDates = prDates;
 	}
 
-	public boolean isLifeTime() {
-		return lifeTime;
+	public boolean isPrLifeTime() {
+		return prLifeTime;
 	}
 
-	public void setLifeTime(boolean lifeTime) {
-		this.lifeTime = lifeTime;
+	public void setPrLifeTime(boolean prLifeTime) {
+		this.prLifeTime = prLifeTime;
 	}
 
-	public boolean isClosedMergedBy() {
-		return closedMergedBy;
+	public boolean isPrClosedMergedBy() {
+		return prClosedMergedBy;
 	}
 
-	public void setClosedMergedBy(boolean closedMergedBy) {
-		this.closedMergedBy = closedMergedBy;
+	public void setPrClosedMergedBy(boolean prClosedMergedBy) {
+		this.prClosedMergedBy = prClosedMergedBy;
 	}
 
-	public boolean isShas() {
-		return shas;
+	public boolean isPrShas() {
+		return prShas;
 	}
 
-	public void setShas(boolean shas) {
-		this.shas = shas;
+	public void setPrShas(boolean prShas) {
+		this.prShas = prShas;
 	}
 
-	public boolean isAssignee() {
-		return assignee;
+	public boolean isPrAssignee() {
+		return prAssignee;
 	}
 
-	public void setAssignee(boolean assignee) {
-		this.assignee = assignee;
+	public void setPrAssignee(boolean prAssignee) {
+		this.prAssignee = prAssignee;
 	}
 
-	public boolean isComments() {
-		return comments;
+	public boolean isPrComments() {
+		return prComments;
 	}
 
-	public void setComments(boolean comments) {
-		this.comments = comments;
+	public void setPrComments(boolean prComments) {
+		this.prComments = prComments;
 	}
 
-	public boolean isModifiedLines() {
-		return modifiedLines;
+	public boolean isPrCommits() {
+		return prCommits;
 	}
 
-	public void setModifiedLines(boolean modifiedLines) {
-		this.modifiedLines = modifiedLines;
+	public void setPrCommits(boolean prCommits) {
+		this.prCommits = prCommits;
 	}
 
-	public boolean isChangedFiles() {
-		return changedFiles;
+	public boolean isPrModifiedLines() {
+		return prModifiedLines;
 	}
 
-	public void setChangedFiles(boolean changedFiles) {
-		this.changedFiles = changedFiles;
+	public void setPrModifiedLines(boolean prModifiedLines) {
+		this.prModifiedLines = prModifiedLines;
 	}
 
-	public boolean isDirFinal() {
-		return dirFinal;
+	public boolean isPrChangedFiles() {
+		return prChangedFiles;
 	}
 
-	public void setDirFinal(boolean dirFinal) {
-		this.dirFinal = dirFinal;
+	public void setPrChangedFiles(boolean prChangedFiles) {
+		this.prChangedFiles = prChangedFiles;
 	}
 
-	public boolean isFilesPath() {
-		return filesPath;
+	public boolean isPrDirFinal() {
+		return prDirFinal;
 	}
 
-	public void setFilesPath(boolean filesPath) {
-		this.filesPath = filesPath;
+	public void setPrDirFinal(boolean prDirFinal) {
+		this.prDirFinal = prDirFinal;
+	}
+
+	public boolean isPrFiles() {
+		return prFiles;
+	}
+
+	public void setPrFiles(boolean prFiles) {
+		this.prFiles = prFiles;
 	}
 
 	public boolean isUser() {
@@ -270,12 +267,12 @@ public  class Settings {
 		this.user = user;
 	}
 
-	public boolean isAge() {
-		return age;
+	public boolean isUserAge() {
+		return userAge;
 	}
 
-	public void setAge(boolean age) {
-		this.age = age;
+	public void setUserAge(boolean userAge) {
+		this.userAge = userAge;
 	}
 
 	public boolean isType() {
@@ -302,37 +299,61 @@ public  class Settings {
 		this.averages = averages;
 	}
 
-	public boolean isFollowers() {
-		return followers;
+	public boolean isUserFollowers() {
+		return userFollowers;
 	}
 
-	public void setFollowers(boolean followers) {
-		this.followers = followers;
+	public void setUserFollowers(boolean userFollowers) {
+		this.userFollowers = userFollowers;
 	}
 
-	public boolean isFollowing() {
-		return following;
+	public boolean isUserFollowing() {
+		return userFollowing;
 	}
 
-	public void setFollowing(boolean following) {
-		this.following = following;
+	public void setUserFollowing(boolean userFollowing) {
+		this.userFollowing = userFollowing;
 	}
 
-	public boolean isLocation() {
-		return location;
+	public boolean isUserLocation() {
+		return userLocation;
 	}
 
-	public void setLocation(boolean location) {
-		this.location = location;
+	public void setUserLocation(boolean userLocation) {
+		this.userLocation = userLocation;
 	}
 
-	public List<Integer> getCommitsDays() {
-		return commitsDays;
+	public int getPrType() {
+		return prType;
 	}
 
-	public void setCommitsDays(List<Integer> commitsDays) {
-		this.commitsDays = commitsDays;
+	public void setPrType(int prType) {
+		this.prType = prType;
 	}
-	
-	
+
+	public List<Integer> getDays() {
+		return days;
+	}
+
+	public void setDays(List<Integer> days) {
+		this.days = days;
+	}
+
+	@Override
+	public String toString() {
+		return "Settings [repoData=" + repoData + ", contributors="
+				+ contributors + ", contributorsMonths=" + contributorsMonths
+				+ ", prNumber=" + prNumber + ", prState=" + prState
+				+ ", title=" + title + ", prDates=" + prDates + ", prLifeTime="
+				+ prLifeTime + ", prClosedMergedBy=" + prClosedMergedBy
+				+ ", prShas=" + prShas + ", prAssignee=" + prAssignee
+				+ ", prComments=" + prComments + ", prCommits=" + prCommits
+				+ ", prModifiedLines=" + prModifiedLines + ", prChangedFiles="
+				+ prChangedFiles + ", prDirFinal=" + prDirFinal + ", prFiles="
+				+ prFiles + ", user=" + user + ", userAge=" + userAge
+				+ ", type=" + type + ", pullsUser=" + pullsUser + ", averages="
+				+ averages + ", userFollowers=" + userFollowers
+				+ ", userFollowing=" + userFollowing + ", userLocation="
+				+ userLocation + ", prType=" + prType + ", days=" + days + "]";
+	}
 }
