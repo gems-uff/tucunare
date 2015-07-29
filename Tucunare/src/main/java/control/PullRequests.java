@@ -31,8 +31,8 @@ public class PullRequests extends Thread{
 			fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,contributors,acceptanceRepo,"
 					+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,followContributors,location,"
 					+ "idPull,numberPull,login,state,title,createdDate,closedDate,mergedDate,lifetimeDays,lifetimeHours,lifetimeMinutes,closedBy,"
-					+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants"
-					+ "additionsLines,deletionsLines,totalLines,changedFiles,check_files,dirFinal,files");
+					+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants,"
+					+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files");
 			fw.write("\n");
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
@@ -52,7 +52,7 @@ public class PullRequests extends Thread{
 				String number = dbObject.get("number").toString();
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
 				
-				if(dbObject!=null && !closed_by.equals(user)){
+				if(dbObject!=null && !closed_by.equals(user)){//fitro de pull requests auto analisados
 					//Dados do projeto
 					String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String acceptanceRepo="";
@@ -110,7 +110,6 @@ public class PullRequests extends Thread{
 					}
 
 					String participants = Users.getParticipants(number, rep);
-					participants += participants.substring(1, participants.length()-1).replaceAll(", ", "|");
 					
 					//tratamento para caminho dos arquivos para buscar o último diretório
 					String dirFinal = "";
@@ -168,7 +167,7 @@ public class PullRequests extends Thread{
 							acceptanceUser+","+
 							watchRepo+","+
 							followContributors+","+
-							location.replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ').replace('/', ' ')+","+
+							location.replace('\n', '|').replace(',', '|').replace('\'', '´').replace('"', '|').replace('%', '|').replace('/', '|')+","+
 							(Integer) dbObject.get("id")+","+
 							(Integer) dbObject.get("number")+","+
 							((BasicDBObject)dbObject.get("user")).get("login")+","+
@@ -187,12 +186,13 @@ public class PullRequests extends Thread{
 							dbObject.get("commits")+","+
 							commitsPorArquivos+","+
 							authorMoreCommits+","+
+							participants.substring(1, participants.length()-1).replaceAll(", ", "|")+","+
 							dbObject.get("additions")+","+
 							dbObject.get("deletions")+","+
 							(Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString()))+","+
 							dbObject.get("changed_files")+","+
 							dirFinal+","+
-							filesPath.replace(", ", "|").replace(";", ","));
+							files.replace(", ", "|"));
 					fw.write("\n");
 				}else
 					continue;
