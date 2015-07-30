@@ -18,32 +18,41 @@ import javax.swing.SwingConstants;
 import control.SaveFile;
 import util.Connect;
 
-public class DialogStatus extends JDialog{
+public class DialogStatus extends JDialog {
 	private static final long serialVersionUID = 6446402150733028773L;
-	
+
+	private static JDialog jDialogStatic;
 	private static JProgressBar jProgressBar;
 	private static JLabel jLabel;
-	private static int max;
+	private static int totalRepositories;
+	private static int totalPullRequests;
+	private static int currentPR;
 	private static JTextField txtOperaoFinalizada;
-	private static JDialog dialogStatic;
 	private JPanel panel_1;
 	private JPanel panel_2;
 	private static JButton btnSair;
+	private static JFrame jFrameStatic;
 
 	@SuppressWarnings("static-access")
-	public DialogStatus(JFrame frame, int max){
+	public DialogStatus(JFrame frame, int totalRepositories, int totalPullRequests){
 		super(frame);
-		dialogStatic = this;
-		this.max = max;
+		jDialogStatic = this;
+		jFrameStatic = frame;
+		this.totalRepositories = totalRepositories;
+		this.totalPullRequests = totalPullRequests;
 		getContentPane().setLayout(new BorderLayout(0, 0));
 
 		JPanel panel = new JPanel();
 		getContentPane().add(panel);
-		jLabel = new JLabel("Carregando... (0 de "+max+")");
+		jLabel = new JLabel("Carregando... (0 de "+totalRepositories+")");
 		panel.add(jLabel);
 		jProgressBar = new JProgressBar();
+		jProgressBar.setMaximum(0);
+		jProgressBar.setMaximum(100);
+		jProgressBar.setStringPainted(true);//Faz aparecer o valor em porcentagem  
+		jProgressBar.setValue(0);
 		panel.add(jProgressBar);
-		jProgressBar.setIndeterminate(true);
+		//jProgressBar.setIndeterminate(true);
 
 		panel_1 = new JPanel();
 		getContentPane().add(panel_1, BorderLayout.SOUTH);
@@ -72,14 +81,10 @@ public class DialogStatus extends JDialog{
 		this.pack();
 	}
 
-	public static void toPack(){
-		dialogStatic.pack();
-	}
-
-	public static void setjLabel(int atual){
-		if (atual == max){
+	public static void setThreads(int atual){
+		if (atual == totalRepositories){
 			jProgressBar.setVisible(false);
-			jLabel.setText("Concluído. ("+atual+" de "+max+")");
+			jLabel.setText("Concluído. ("+atual+" de "+totalRepositories+")");
 			txtOperaoFinalizada.setVisible(true);
 			btnSair.setVisible(true);
 			System.out.println("Tempo em segundos do fim da recuperação dos dados: "+SaveFile.tempo);
@@ -89,9 +94,18 @@ public class DialogStatus extends JDialog{
 				e.printStackTrace();
 				System.err.println("erro ao tentar finalizar a conexão com o banco de dados.");
 			}
-		}
-		else
-			jLabel.setText("Carregando... ("+atual+" de "+max+")");
-		toPack();
+			jDialogStatic.setLocationRelativeTo(jFrameStatic);		
+			jDialogStatic.pack();
+		}else
+			jLabel.setText("Carregando... ("+atual+" de "+totalRepositories+")");
+
+	}
+
+	public static void addsPullRequests(){
+		currentPR++;
+		int x = (100*currentPR)/totalPullRequests;
+		jProgressBar.setValue(x);
+		jDialogStatic.setLocationRelativeTo(jFrameStatic);		
+		jDialogStatic.pack();
 	}
 }

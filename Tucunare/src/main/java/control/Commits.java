@@ -79,7 +79,7 @@ public class Commits {
 	public static String getAuthorCommits(String filesNames, String shaBase, String repo, Integer days) throws UnknownHostException{ 
 		ArrayList<String> authors = new ArrayList<String>();
 		String files[] = filesNames.split(", ");
-		DB db = Connect.getInstance().getDB("ghtorrent2");
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
 		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
@@ -127,7 +127,7 @@ public class Commits {
 	public static String getCommitsByFiles (String filesNames, String pullRequestDate, String repo, Integer days) throws UnknownHostException{
 		String files[] = filesNames.split(", ");
 		long numCommitsNoArquivo = 0L;
-		DB db = Connect.getInstance().getDB("ghtorrent2");
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		String data = FormatDate.dataLimit(pullRequestDate, days);
 		BasicDBObject queryHead = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",pullRequestDate).append("$gt", data)); //consulta com data menor que a data do pull request
@@ -148,7 +148,7 @@ public class Commits {
 
 	//recent contributors (3 months)
 	public static String getContributors(String shaBase, String repo, String owner, Integer months) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent2");
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
 		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
@@ -169,7 +169,7 @@ public class Commits {
 	}
 	
 	public static ArrayList<String> getContributorsList(String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent2");
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryCommit = new BasicDBObject("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
 		//System.out.println("Executando...");
@@ -193,7 +193,7 @@ public class Commits {
 	
 	//type developer
 	public static String getTypeDeveloper(String user, String repo, String owner) throws UnknownHostException{
-		DB db = Connect.getInstance().getDB("ghtorrent2");
+		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("commits");
 		BasicDBObject query = new BasicDBObject("committer.login", user); 		
 		query.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));

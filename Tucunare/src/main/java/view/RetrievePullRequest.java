@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import control.PullRequests;
 import control.SaveFile;
 
 import javax.swing.JTextField;
+import javax.swing.BoxLayout;
 
 public class RetrievePullRequest implements ActionListener, ItemListener, ListSelectionListener {
 
@@ -83,7 +85,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JCheckBox jcbStatePR;
 	private JCheckBox jcbTitlePR;
 	private JCheckBox jcbShaHeadBasePR;
-	private JCheckBox jcbDates;
+	private JCheckBox jcbDatesPR;
 	private JCheckBox jcbClosedMergedByPR;
 	private JCheckBox jcbLifetimePR;
 	private JCheckBox jcbAssigneePR;
@@ -94,7 +96,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JCheckBox jcbCommitsByFilesPR;
 	private JCheckBox jcbChangedFilesPR;
 	private JCheckBox jcbFilesPR;
-	private JCheckBox jcbRootDirectory;
+	private JCheckBox jcbRootDirectoryPR;
 	private JCheckBox jcbModifiedLinesPR;
 	private JTextField jtxtRepoContributors;
 
@@ -111,7 +113,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 	private JList<String> repositoryList;
 	private List<String> selectedRepositories = new ArrayList<String>();
-	public static int total=0;
+	public static int totalPullRequests=0;
 	//Menu
 	private JMenuBar menuBar;
 	private JMenu mnFile;
@@ -130,6 +132,16 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JPanel panel_2;
 	private JPanel panel_3;
 	private JPanel panel_4;
+	private JCheckBox jcbAllPRData;
+	private JCheckBox jcbAllAuthorData;
+	private JPanel panel_7;
+	private JPanel panel_5;
+	private JPanel panel_6;
+	private JPanel panel_8;
+	private JPanel panel_9;
+	private JPanel panel_10;
+	private JPanel panel_11;
+	private JPanel panel_12;
 
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
@@ -179,8 +191,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource() == jcbCommitsByFilesPR){
 			boolean aux = jcbCommitsByFilesPR.isSelected();
-				jLabelCommByFiles.setVisible(aux);
-				jTxtCommByFiles.setVisible(aux);
+			jLabelCommByFiles.setVisible(aux);
+			jTxtCommByFiles.setVisible(aux);
 		}else
 			if (e.getSource() == jcbAuthorMoreCommitsPR){
 				jLabelAuthorMoreComm.setVisible(jcbAuthorMoreCommitsPR.isSelected());
@@ -207,7 +219,13 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					}else
 						if (e.getSource() == jcbUserPulls){
 							jcbUserAverages.setSelected(jcbUserPulls.isSelected());
-						}
+						}else
+							if (e.getSource() == jcbAllPRData){
+								loadPRComponents(jcbAllPRData.isSelected());
+							}else
+								if (e.getSource() == jcbAllAuthorData){
+									loadAuthorComponents(jcbAllAuthorData.isSelected());
+								}
 	}
 
 	public void actionPerformed(ActionEvent evt) {
@@ -228,17 +246,16 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					try {
 						jTextArea.setText("Processando dados.");
 						boolean entrou=false;
-						total=0;
+						totalPullRequests=0;
 						settings = getSelectedFields();
 						for (String repository : selectedRepositories) {
 							entrou = true;
-							total++;
+							totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
 							new Thread(new SaveFile(repository, file, settings), "Thread-"+repository).start();	
 						}
 						if (entrou){
-							DialogStatus ds = new DialogStatus(jFrame, total);
-							ds.setVisible(true);
-							ds.setModal(true);
+							showStatusWindow();
+
 						}
 					} catch (UnknownHostException e) {
 						e.printStackTrace();
@@ -253,7 +270,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		else
 			if(evt.getSource()==jButtonFile){
 				JFileChooser fileChooser = new JFileChooser("D:\\files"); 
-				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				int i= fileChooser.showSaveDialog(null);
 				if (i==1){
 					jTxtFePath.setText("");
@@ -278,40 +295,70 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 							}
 							jTextRepo.setText(result);
 						}
-
 		if(evt.getSource()==jButtonStop){
 			System.exit(0);
 		}	
 	}
 
 
+	private void showStatusWindow() {
+		DialogStatus ds = new DialogStatus(jFrame, selectedRepositories.size() ,totalPullRequests);
+		ds.setLocationRelativeTo(jFrame);
+		ds.setModal(true);
+		ds.setVisible(true);
+	}
+
 	public void addTopPanel(){
 		topPanel = new JPanel();
-		jTextRepo = new JTextField(20);
-		jTextRepo.setEditable(false);
-
-		jButtonFile = new JButton("File...");
-
-		jButtonSave = new JButton("Save");
 
 		jButtonSelectAll = new JButton("Select all");
 
 		jButtonDeselectAll = new JButton("Deselect all");
 
-		jButtonRepositories = new JButton("Repositories:");
+		panel_7 = new JPanel();
+		topPanel.add(panel_7);
+		panel_7.setLayout(new BorderLayout(3, 0));
+
+		panel_5 = new JPanel();
+		panel_7.add(panel_5, BorderLayout.WEST);
+		panel_5.setLayout(new BoxLayout(panel_5, BoxLayout.Y_AXIS));
+
+		panel_9 = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panel_9.getLayout();
+		flowLayout.setAlignment(FlowLayout.LEFT);
+		panel_5.add(panel_9);
+
+		jButtonRepositories = new JButton("Repositories:  ");
+		panel_9.add(jButtonRepositories);
+		jButtonRepositories.setHorizontalAlignment(SwingConstants.LEFT);
 		jButtonRepositories.addActionListener(this);
-		topPanel.add(jButtonRepositories);
-		topPanel.add(jTextRepo);
+
+		panel_8 = new JPanel();
+		FlowLayout flowLayout_1 = (FlowLayout) panel_8.getLayout();
+		flowLayout_1.setAlignment(FlowLayout.LEFT);
+		panel_5.add(panel_8);
+
+		jButtonFile = new JButton("File directory:");
+		panel_8.add(jButtonFile);
 
 		jButtonFile.addActionListener(this);
-		topPanel.add(jButtonSave);
 
-		jButtonSave.addActionListener(this);
-		topPanel.add(jButtonFile);
+		panel_6 = new JPanel();
+		panel_7.add(panel_6, BorderLayout.CENTER);
+		panel_6.setLayout(new BoxLayout(panel_6, BoxLayout.Y_AXIS));
+
+		panel_11 = new JPanel();
+		panel_6.add(panel_11);
+		jTextRepo = new JTextField(20);
+		panel_11.add(jTextRepo);
+		jTextRepo.setEditable(false);
+
+		panel_10 = new JPanel();
+		panel_6.add(panel_10);
 
 		jTxtFePath = new JTextField(20);
+		panel_10.add(jTxtFePath);
 		jTxtFePath.setEditable(false);
-		topPanel.add(jTxtFePath);
 
 		jButtonSelectAll.addActionListener(this);
 		topPanel.add(jButtonSelectAll);
@@ -381,6 +428,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbCommitsByFilesPR.addItemListener(this);
 		jcbModifiedLinesPR = new JCheckBox("modified lines");
 
+		jcbAllPRData = new JCheckBox("all");
+		jcbAllPRData.setSelected(true);
+		jcbAllPRData.addItemListener(this);
+		centerPanelMidIn.add(jcbAllPRData);
+
 		panel = new JPanel();
 		panel.setToolTipText("choose the type of pull request to be recovered. All = open & closed.");
 		FlowLayout flowLayout = (FlowLayout) panel.getLayout();
@@ -405,8 +457,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		centerPanelMidIn.add(jcbShaHeadBasePR);
 
 		//JLabel labelDates = new JLabel("PR dates: ");
-		jcbDates = new JCheckBox("dates");
-		centerPanelMidIn.add(jcbDates);
+		jcbDatesPR = new JCheckBox("dates");
+		centerPanelMidIn.add(jcbDatesPR);
 		centerPanelMidIn.add(jcbClosedMergedByPR);
 		jcbLifetimePR = new JCheckBox("lifetime");
 		centerPanelMidIn.add(jcbLifetimePR);
@@ -458,21 +510,26 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbFilesPR = new JCheckBox("files");
 		centerPanelMidIn.add(jcbFilesPR);
 
-		jcbRootDirectory = new JCheckBox("root directory");
-		jcbRootDirectory.setSelected(true);
-		centerPanelMidIn.add(jcbRootDirectory);
+		jcbRootDirectoryPR = new JCheckBox("root directory");
+		jcbRootDirectoryPR.setSelected(true);
+		centerPanelMidIn.add(jcbRootDirectoryPR);
 		centerPanelMidIn.add(jcbModifiedLinesPR);
 
 
 		//TitledBorder title = BorderFactory.createTitledBorder( BorderFactory.createEmptyBorder(), "PR dates: ");
 
-		centerPanelBotAuthorPR = new JPanel(new GridLayout(2,5));
+		centerPanelBotAuthorPR = new JPanel(new GridLayout(0,4));
 		centerPanelBotAuthorPR.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Author Data: ", 
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
 		jcbAgeUser = new JCheckBox("age user");
 		jcbUserFollowers = new JCheckBox("followers");
 		jcbUserFollowing = new JCheckBox("following");
 		jcbUserLocation = new JCheckBox("location");
+
+		jcbAllAuthorData = new JCheckBox("all");
+		jcbAllAuthorData.setSelected(true);
+		jcbAllAuthorData.addItemListener(this);
+		centerPanelBotAuthorPR.add(jcbAllAuthorData);
 
 		jcbUser = new JCheckBox("user");
 		jcbUser.setSelected(true);
@@ -510,38 +567,86 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jTextArea.setEditable(false);
 		jTextArea.setText("\n\n\n");
 		bottomPanel = new JPanel(new BorderLayout());
+
+		panel_12 = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panel_12.getLayout();
+		flowLayout.setAlignment(FlowLayout.RIGHT);
+		bottomPanel.add(panel_12, BorderLayout.NORTH);
+
+		jButtonSave = new JButton("Save");
+		panel_12.add(jButtonSave);
+
+		jButtonSave.addActionListener(this);
 		bottomPanel.add(jTextArea);
 		bottomPanel.setEnabled(false);
 		jFrame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 	}
 
 	private void loadComponents(boolean value){
-		jcbAgeUser.setSelected(value);
-		jcbUserFollowers.setSelected(value);
-		jcbUserFollowing.setSelected(value);
-		jcbUserLocation.setSelected(value);
-		jcbUserPulls.setSelected(value);
-		jcbUserAverages.setSelected(value);
-		jcbDates.setSelected(value);
+		jcbAllRepoData.setSelected(value);
+		jcbContributors.setSelected(value);
+		loadPRComponents(value);
+		loadAuthorComponents(value);
+	}
+
+	public void loadPRComponents(boolean value){
+		jcbAllPRData.setSelected(value);
 		jcbNumPR.setSelected(value);
 		jcbStatePR.setSelected(value);
-		jcbLifetimePR.setSelected(value);
-		jcbClosedMergedByPR.setSelected(value);
+		jcbTitlePR.setSelected(value);
 		jcbShaHeadBasePR.setSelected(value);
+		jcbDatesPR.setSelected(value);
+		jcbClosedMergedByPR.setSelected(value);
+		jcbLifetimePR.setSelected(value);
 		jcbAssigneePR.setSelected(value);
 		jcbCommentsPR.setSelected(value);
 		jcbCommitsPR.setSelected(value);
-		jcbFilesPR.setSelected(value);
-		jcbCommitsByFilesPR.setSelected(value);
 		jcbAuthorMoreCommitsPR.setSelected(value);
-		jcbModifiedLinesPR.setSelected(value);
+		jcbCommitsByFilesPR.setSelected(value);
 		jcbChangedFilesPR.setSelected(value);
-		jcbTitlePR.setSelected(value);
-		jcbAllRepoData.setSelected(value);
-		jcbUserType.setSelected(value);
-		jcbRootDirectory.setSelected(value);
+		jcbFilesPR.setSelected(value);
+		jcbRootDirectoryPR.setSelected(value);
+		jcbModifiedLinesPR.setSelected(value);
+
+		jcbNumPR.setEnabled(!value);
+		jcbStatePR.setEnabled(!value);
+		jcbTitlePR.setEnabled(!value);
+		jcbShaHeadBasePR.setEnabled(!value);
+		jcbDatesPR.setEnabled(!value);
+		jcbClosedMergedByPR.setEnabled(!value);
+		jcbLifetimePR.setEnabled(!value);
+		jcbAssigneePR.setEnabled(!value);
+		jcbCommentsPR.setEnabled(!value);
+		jcbCommitsPR.setEnabled(!value);
+		jcbAuthorMoreCommitsPR.setEnabled(!value);
+		jcbCommitsByFilesPR.setEnabled(!value);
+		jcbChangedFilesPR.setEnabled(!value);
+		jcbFilesPR.setEnabled(!value);
+		jcbRootDirectoryPR.setEnabled(!value);
+		jcbModifiedLinesPR.setEnabled(!value);
+
+	}
+
+	public void loadAuthorComponents(boolean value){
+		jcbAllAuthorData.setSelected(value);
 		jcbUser.setSelected(value);
-		jcbContributors.setSelected(value);
+		jcbAgeUser.setSelected(value);
+		jcbUserType.setSelected(value);
+		jcbUserPulls.setSelected(value);
+		jcbUserAverages.setSelected(value);
+		jcbUserFollowers.setSelected(value);
+		jcbUserFollowing.setSelected(value);
+		jcbUserLocation.setSelected(value);
+
+		jcbUser.setEnabled(!value);
+		jcbAgeUser.setEnabled(!value);
+		jcbUserType.setEnabled(!value);
+		jcbUserPulls.setEnabled(!value);
+		jcbUserAverages.setEnabled(!value);
+		jcbUserFollowers.setEnabled(!value);
+		jcbUserFollowing.setEnabled(!value);
+		jcbUserLocation.setEnabled(!value);
+
 	}
 
 	private Settings getSelectedFields(){
@@ -555,7 +660,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			jo.put("state", jcbStatePR.isSelected());
 			jo.put("title", jcbTitlePR.isSelected());
 			jo.put("shas", jcbShaHeadBasePR.isSelected());
-			jo.put("dates", jcbDates.isSelected());
+			jo.put("dates", jcbDatesPR.isSelected());
 			jo.put("closedmergedby", jcbClosedMergedByPR.isSelected());
 			jo.put("lifetime", jcbLifetimePR.isSelected());
 			jo.put("assignee", jcbAssigneePR.isSelected());
@@ -566,7 +671,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			jo.put("commitsdays", getDaysValues());
 			jo.put("changedfiles", jcbChangedFilesPR.isSelected());
 			jo.put("files", jcbFilesPR.isSelected());
-			jo.put("dirfinal", jcbRootDirectory.isSelected());
+			jo.put("dirfinal", jcbRootDirectoryPR.isSelected());
 			jo.put("modifiedlines", jcbModifiedLinesPR.isSelected());
 
 			//dados user
@@ -583,7 +688,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 			s = new Settings(jo);
 			System.out.println("Valid settings: "+s.tryParseValues());
-			System.out.println("Settings: "+s);
+			//System.out.println("Settings: "+s);
 		}catch(JSONException je){
 			s = new Settings();
 			System.err.println("erro.");
@@ -644,15 +749,16 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	}
 
 
-	public static void main(String[] args) throws UnknownHostException {
+	public static void main(String[] args) {
 		RetrievePullRequest window;
-		//try {
-		window = new RetrievePullRequest();
-		window.jFrame.setVisible(true);
-		//} catch (Exception e) {
-		//JOptionPane.showMessageDialog(null, "Servidor de banco de dados não encontrado.","Erro",1);
-		//System.err.println(e.getMessage());
-		//}
+		try {
+			window = new RetrievePullRequest();
+			window.jFrame.setLocationRelativeTo(null); 
+			window.jFrame.setVisible(true);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Servidor de banco de dados não encontrado.","Erro",1);
+			System.err.println(e.getMessage());
+		}
 	}
 
 }

@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.List;
-import java.util.Map;
 
 import model.Settings;
 import teste.DialogStatus;
@@ -21,13 +19,11 @@ import com.mongodb.DBObject;
 
 public class SaveFile implements Runnable {
 	private String repo = ""; 
-	private static String file;
+	private String file;
 	public static int finalizedThreads = 0;
-	private static String result="";
 	public static String tempo="";
 	private Settings settings;
 
-	@SuppressWarnings("static-access")
 	public SaveFile(String repo, String file, Settings settings) throws UnknownHostException{
 		this.repo = repo; 
 		this.file = file;
@@ -38,12 +34,11 @@ public class SaveFile implements Runnable {
 		System.out.println("Processando dados do Pull Request "+ repo+"\nThread utilizada: "+ Thread.currentThread().getId());
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
+			saveFile(true, null);
 			retrieveData(repo, settings);
 			tempo += Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ";
-			if (finalizedThreads==RetrievePullRequest.total){
-				System.out.println(saveFile());
-			}
-			DialogStatus.setjLabel(finalizedThreads);
+			System.out.println("HERE");
+			DialogStatus.setThreads(finalizedThreads);
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao processar os dados do repositórios "+repo);
 			e.printStackTrace();
@@ -51,25 +46,28 @@ public class SaveFile implements Runnable {
 	}
 
 	//Usar threads para recuperar os dados e salvar tudo o que foi armazenado na String em uma única escrita de arquivo.
-	public String retrieveData(String repo, Settings settings) throws UnknownHostException { 
+	public String retrieveData(String repo, Settings settings) throws UnknownHostException {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
 
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
-		query.append("state", "closed"); //Apenas pull requests encerrados
+
+		if (settings.getPrType() == 1)
+			query.append("state", "open"); //Apenas pull requests encerrados
+		else
+			if (settings.getPrType() == 2)
+				query.append("state", "closed"); //Apenas pull requests encerradosquery.append("state", "closed"); //Apenas pull requests encerrados
 		//query.append("number", new BasicDBObject("$gt", Integer.parseInt("705")));//maiores que number
-		int i = file.lastIndexOf("\\");
-		File dir = new File(file.substring(0, i)); 
-		File fileTemp = new File(dir, file.substring(i, file.length()));
+		//int i = file.lastIndexOf("\\");
+		//File dir = new File(file.substring(0, i)); 
+		//File fileTemp = new File(dir, file.substring(i, file.length()));
 
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
 			//Estimar o tempo para terminar a consulta
-			//System.out.println(cursor.count());
 			for (DBObject dbObject : cursor) {
 				//Variváveis
-				//repo owner, rep, dataRepo, contributors, acceptanceRepo, watchRepo, followContributors.
 				String owner = dbObject.get("owner").toString();
 				String rep = dbObject.get("repo").toString();
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
@@ -125,23 +123,19 @@ public class SaveFile implements Runnable {
 					long comments = commentsPull + commentsIssue;
 
 					//arquivos
-					String filesPath = "";
-					filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
+					//String filesPath = "";
+					//filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
 					//					filesPath = Commits.getCommitsFilesPath2(shaHead, shaBase);
 					String files="", commitsPorArquivos="", authorMoreCommits="";
 
-					if(!filesPath.equals("")){
-						//int j = filesPath.lastIndexOf(";");
-						files = filesPath.substring(1, filesPath.length()-1);
-
-						//Desenvolvedor com mais commits na última semana.
-						if (settings.getDays().get(0) > 0 )
-							authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep, settings.getDays().get(0));
-
-						//commitsNosArquivos na última semana.
-						if (settings.getDays().get(1) > 0)
-							commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep, settings.getDays().get(1));
-					}
+//					if(!filesPath.equals("")){
+//						//int j = filesPath.lastIndexOf(";");
+//						files = filesPath.substring(1, filesPath.length()-1);
+//						//commitsNosArquivos na última semana.
+//						commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep, settings.getCommitsByFilesDays());
+//						//Desenvolvedor com mais commits na última semana.
+//						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep, settings.getAuthorCommitsDays());
+//					}
 
 					String participants = Users.getParticipants(number, rep);
 					participants += participants.substring(1, participants.length()-1).replaceAll(", ", "|");
@@ -187,7 +181,7 @@ public class SaveFile implements Runnable {
 					if(dbObject.get("merged_at")!=null)
 						mergedDate = FormatDate.getDate(dbObject.get("merged_at").toString());
 
-
+					//Escrevendo no arquivo
 					String resultTemp = owner+"/"+rep+","+dataRepo+","+
 							contributors+","+
 							acceptanceRepo+","+
@@ -225,12 +219,14 @@ public class SaveFile implements Runnable {
 							dbObject.get("deletions")+","+
 							(Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString()))+","+
 							dbObject.get("changed_files")+","+
-							dirFinal+","+
-							filesPath.replace(", ", "|").replace(";", ",");
-					result += resultTemp+"\r\n";
-
+							dirFinal+",";//+
+							//filesPath.replace(", ", "|").replace(";", ",");
+					resultTemp += "\r\n";
+					if (!saveFile(false, resultTemp))
+						System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
 				}else
 					continue;
+				DialogStatus.addsPullRequests();
 			}
 			finalizedThreads++;
 			return "sucess!";
@@ -240,32 +236,35 @@ public class SaveFile implements Runnable {
 		}
 	}	
 
-	public static String saveFile(){
-		int i = file.lastIndexOf("\\");
-		File dir = new File(file.substring(0, i)); 
-		File fileTemp = new File(dir, file.substring(i, file.length()));
+	public boolean saveFile(boolean firstWritten, String pullRequestData){
+		File fileTemp = new File(file+File.separator+repo+".ght");
 		FileWriter fw = null;
 		try {
-			fw = new FileWriter(fileTemp, false);
-
-			fw.write("owner/repo;ageRepoDays;stargazersCount;watchersCount;language;forksCount;openIssuesCount;subscribersCount;has_wiki;contributors;acceptanceRepo;"
-					+ "followers;following;ageUser;typeDeveloper;totalPullDeveloper;acceptanceDeveloper;watchRepo;followContributors;location;"
-					+ "idPull;numberPull;login;state;title;createdDate;closedDate;mergedDate;lifetimeDays;lifetimeHours;lifetimeMinutes;closedBy;"
-					+ "mergedBy;commitHeadSha;commitBaseSha;assignee;comments;commitsPull;commitsbyFilesPull; authorMoreCommits;"
-					+ "additionsLines;deletionsLines;totalLines;changedFiles;files");
-			fw.write("\r\n");
-			fw.write(result);
+			
+			if (firstWritten){
+				fw = new FileWriter(fileTemp);
+				fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,contributors,acceptanceRepo,"
+						+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,followContributors,location,"
+						+ "idPull,numberPull,login,state,title,createdDate,closedDate,mergedDate,lifetimeDays,lifetimeHours,lifetimeMinutes,closedBy,"
+						+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants"
+						+ "additionsLines,deletionsLines,totalLines,changedFiles,check_files,dirFinal,files");
+				fw.write("\r\n");
+			}else{
+				fw = new FileWriter(fileTemp, true);
+				fw.write(pullRequestData);
+			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "erro na escrita do arquivo.";
+			System.err.println("erro na escrita do arquivo.");
+			return false;
 		}
 		try {
 			fw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "erro na escrita do arquivo (2).";
+			System.err.println("erro ao tentar fechar a escrita do arquivo (2).");
 		}
-		return "Arquivo escrito com sucesso.";
+		return true;
 	}
 }

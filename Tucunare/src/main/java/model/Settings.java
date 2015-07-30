@@ -16,8 +16,7 @@ public  class Settings {
 	private boolean prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prDirFinal, prFiles;
 	private boolean user, userAge, type, pullsUser, averages, userFollowers, userFollowing, userLocation; 
 	private int prType = 0;
-
-	private List<Integer> days;
+	private int authorCommitsDays, commitsByFilesDays;
 
 	public Settings() {
 		setDefaultValues();
@@ -56,13 +55,12 @@ public  class Settings {
 	//"comments":"true","commits":["true","10","5"],"modifiedlines":"true","changedfiles":"true","dirfinal":"true","filespath":"true",
 	private void tryParsePRFiles() throws JSONException {
 			JSONArray ja = data.getJSONArray("commitsdays"); 
-			days = new ArrayList<Integer>();
 
 			prComments = data.getBoolean("comments");
 			prCommits = data.getBoolean("commits");
-			//dias do author, dias dos arquivos e número de meses para recuperar contribuidores.
-			days.add(ja.getInt(0));
-			days.add(ja.getInt(1));
+			//dias do author, dias dos arquivos
+			authorCommitsDays = ja.getInt(0);
+			commitsByFilesDays = ja.getInt(1);
 			contributorsMonths = ja.getInt(2);
 
 			prModifiedLines = data.getBoolean("modifiedlines");
@@ -93,10 +91,8 @@ public  class Settings {
 	public void setDefaultValues(){
 		prType = 0;
 		contributorsMonths = 1;
-		days = new ArrayList<Integer>();
-		days.add(10);
-		days.add(10);
-		days.add(10);
+		authorCommitsDays = 7;
+		commitsByFilesDays = 7;
 
 		repoData = true; 
 		prNumber = true; 
@@ -330,13 +326,21 @@ public  class Settings {
 	public void setPrType(int prType) {
 		this.prType = prType;
 	}
-
-	public List<Integer> getDays() {
-		return days;
+	
+	public int getAuthorCommitsDays() {
+		return authorCommitsDays;
 	}
-
-	public void setDays(List<Integer> days) {
-		this.days = days;
+	
+	public void setAuthorCommitsDays(int days) {
+		authorCommitsDays = days;
+	}
+	
+	public int getCommitsByFilesDays() {
+		return commitsByFilesDays;
+	}
+	
+	public void setCommitsByFilesDays(int days) {
+		commitsByFilesDays = days;
 	}
 
 	@Override
@@ -354,6 +358,6 @@ public  class Settings {
 				+ ", type=" + type + ", pullsUser=" + pullsUser + ", averages="
 				+ averages + ", userFollowers=" + userFollowers
 				+ ", userFollowing=" + userFollowing + ", userLocation="
-				+ userLocation + ", prType=" + prType + ", days=" + days + "]";
+				+ userLocation + ", prType=" + prType + ", commitsByFilesDays=" + commitsByFilesDays + ", authorCommitsDays="+authorCommitsDays+"]";
 	}
 }
