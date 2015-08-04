@@ -8,7 +8,7 @@ import java.util.GregorianCalendar;
 
 public class FormatDate {
 	
-	public static String dataLimit(String pullRequestDateString){
+	public static String dataLimit(String pullRequestDateString, int days){
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		Date pullRequestDate = null;
 		String beforeDate="";
@@ -16,7 +16,8 @@ public class FormatDate {
 			pullRequestDate = formatter.parse(pullRequestDateString);
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
-			pastDate.add(Calendar.DAY_OF_WEEK, -7);
+			days = days * -1;
+			pastDate.add(Calendar.DAY_OF_WEEK, days);
 			Date d = pastDate.getTime();
 			beforeDate = formatter.format(d);
 		} catch (ParseException e){
@@ -25,15 +26,21 @@ public class FormatDate {
 		return beforeDate;	
 	}
 	
-	public static String dataLimitMonth(String pullRequestDateString){
+	public static String dataLimitMonth(String pullRequestDateString, Integer months){
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		Date pullRequestDate = null;
 		String beforeDate="";
+		months = months * -1;
 		try {
 			pullRequestDate = formatter.parse(pullRequestDateString);
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
+<<<<<<< HEAD
 			pastDate.add(Calendar.MONTH, -1);
+=======
+			pastDate.add(Calendar.MONTH, months);
+
+>>>>>>> refs/heads/gui
 			Date d = pastDate.getTime();
 			beforeDate = formatter.format(d);
 		} catch (ParseException e){
