@@ -35,12 +35,7 @@ public class FormatDate {
 			pullRequestDate = formatter.parse(pullRequestDateString);
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
-<<<<<<< HEAD
-			pastDate.add(Calendar.MONTH, -1);
-=======
 			pastDate.add(Calendar.MONTH, months);
-
->>>>>>> refs/heads/gui
 			Date d = pastDate.getTime();
 			beforeDate = formatter.format(d);
 		} catch (ParseException e){

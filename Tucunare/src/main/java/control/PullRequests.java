@@ -9,9 +9,6 @@ import com.mongodb.DBCollection;
 import util.Connect;
 
 public class PullRequests extends Thread{
-
-
-
 	@SuppressWarnings("unchecked")
 	public static List<String> getAllRepos() throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");

@@ -25,7 +25,7 @@ public class Issues {
 	public static int getIssueComments(String idPullRequest, String repo) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("issue_comments");
-		BasicDBObject query = new BasicDBObject("pullreq_id",Integer.parseInt(idPullRequest)); //consulta com query
+		BasicDBObject query = new BasicDBObject("pullreq_id",Integer.parseInt(idPullRequest));
 		query.append("repo", repo);
 		int comments = dbc.find(query).count();
 		return comments;

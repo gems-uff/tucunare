@@ -49,24 +49,17 @@ public class SaveFile implements Runnable {
 	public String retrieveData(String repo, Settings settings) throws UnknownHostException {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
-
+ 
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
-		query.append("number", new BasicDBObject("$gt", Integer.parseInt("1243")));//maiores que number
-		//if (settings.getPrType() == 1)
-		//	query.append("state", "open"); //Apenas pull requests encerrados
-		//else
-		//	if (settings.getPrType() == 2)
-				query.append("state", "closed"); //Apenas pull requests encerradosquery.append("state", "closed"); //Apenas pull requests encerrados
+		//query.append("number", new BasicDBObject("$gt", Integer.parseInt("1243")));//maiores que number
+		if (settings.getPrType() == 1)
+			query.append("state", "open"); //Apenas pull requests encerrados
+		if (settings.getPrType() == 2)
+			query.append("state", "closed"); //Apenas pull requests encerrados
 		
-		//int i = file.lastIndexOf("\\");
-		//File dir = new File(file.substring(0, i)); 
-		//File fileTemp = new File(dir, file.substring(i, file.length()));
-
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
-			System.out.println("inicio do cursor");
-			//Estimar o tempo para terminar a consulta
 			for (DBObject dbObject : cursor) {
 				//Variváveis
 				String rep = dbObject.get("repo").toString();
@@ -107,7 +100,7 @@ public class SaveFile implements Runnable {
 						acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
 						rejectUser = String.valueOf(((closedPullUser*100)/totalPullUser));
 					}
-					String contributors = Commits.getContributors(shaHead, rep, owner);
+					String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
 					String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
 
 					boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
@@ -127,16 +120,14 @@ public class SaveFile implements Runnable {
 					//arquivos
 					String filesPath = "";
 					filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
-					//					filesPath = Commits.getCommitsFilesPath2(shaHead, shaBase);
 					String files="", commitsPorArquivos="", authorMoreCommits="";
 
 					if(!filesPath.equals("")){
-						//int j = filesPath.lastIndexOf(";");
 						files = filesPath.substring(1, filesPath.length()-1);
 						//commitsNosArquivos na última semana.
-						commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep);
+						commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep, settings.getCommitsByFilesDays());
 						//Desenvolvedor com mais commits na última semana.
-						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep);
+						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep, settings.getAuthorCommitsDays());
 					}
 
 					String participants = Users.getParticipants(number, rep);
@@ -163,7 +154,7 @@ public class SaveFile implements Runnable {
 							dirFinal += str;
 					}
 
-					//System.out.println((Integer) dbObject.get("number"));
+					
 					//Tempo de vida de um pull request
 					String lifetime = "", merged_by = "";
 					if((dbObject.get("closed_at")!=null)){
@@ -183,7 +174,7 @@ public class SaveFile implements Runnable {
 					if(dbObject.get("merged_at")!=null)
 						mergedDate = FormatDate.getDate(dbObject.get("merged_at").toString());
 
-					//Escrevendo no arquivo
+					//String enviada para o arquivo
 					String resultTemp = 
 							owner+"/"+rep+","+dataRepo+","+
 							contributors+","+
@@ -226,7 +217,7 @@ public class SaveFile implements Runnable {
 							dirFinal+","+
 							files.replace(", ", "|");
 					resultTemp += "\r\n";
-					System.out.println(resultTemp);
+					System.out.println((Integer) dbObject.get("number"));
 					if (!saveFile(false, resultTemp))
 						System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
 				}else
@@ -242,10 +233,9 @@ public class SaveFile implements Runnable {
 	}	
 
 	public boolean saveFile(boolean firstWritten, String pullRequestData){
-		File fileTemp = new File(file+File.separator+repo+"2.csv");
+		File fileTemp = new File(file+File.separator+repo+".csv");
 		FileWriter fw = null;
 		try {
-			
 			if (firstWritten){
 				fw = new FileWriter(fileTemp);
 				fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,contributors,acceptanceRepo,"
