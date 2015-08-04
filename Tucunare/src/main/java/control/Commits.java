@@ -75,15 +75,16 @@ public class Commits {
 		}
 		return files.size()+"; "+files.toString();
 	}
-
-	public static String getAuthorCommits(String filesNames, String shaBase, String repo, Integer days) throws UnknownHostException{ 
+	
+	
+	public static String getAuthorCommits(String filesNames, String shaBase, String repo) throws UnknownHostException{
 		ArrayList<String> authors = new ArrayList<String>();
 		String files[] = filesNames.split(", ");
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
 		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
-		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(), days);
+		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(),7);
 		BasicDBObject queryHead = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
 		queryHead.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
 		DBCursor dbcCommits = commitsC.find(queryHead);
@@ -118,18 +119,16 @@ public class Commits {
                 }   
             } 
 		}
-//		if(a.equals(""))
-//			a = "None";
 		return a;
 		
 	}
 
-	public static String getCommitsByFiles (String filesNames, String pullRequestDate, String repo, Integer days) throws UnknownHostException{
+	public static String getCommitsByFiles (String filesNames, String pullRequestDate, String repo) throws UnknownHostException{
 		String files[] = filesNames.split(", ");
 		long numCommitsNoArquivo = 0L;
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
-		String data = FormatDate.dataLimit(pullRequestDate, days);
+		String data = FormatDate.dataLimit(pullRequestDate,7);
 		BasicDBObject queryHead = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",pullRequestDate).append("$gt", data)); //consulta com data menor que a data do pull request
 		queryHead.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
 		DBCursor dbc = commitsC.find(queryHead);
@@ -146,13 +145,13 @@ public class Commits {
 		return ""+numCommitsNoArquivo;
 	}
 
-	//recent contributors (3 months)
-	public static String getContributors(String shaBase, String repo, String owner, Integer months) throws UnknownHostException{
+	//recent contributors (1 mont)
+	public static String getContributors(String shaBase, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
 		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
-		String data = FormatDate.dataLimitMonth(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(), months);
+		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(),7);
 		BasicDBObject query = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("author")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
 		query.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
 		DBCursor cursor = commitsC.find(query);
@@ -172,7 +171,6 @@ public class Commits {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryCommit = new BasicDBObject("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
-		//System.out.println("Executando...");
 		DBCursor cursor = commitsC.find(queryCommit);
 		ArrayList<String> listCommitters = new ArrayList<String>();
 		for (DBObject dbObject : cursor) {

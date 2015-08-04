@@ -44,7 +44,7 @@ import org.json.JSONObject;
 
 import teste.DialogStatus;
 import control.PullRequests;
-import control.SaveFile;
+import control.SaveFile2;
 
 import javax.swing.JTextField;
 import javax.swing.BoxLayout;
@@ -251,7 +251,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 						for (String repository : selectedRepositories) {
 							entrou = true;
 							totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
-							new Thread(new SaveFile(repository, file, settings), "Thread-"+repository).start();	
+							new Thread(new SaveFile2(repository, file, settings), "Thread-"+repository).start();	
 						}
 						if (entrou){
 							showStatusWindow();
@@ -269,7 +269,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		}
 		else
 			if(evt.getSource()==jButtonFile){
-				JFileChooser fileChooser = new JFileChooser("D:\\files"); 
+				JFileChooser fileChooser = new JFileChooser("D:\\ICMLA2015\\files"); 
 				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				int i= fileChooser.showSaveDialog(null);
 				if (i==1){

@@ -51,13 +51,13 @@ public class SaveFile implements Runnable {
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
 
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
-
-		if (settings.getPrType() == 1)
-			query.append("state", "open"); //Apenas pull requests encerrados
-		else
-			if (settings.getPrType() == 2)
+		query.append("number", new BasicDBObject("$gt", Integer.parseInt("1243")));//maiores que number
+		//if (settings.getPrType() == 1)
+		//	query.append("state", "open"); //Apenas pull requests encerrados
+		//else
+		//	if (settings.getPrType() == 2)
 				query.append("state", "closed"); //Apenas pull requests encerradosquery.append("state", "closed"); //Apenas pull requests encerrados
-		//query.append("number", new BasicDBObject("$gt", Integer.parseInt("705")));//maiores que number
+		
 		//int i = file.lastIndexOf("\\");
 		//File dir = new File(file.substring(0, i)); 
 		//File fileTemp = new File(dir, file.substring(i, file.length()));
@@ -65,22 +65,24 @@ public class SaveFile implements Runnable {
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
+			System.out.println("inicio do cursor");
 			//Estimar o tempo para terminar a consulta
 			for (DBObject dbObject : cursor) {
 				//Variváveis
-				String owner = dbObject.get("owner").toString();
 				String rep = dbObject.get("repo").toString();
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
-				String created = dbObject.get("created_at").toString();
-				String followers = Users.getFollowersUser(user);
-				String following = Users.getFollowingUser(user);
-				String ageUser = Users.getAgeUser(user);
-				String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
-				String shaBase = ((BasicDBObject)dbObject.get("base")).get("sha").toString();
 				String number = dbObject.get("number").toString();
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
-
-				if(dbObject!=null && !closed_by.equals(user)){
+				
+				if(dbObject!=null & !closed_by.equals(user)){
+					String owner = dbObject.get("owner").toString();
+					String created = dbObject.get("created_at").toString();
+					String followers = Users.getFollowersUser(user);
+					String following = Users.getFollowingUser(user);
+					String ageUser = Users.getAgeUser(user);
+					String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
+					String shaBase = ((BasicDBObject)dbObject.get("base")).get("sha").toString();
+					
 					//Dados do projeto
 					String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String acceptanceRepo="";
@@ -105,7 +107,7 @@ public class SaveFile implements Runnable {
 						acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
 						rejectUser = String.valueOf(((closedPullUser*100)/totalPullUser));
 					}
-					String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
+					String contributors = Commits.getContributors(shaHead, rep, owner);
 					String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
 
 					boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
@@ -123,22 +125,22 @@ public class SaveFile implements Runnable {
 					long comments = commentsPull + commentsIssue;
 
 					//arquivos
-					//String filesPath = "";
-					//filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
+					String filesPath = "";
+					filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
 					//					filesPath = Commits.getCommitsFilesPath2(shaHead, shaBase);
 					String files="", commitsPorArquivos="", authorMoreCommits="";
 
-//					if(!filesPath.equals("")){
-//						//int j = filesPath.lastIndexOf(";");
-//						files = filesPath.substring(1, filesPath.length()-1);
-//						//commitsNosArquivos na última semana.
-//						commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep, settings.getCommitsByFilesDays());
-//						//Desenvolvedor com mais commits na última semana.
-//						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep, settings.getAuthorCommitsDays());
-//					}
+					if(!filesPath.equals("")){
+						//int j = filesPath.lastIndexOf(";");
+						files = filesPath.substring(1, filesPath.length()-1);
+						//commitsNosArquivos na última semana.
+						commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep);
+						//Desenvolvedor com mais commits na última semana.
+						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep);
+					}
 
 					String participants = Users.getParticipants(number, rep);
-					participants += participants.substring(1, participants.length()-1).replaceAll(", ", "|");
+					participants = participants.substring(1, participants.length()-1).replaceAll(", ", "|");
 
 					//tratamento para caminho dos arquivos para buscar o último diretório
 					String dirFinal = "";
@@ -161,7 +163,7 @@ public class SaveFile implements Runnable {
 							dirFinal += str;
 					}
 
-					System.out.println((Integer) dbObject.get("number"));
+					//System.out.println((Integer) dbObject.get("number"));
 					//Tempo de vida de um pull request
 					String lifetime = "", merged_by = "";
 					if((dbObject.get("closed_at")!=null)){
@@ -182,7 +184,8 @@ public class SaveFile implements Runnable {
 						mergedDate = FormatDate.getDate(dbObject.get("merged_at").toString());
 
 					//Escrevendo no arquivo
-					String resultTemp = owner+"/"+rep+","+dataRepo+","+
+					String resultTemp = 
+							owner+"/"+rep+","+dataRepo+","+
 							contributors+","+
 							acceptanceRepo+","+
 							followers+","+
@@ -215,13 +218,15 @@ public class SaveFile implements Runnable {
 							dbObject.get("commits")+","+
 							commitsPorArquivos+","+
 							authorMoreCommits+","+
+							participants+","+
 							dbObject.get("additions")+","+
 							dbObject.get("deletions")+","+
 							(Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString()))+","+
 							dbObject.get("changed_files")+","+
-							dirFinal+",";//+
-							//filesPath.replace(", ", "|").replace(";", ",");
+							dirFinal+","+
+							files.replace(", ", "|");
 					resultTemp += "\r\n";
+					System.out.println(resultTemp);
 					if (!saveFile(false, resultTemp))
 						System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
 				}else
@@ -237,7 +242,7 @@ public class SaveFile implements Runnable {
 	}	
 
 	public boolean saveFile(boolean firstWritten, String pullRequestData){
-		File fileTemp = new File(file+File.separator+repo+".ght");
+		File fileTemp = new File(file+File.separator+repo+"2.csv");
 		FileWriter fw = null;
 		try {
 			
@@ -246,8 +251,8 @@ public class SaveFile implements Runnable {
 				fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,contributors,acceptanceRepo,"
 						+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,followContributors,location,"
 						+ "idPull,numberPull,login,state,title,createdDate,closedDate,mergedDate,lifetimeDays,lifetimeHours,lifetimeMinutes,closedBy,"
-						+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants"
-						+ "additionsLines,deletionsLines,totalLines,changedFiles,check_files,dirFinal,files");
+						+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants,"
+						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files");
 				fw.write("\r\n");
 			}else{
 				fw = new FileWriter(fileTemp, true);
