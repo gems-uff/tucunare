@@ -89,3 +89,7 @@ D:\mongodb\bin>
 mongodump.exe -db ghtorrent
 //restaurando o banco da vers�o 2.4 para a vers�o 3.03
 mongorestore D:\mongodb\bin\dump\ghtorrent -d ghtorrent
+
+16)Recuperar os dados da collection followers: ght-retrieve-user login
+Com a classe ContributorsRepo gerando um arquivo com todos os comandos
+Por fim, utiliza o arquivo para extrair os dados.

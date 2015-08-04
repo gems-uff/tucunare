@@ -68,10 +68,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 	private JTextField jTxtFePath;
 	private JTextField jTextRepo;
+
 	private JTextField jTxtAuthorMoreCommitsPR;
 	private JTextField jTxtCommByFiles;
 
 	private JTextArea jTextArea;
+
 
 	private JButton jButtonSave;
 	private JButton jButtonStop;

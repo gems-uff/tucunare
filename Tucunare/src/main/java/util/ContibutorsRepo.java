@@ -13,9 +13,9 @@ import control.Commits;
 //para executar no GHTorrent basta digitar o nome do aqruivo gerado no diretório 
 public class ContibutorsRepo {
 	public static void main(String[] args) throws UnknownHostException {
-		ArrayList<String> list = Commits.getContributorsList("libgit2", "libgit2");
+		ArrayList<String> list = Commits.getContributorsList("infinispan", "infinispan");
 		Collections.sort(list);
-		File file = new File("d:/Ruby200/lib/ruby/gems/2.0.0/gems/ghtorrent-0.10/","libgit2Contributors.sh");
+		File file = new File("d:/Ruby200/lib/ruby/gems/2.0.0/gems/ghtorrent-0.10/","infinispanContributors.sh");
 		try{
 			FileWriter fw = new FileWriter(file, false);
 			fw.write("#!/bin/bash"+"\n");

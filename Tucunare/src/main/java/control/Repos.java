@@ -18,12 +18,12 @@ public class Repos {
 		BasicDBObject queryRepos = new BasicDBObject("full_name",repo);
 		DBObject repoObject = dbcRepos.findOne(queryRepos);
 		String ageRepo = FormatDate.getAge(((BasicDBObject) repoObject).get("created_at").toString());
-		return ageRepo+";"+((BasicDBObject) repoObject).get("stargazers_count")+";"+
-				((BasicDBObject) repoObject).get("watchers_count")+";"+
-				((BasicDBObject) repoObject).get("language")+";"+
-				((BasicDBObject) repoObject).get("forks_count")+";"+
-				((BasicDBObject) repoObject).get("open_issues_count")+";"+
-				((BasicDBObject) repoObject).get("subscribers_count")+";"+
+		return ageRepo+","+((BasicDBObject) repoObject).get("stargazers_count")+","+
+				((BasicDBObject) repoObject).get("watchers_count")+","+
+				((BasicDBObject) repoObject).get("language")+","+
+				((BasicDBObject) repoObject).get("forks_count")+","+
+				((BasicDBObject) repoObject).get("open_issues_count")+","+
+				((BasicDBObject) repoObject).get("subscribers_count")+","+
 				((BasicDBObject) repoObject).get("has_wiki");
 	}
 	

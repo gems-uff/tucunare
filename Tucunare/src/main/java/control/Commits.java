@@ -84,6 +84,7 @@ public class Commits {
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
 		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
+		//corrigir parâmetro
 		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(),7);
 		BasicDBObject queryHead = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
 		queryHead.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
@@ -128,6 +129,7 @@ public class Commits {
 		long numCommitsNoArquivo = 0L;
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
+		//corrigir parâmetro
 		String data = FormatDate.dataLimit(pullRequestDate,7);
 		BasicDBObject queryHead = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",pullRequestDate).append("$gt", data)); //consulta com data menor que a data do pull request
 		queryHead.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
@@ -151,6 +153,7 @@ public class Commits {
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
 		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
+		//corrigir parâmetro
 		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(),7);
 		BasicDBObject query = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("author")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
 		query.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
