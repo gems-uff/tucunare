@@ -44,7 +44,7 @@ import org.json.JSONObject;
 
 import teste.DialogStatus;
 import control.PullRequests;
-import control.SaveFile2;
+import control.SaveFile;
 
 import javax.swing.JTextField;
 import javax.swing.BoxLayout;
@@ -253,7 +253,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 						for (String repository : selectedRepositories) {
 							entrou = true;
 							totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
-							new Thread(new SaveFile2(repository, file, settings), "Thread-"+repository).start();	
+							new Thread(new SaveFile(repository, file, settings), "Thread-"+repository).start();	
 						}
 						if (entrou){
 							showStatusWindow();

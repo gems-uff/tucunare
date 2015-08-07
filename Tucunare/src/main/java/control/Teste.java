@@ -29,7 +29,7 @@ public class Teste {
 		DBCursor cursorPull = dbcPull.find(queryPull);
 		for (DBObject dbObjectPull : cursorPull) {
 			ArrayList<String> authors = new ArrayList<String>();
-			String filesPath = Commits.getCommitsFilesPath(((BasicDBObject)dbObjectPull.get("head")).get("sha").toString(), ((BasicDBObject)dbObjectPull.get("base")).get("sha").toString(), Integer.parseInt(dbObjectPull.get("commits").toString()));
+			String filesPath = Commits.getCommitsFilesPath(((BasicDBObject)dbObjectPull.get("head")).get("sha").toString(), ((BasicDBObject)dbObjectPull.get("base")).get("sha").toString(), Integer.parseInt(dbObjectPull.get("commits").toString()),7);
 			String filesNames = filesPath.substring(1, filesPath.length()-1);
 			String files[] = filesNames.split(", ");
 			long numCommitsNoArquivo = 0L;
