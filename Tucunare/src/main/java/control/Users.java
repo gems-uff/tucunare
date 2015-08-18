@@ -105,8 +105,9 @@ public class Users {
 		DBCursor cursorIssueComment = dbcIssueComment.find(queryIssueComment);
 		ArrayList<String> participants = new ArrayList<String>();
 		for (DBObject issueComment : cursorIssueComment) {
-			if(!participants.contains(((BasicDBObject) issueComment.get("user")).get("login").toString()))
-				participants.add(((BasicDBObject) issueComment.get("user")).get("login").toString());
+			if((BasicDBObject) issueComment.get("user") != null)
+				if(!participants.contains(((BasicDBObject) issueComment.get("user")).get("login").toString()))
+					participants.add(((BasicDBObject) issueComment.get("user")).get("login").toString());
 		}
 		
 		DBCollection dbcPullComment = db.getCollection("pull_request_comments");
@@ -114,8 +115,9 @@ public class Users {
 		queryPullComment.append("repo", repo);
 		DBCursor cursorPullComment = dbcPullComment.find(queryPullComment);
 		for (DBObject pullComments : cursorPullComment) {
-			if(!participants.contains(((BasicDBObject) pullComments.get("user")).get("login").toString()))
-				participants.add(((BasicDBObject) pullComments.get("user")).get("login").toString());
+			if((BasicDBObject) pullComments.get("user") != null)
+				if(!participants.contains(((BasicDBObject) pullComments.get("user")).get("login").toString()))
+					participants.add(((BasicDBObject) pullComments.get("user")).get("login").toString());
 		}
 		
 		DBCollection dbcIssueEvent = db.getCollection("issue_events");
@@ -123,8 +125,9 @@ public class Users {
 		queryIssueEvent.append("repo", repo);
 		DBCursor cursorIssueEvent = dbcIssueEvent.find(queryIssueEvent);
 		for (DBObject issueEvent : cursorIssueEvent) {
-			if(!participants.contains(((BasicDBObject) issueEvent.get("actor")).get("login").toString()))
-				participants.add(((BasicDBObject) issueEvent.get("actor")).get("login").toString());
+			if((BasicDBObject) issueEvent.get("actor") != null)
+				if(!participants.contains(((BasicDBObject) issueEvent.get("actor")).get("login").toString()))
+					participants.add(((BasicDBObject) issueEvent.get("actor")).get("login").toString());
 		}
 		
 		DBCollection dbcIssues = db.getCollection("issues");
@@ -139,8 +142,9 @@ public class Users {
 		BasicDBObject queryPull = new BasicDBObject("number",Integer.parseInt(idPullRequest)); //consulta com query
 		queryPull.append("repo", repo);
 		DBObject pull = dbcPull.findOne(queryPull);
-			if(!participants.contains(((BasicDBObject) pull.get("user")).get("login").toString()))
-				participants.add(((BasicDBObject) pull.get("user")).get("login").toString());
+			if((BasicDBObject) pull.get("user") != null)
+				if(!participants.contains(((BasicDBObject) pull.get("user")).get("login").toString()))
+					participants.add(((BasicDBObject) pull.get("user")).get("login").toString());
 		
 		return participants.toString();
 	}
