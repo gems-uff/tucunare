@@ -17,7 +17,7 @@ public class FormatDate {
 			GregorianCalendar pastDate = new GregorianCalendar();
 			pastDate.setTime(pullRequestDate);
 			days = days * -1;
-			pastDate.add(Calendar.DAY_OF_WEEK, days);
+			pastDate.add(Calendar.DAY_OF_YEAR, days);
 			Date d = pastDate.getTime();
 			beforeDate = formatter.format(d);
 		} catch (ParseException e){

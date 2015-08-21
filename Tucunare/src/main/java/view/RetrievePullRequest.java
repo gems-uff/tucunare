@@ -220,12 +220,14 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 						if (e.getSource() == jcbUserPulls){
 							jcbUserAverages.setSelected(jcbUserPulls.isSelected());
 						}else
-							if (e.getSource() == jcbAllPRData){
+							if (e.getSource() == jcbAllPRData)
 								loadPRComponents(jcbAllPRData.isSelected());
-							}else
-								if (e.getSource() == jcbAllAuthorData){
+							else
+								if (e.getSource() == jcbAllAuthorData)
 									loadAuthorComponents(jcbAllAuthorData.isSelected());
-								}
+								else
+									if (e.getSource() == jcbAllRepoData)
+										jcbContributors.setSelected(jcbAllRepoData.isSelected());
 	}
 
 	public void actionPerformed(ActionEvent evt) {
@@ -381,7 +383,9 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		centerPanelNorth = new JPanel(new GridLayout(1,4));
 		centerPanelNorth.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Repository: ", 
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
-		jcbAllRepoData = new JCheckBox("all");
+		jcbAllRepoData = new JCheckBox("all"); 
+		jcbAllRepoData.setToolTipText("Select all data repository to retrieve the repository, owner, dataRepo, acceptanceRepo and watchRepo.");
+		jcbAllRepoData.addItemListener(this);
 
 		centerPanelNorth.add(jcbAllRepoData);
 
@@ -390,11 +394,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		panel_1.setLayout(new BorderLayout(0, 0));
 
 		jcbContributors = new JCheckBox("contributors");
+		jcbContributors.setToolTipText("Select this to retrieve the contributors of the repositories.");
 		jcbContributors.addItemListener(this);
 		jcbContributors.setSelected(true);
 		panel_1.add(jcbContributors, BorderLayout.NORTH);
 
-		jlbMonthAgo = new JLabel("Months ago:");
+		jlbMonthAgo = new JLabel("Days ago:");
 		panel_1.add(jlbMonthAgo, BorderLayout.WEST);
 
 		panel_2 = new JPanel();
@@ -405,6 +410,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		panel_1.add(panel_2, BorderLayout.CENTER);
 
 		jtxtRepoContributors = new JTextField();
+		jtxtRepoContributors.setToolTipText("Enter the number of days before the current date to recover the repository's contributors.");
 		jtxtRepoContributors.setText("2");
 		jtxtRepoContributors.setColumns(5);
 
@@ -417,9 +423,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
 		centerPanelMidIn = new JPanel(new GridLayout(0,4));
 		jcbNumPR = new JCheckBox("number");
+		jcbNumPR.setToolTipText("Retrieve the number of the pull requests.");
 
 		jcbStatePR = new JCheckBox("state");
+		jcbStatePR.setToolTipText("Retrieve the state of the pull request (open, closed or merged).");
 		jcbClosedMergedByPR = new JCheckBox("closed and merged by");
+		jcbClosedMergedByPR.setToolTipText("Retrieves who closed and merged the pull request.");
 		jcbAssigneePR = new JCheckBox("assignee");
 		jcbCommentsPR = new JCheckBox("comments");
 		jcbCommitsPR = new JCheckBox("commits");
@@ -429,12 +438,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbModifiedLinesPR = new JCheckBox("modified lines");
 
 		jcbAllPRData = new JCheckBox("all");
+		jcbAllPRData.setToolTipText("Select this to recover all the pull request data.");
 		jcbAllPRData.setSelected(true);
 		jcbAllPRData.addItemListener(this);
 		centerPanelMidIn.add(jcbAllPRData);
 
 		panel = new JPanel();
-		panel.setToolTipText("choose the type of pull request to be recovered. All = open & closed.");
 		FlowLayout flowLayout = (FlowLayout) panel.getLayout();
 		flowLayout.setVgap(10);
 		flowLayout.setAlignment(FlowLayout.LEFT);
@@ -445,6 +454,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		panel.add(lblPrType);
 
 		jcbPRType = new JComboBox<String>();
+		jcbPRType.setToolTipText("Choose the state of pull requests to be recovered. All = open & closed.");
 		jcbPRType.setModel(new DefaultComboBoxModel<String>(new String[] {"all", "open", "closed"}));
 		jcbPRType.setSelectedIndex(0);
 
@@ -454,18 +464,22 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbTitlePR = new JCheckBox("title");
 		centerPanelMidIn.add(jcbTitlePR);
 		jcbShaHeadBasePR = new JCheckBox("shas (head e base)");
+		jcbShaHeadBasePR.setToolTipText("Retrieves the sha head and the sha base of the pull request.");
 		centerPanelMidIn.add(jcbShaHeadBasePR);
 
 		//JLabel labelDates = new JLabel("PR dates: ");
 		jcbDatesPR = new JCheckBox("dates");
+		jcbDatesPR.setToolTipText("Retrieves the created, closed and merged date of the pull request.");
 		centerPanelMidIn.add(jcbDatesPR);
 		centerPanelMidIn.add(jcbClosedMergedByPR);
 		jcbLifetimePR = new JCheckBox("lifetime");
+		jcbLifetimePR.setToolTipText("Retrieves the lifetime of the pull request (in days, hours and minutes)");
 		centerPanelMidIn.add(jcbLifetimePR);
 		centerPanelMidIn.add(jcbAssigneePR);
 		centerPanelMidIn.add(jcbCommentsPR);
 		centerPanelMidIn.add(jcbCommitsPR);
 		jcbAuthorMoreCommitsPR = new JCheckBox("author more commits");
+		jcbAuthorMoreCommitsPR.setToolTipText("Retrieves the author with more commits in the pull request.");
 		jcbAuthorMoreCommitsPR.addItemListener(this);
 
 		panelAuthorMoreCommitsPR = new JPanel(new BorderLayout());
@@ -483,6 +497,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		flowLayout_3.setAlignment(FlowLayout.LEFT);
 		panelAuthorMoreCommitsPR.add(panel_4, BorderLayout.CENTER);
 		jTxtAuthorMoreCommitsPR = new JTextField("10");
+		jTxtAuthorMoreCommitsPR.setToolTipText("Enter the number of days before the first commit in the pull request to recover the author with more commits in the pull request.");
 		jTxtAuthorMoreCommitsPR.setColumns(5);
 		panel_4.add(jTxtAuthorMoreCommitsPR);
 		jTxtAuthorMoreCommitsPR.setToolTipText("Number in former days the date of creation of the PR to retrieve the author of more commits on the PR.");
