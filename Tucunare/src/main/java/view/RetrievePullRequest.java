@@ -8,12 +8,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.net.ConnectException;
 import java.net.UnknownHostException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -46,12 +45,9 @@ import teste.DialogStatus;
 import control.PullRequests;
 import control.SaveFile;
 
-import javax.swing.JTextField;
-import javax.swing.BoxLayout;
-
 public class RetrievePullRequest implements ActionListener, ItemListener, ListSelectionListener {
 
-	private Settings settings;
+	private static Settings settings;
 	private JPanel topPanel;
 	private JPanel bottomPanel;
 	private JPanel centerPanel;
@@ -112,7 +108,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JButton jButtonRepositories;
 
 	private JList<String> repositoryList;
-	private List<String> selectedRepositories = new ArrayList<String>();
+	private static List<String> selectedRepositories = new ArrayList<String>();
 	public static int totalPullRequests=0;
 	//Menu
 	private JMenuBar menuBar;
@@ -142,6 +138,9 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JPanel panel_10;
 	private JPanel panel_11;
 	private JPanel panel_12;
+	private static int threadAtual=0;
+	private static String file="";
+
 
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
@@ -231,7 +230,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	}
 
 	public void actionPerformed(ActionEvent evt) {
-		String file="";
+		file="";
 		if(evt.getSource()==jButtonSave){
 			if (hasCheckBoxSelected()){
 				if (jTextRepo==null || jTextRepo.equals("") || jTextRepo.getText().length()<1){
@@ -245,26 +244,27 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 				else{
 					//PullRequests pull = new PullRequests();
 					file = jTxtFePath.getText();
-					try {
-						jTextArea.setText("Processando dados.");
-						boolean entrou=false;
-						totalPullRequests=0;
-						settings = getSelectedFields();
-						for (String repository : selectedRepositories) {
-							entrou = true;
-							totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
-							new Thread(new SaveFile(repository, file, settings), "Thread-"+repository).start();	
-						}
-						if (entrou){
-							showStatusWindow();
+					//try {
+					jTextArea.setText("Processando dados.");
+					//boolean entrou=false;
+					totalPullRequests=0;
+					settings = getSelectedFields();
+					//for (String repository : selectedRepositories) {
+					//entrou = true;
+					//	totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
+					//	new Thread(new SaveFile(repository, file, settings), "Thread-"+repository).start();	
+					//}
+					iniciaThreads(selectedRepositories, settings);
+					if (selectedRepositories.size()>0){
+						showStatusWindow();
 
-						}
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
 					}
-					catch (NumberFormatException e) {
-						JOptionPane.showMessageDialog(null, "Entre com valores válidos nos campos de dias");
-					}
+					//} catch (UnknownHostException e) {
+					//	e.printStackTrace();
+					//}
+					//catch (NumberFormatException e) {
+					//	JOptionPane.showMessageDialog(null, "Entre com valores válidos nos campos de dias");
+					//}
 				}
 			}else
 				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informação para ser recuperada.");
@@ -302,6 +302,56 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		}	
 	}
 
+
+	private void iniciaThreads(List<String> selectedRepositories,
+			Settings settings) {
+
+		for (String repository : selectedRepositories) {
+			try {
+				totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
+				System.out.println(settings.getPrType());
+			} catch (UnknownHostException e) {
+				System.err.println("Erro ao iniciar a contagem de pull requests dos repositórios selecionados.");
+			}
+		}
+
+		//caso sejam selecionados no máximo 3 repositórios, realiza a recuperação de todos ao mesmo tempo.
+		if (selectedRepositories.size() <=3){
+			for (String repository : selectedRepositories) {
+				try {
+					new Thread(new SaveFile(repository, file, settings), "Thread-"+repository).start();	
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+		else
+		{//Se forem selecionados mais de 3 repositórios, será iniciada a recuperação de 3, após isso ao final de cada thread uma nova é iniciada.
+			threadAtual +=3; 
+			for (int i=0; 1<3; i++){
+				try {
+					new Thread(new SaveFile(selectedRepositories.get(i), file, settings), "Thread-"+selectedRepositories.get(i)).start();	
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+	}
+
+	public static void iniciaThreads(){
+		if (threadAtual>3){
+			try {
+				new Thread(new SaveFile(selectedRepositories.get(threadAtual), file, settings), "Thread-"+selectedRepositories.get(threadAtual)).start();
+				threadAtual++;
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
 
 	private void showStatusWindow() {
 		DialogStatus ds = new DialogStatus(jFrame, selectedRepositories.size() ,totalPullRequests);
@@ -434,8 +484,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbCommitsPR = new JCheckBox("commits");
 		jcbCommitsPR.addItemListener(this);
 		jcbCommitsByFilesPR = new JCheckBox("commits by files");
+		jcbCommitsByFilesPR.setToolTipText("Retrieves the number of commits on each file of the pull request.");
 		jcbCommitsByFilesPR.addItemListener(this);
 		jcbModifiedLinesPR = new JCheckBox("modified lines");
+		jcbModifiedLinesPR.setToolTipText("Retrieve the number of additions and deletions of code lines.");
 
 		jcbAllPRData = new JCheckBox("all");
 		jcbAllPRData.setToolTipText("Select this to recover all the pull request data.");
@@ -521,11 +573,14 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jTxtCommByFiles.setColumns(5);
 		jTxtCommByFiles.setToolTipText("Number of days prior to the date of creation of the PR to recover the amount of commits by PR files.");
 		jcbChangedFilesPR = new JCheckBox("changed files");
+		jcbChangedFilesPR.setToolTipText("Retrieves the number of files modifieds in the pull request.");
+		
 		centerPanelMidIn.add(jcbChangedFilesPR);
 		jcbFilesPR = new JCheckBox("files");
 		centerPanelMidIn.add(jcbFilesPR);
 
 		jcbRootDirectoryPR = new JCheckBox("root directory");
+		jcbRootDirectoryPR.setToolTipText("Retrieves the root directory of the pull request files.");
 		jcbRootDirectoryPR.setSelected(true);
 		centerPanelMidIn.add(jcbRootDirectoryPR);
 		centerPanelMidIn.add(jcbModifiedLinesPR);
@@ -540,6 +595,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbUserFollowers = new JCheckBox("followers");
 		jcbUserFollowing = new JCheckBox("following");
 		jcbUserLocation = new JCheckBox("location");
+		jcbUserLocation.setToolTipText("Retrieves the location of the author of the pull request.");
 
 		jcbAllAuthorData = new JCheckBox("all");
 		jcbAllAuthorData.setSelected(true);
@@ -554,6 +610,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		//centerPanelBotauthorPR.add(labelAuthorData);
 		centerPanelBotAuthorPR.add(jcbAgeUser);
 		jcbUserType = new JCheckBox("type");
+		jcbUserType.setToolTipText("Retrieves the type of the author of the pull request (core member or contributor)");
 		centerPanelBotAuthorPR.add(jcbUserType);
 		//centerPanelBotauthorPR.setBorder(title);
 

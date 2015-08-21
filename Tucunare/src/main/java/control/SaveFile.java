@@ -37,7 +37,6 @@ public class SaveFile implements Runnable {
 			saveFile(true, null);
 			retrieveData(repo, settings);
 			tempo += Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ";
-			System.out.println("HERE");
 			DialogStatus.setThreads(finalizedThreads);
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao processar os dados do repositórios "+repo);
@@ -225,9 +224,11 @@ public class SaveFile implements Runnable {
 				DialogStatus.addsPullRequests();
 			}
 			finalizedThreads++;
+			RetrievePullRequest.iniciaThreads();
 			return "sucess!";
 		}catch(Exception ioe){
 			finalizedThreads++;
+			RetrievePullRequest.iniciaThreads();
 			return "Erro ao recuperar dados.";
 		}
 	}	
