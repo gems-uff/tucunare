@@ -487,7 +487,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbCommitsByFilesPR.setToolTipText("Retrieves the number of commits on each file of the pull request.");
 		jcbCommitsByFilesPR.addItemListener(this);
 		jcbModifiedLinesPR = new JCheckBox("modified lines");
-		jcbModifiedLinesPR.setToolTipText("Retrieve the number of additions and deletions of code lines.");
+		jcbModifiedLinesPR.setToolTipText("Retrieves the number of additions and deletions of code lines.");
 
 		jcbAllPRData = new JCheckBox("all");
 		jcbAllPRData.setToolTipText("Select this to recover all the pull request data.");
@@ -616,9 +616,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 		//JLabel labelAuthorData = new JLabel("Author data: ");
 		jcbUserPulls = new JCheckBox("pulls user");
+		jcbUserPulls.setToolTipText("Retrieves the number of pull requests submitted by the author, its open and closed pull requests.");
 		jcbUserPulls.addItemListener(this);
 		centerPanelBotAuthorPR.add(jcbUserPulls);
 		jcbUserAverages = new JCheckBox("averages");
+		jcbUserAverages.setToolTipText("Retrieves the acceptance and rejections  average of pull requests submitted by the author.");
 		centerPanelBotAuthorPR.add(jcbUserAverages);
 		centerPanelBotAuthorPR.add(jcbUserFollowers);
 		centerPanelBotAuthorPR.add(jcbUserFollowing);
