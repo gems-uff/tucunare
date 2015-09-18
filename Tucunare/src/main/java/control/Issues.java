@@ -15,10 +15,13 @@ public class Issues {
 		DBCollection dbcIssues = db.getCollection("issues");
 		BasicDBObject queryIssue = new BasicDBObject("number",numberPull); 
 		queryIssue.append("repo", repo);
+		
 		DBObject issue = dbcIssues.findOne(queryIssue);
+		
 		String closedbyPull="";
-		if( ((BasicDBObject) issue).get("closed_by") != null)
-			closedbyPull = ((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString() ;
+		if(((BasicDBObject) issue) != null )
+			if( ((BasicDBObject) issue).get("closed_by") != null  )
+				closedbyPull = ((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString() ;
 		return closedbyPull;
 	}
 	
