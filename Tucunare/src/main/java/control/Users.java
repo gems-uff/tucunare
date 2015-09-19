@@ -2,6 +2,8 @@ package control;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import util.Connect;
 import util.FormatDate;
@@ -97,9 +99,11 @@ public class Users {
 		DBCollection followers = db.getCollection("followers");
 		BasicDBObject query = new BasicDBObject("login", user);
 		DBCursor cursor = followers.find(query);
-		ArrayList<String> listContributors = Commits.getContributorsList(repo, owner);
+		Object [] listContributors = Commits.getContributorsList(repo, owner);
+		List<Object> list;
+		list = Arrays.asList(listContributors);
 		for (DBObject dbFollower : cursor) {
-			if(listContributors.contains(dbFollower.get("follows").toString()))
+			if(list.contains(dbFollower.get("follows").toString()))
 				return true;
 		}
 		return false;

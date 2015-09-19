@@ -2,6 +2,7 @@ package control;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class Commits {
 		}
 		return files.toString();
 	}
-	
+
 	public static String getCommitsFilesPath2(String shaHead, String shaBase) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcCommits = db.getCollection("commits");
@@ -75,8 +76,8 @@ public class Commits {
 		}
 		return files.size()+"; "+files.toString();
 	}
-	
-	
+
+
 	public static String getAuthorCommits(String filesNames, String shaBase, String repo, Integer days) throws UnknownHostException{
 		ArrayList<String> authors = new ArrayList<String>();
 		String files[] = filesNames.split(", ");
@@ -88,42 +89,45 @@ public class Commits {
 		BasicDBObject queryHead = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
 		queryHead.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
 		DBCursor dbcCommits = commitsC.find(queryHead);
+		Arrays.sort(files);
 		int count=0,max=Integer.MIN_VALUE;
 		String a="";
 		//System.out.println("arquivos: "+files.length);
 		for (int i=0 ; i<files.length ; i++) {
 			for (DBObject dbo: dbcCommits){
-			  if((BasicDBObject)dbo != null){	
-				BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
-				for (Object object : commitFilesList){
-				  if((BasicDBObject)object != null)
-					if(((String) ((BasicDBObject) object).get("filename")).equals(files[i])){
-						try{
-							authors.add(((BasicDBObject) dbo.get("committer")).get("login").toString());
-						}catch(NullPointerException npe){
-							String emailAuthor = "", nameAuthor = "";
-							if(   ((BasicDBObject) ((BasicDBObject) dbo.get("commit")).get("committer")).get("email") != null   ){
-								emailAuthor = ((BasicDBObject) ((BasicDBObject) dbo.get("commit")).get("committer")).get("email").toString();
-								if(emailAuthor.lastIndexOf("@")>0)
-									nameAuthor = emailAuthor.substring(0, emailAuthor.lastIndexOf("@"));
+				if((BasicDBObject)dbo != null){	
+					BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
+					for (Object object : commitFilesList){
+						if((BasicDBObject)object != null)
+							if(((String) ((BasicDBObject) object).get("filename")).equals(files[i])){
+								try{
+									authors.add(((BasicDBObject) dbo.get("committer")).get("login").toString());
+									break;
+								}catch(NullPointerException npe){
+									String emailAuthor = "", nameAuthor = "";
+									if(   ((BasicDBObject) ((BasicDBObject) dbo.get("commit")).get("committer")).get("email") != null   ){
+										emailAuthor = ((BasicDBObject) ((BasicDBObject) dbo.get("commit")).get("committer")).get("email").toString();
+										if(emailAuthor.lastIndexOf("@")>0)
+											nameAuthor = emailAuthor.substring(0, emailAuthor.lastIndexOf("@"));
+									}
+									authors.add(nameAuthor);
+									break;
+								}
 							}
-							authors.add(nameAuthor);
-						}
 					}
-				}
-			  }	
+				}	
 			}
 			Collections.sort(authors);
 			for (int j=0; j < authors.size(); j++){  
-                count = Collections.frequency(authors, authors.get(j));
-                if(count>max){
-                	max=count;
-                	a=authors.get(j);
-                }   
-            } 
+				count = Collections.frequency(authors, authors.get(j));
+				if(count>max){
+					max=count;
+					a=authors.get(j);
+				}   
+			} 
 		}
 		return a;
-		
+
 	}
 
 	public static int getCommitsByFiles (String filesNames, String pullRequestDate, String repo, Integer days) throws UnknownHostException{
@@ -134,23 +138,23 @@ public class Commits {
 		String data = FormatDate.dataLimit(pullRequestDate, days);
 		BasicDBObject queryHead = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",pullRequestDate).append("$gt", data)); //consulta com data menor que a data do pull request
 		queryHead.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
-		DBCursor dbc = commitsC.find(queryHead);
-		if(dbc != null)
-		for (int i=0 ; i<files.length ; i++) {
-			//numCommitsNoArquivo = 0L;
-			for (DBObject dbo: dbc){
-				if((BasicDBObject)dbo != null){	
-					BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
-					for (Object object : commitFilesList)
-						if((BasicDBObject)object != null){
-							if(((BasicDBObject) object).get("filename") != null)
-								if(((String) ((BasicDBObject) object).get("filename")).equals(files[i]))
-									numCommitsNoArquivo++;
-						}	
-				}
-				//numCommitsNoArquivo += numCommitsNoArquivo;
+		
+		ArrayList<String> list = new ArrayList<String>();
+		//Arrays.sort(files);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("files", 1);
+		DBCursor c = commitsC.find(queryHead);
+		for (DBObject dbo: c)
+			if((BasicDBObject)dbo != null){	
+				BasicDBList commitFilesList = (BasicDBList) dbo.get("files");
+				for (Object object : commitFilesList)
+					if((BasicDBObject)object != null)
+						if(((BasicDBObject) object).get("filename") != null)
+							list.add((String) ((BasicDBObject) object).get("filename"));	
 			}
-		}
+		//Collections.sort(list);
+		for (int i=0 ; i<files.length ; i++) 
+			numCommitsNoArquivo += Collections.frequency(list, files[i]);
 		return numCommitsNoArquivo;
 	}
 
@@ -163,43 +167,59 @@ public class Commits {
 		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(), days);
 		BasicDBObject query = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("author")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
 		query.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
-		
-		DBCursor cursor = commitsC.find(query);
-		ArrayList<String> listCommitters = new ArrayList<String>();
-		for (DBObject dbObject : cursor) {
-			BasicDBList listParents = (BasicDBList) dbObject.get("parents");
-			if(listParents.size()==1){
-			  if(((BasicDBObject) dbObject.get("commit")).get("committer") != null )
-				if(((BasicDBObject) ((BasicDBObject) dbObject.get("commit")).get("committer")).get("email")!=null)
-					if(!listCommitters.contains(((BasicDBObject) ((BasicDBObject) dbObject.get("commit")).get("committer")).get("email").toString()))
-						listCommitters.add(((BasicDBObject) ((BasicDBObject) dbObject.get("commit")).get("committer")).get("email").toString());
-			}	
-		}
-		return ""+listCommitters.size();
+
+
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("committer.login", 1);
+		Object[] contributorsList = commitsC.distinct("committer.login", query).toArray();
+		return ""+contributorsList.length;
+
+		//		DBCursor cursor = commitsC.find(query);
+		//		ArrayList<String> listCommitters = new ArrayList<String>();
+		//		for (DBObject dbObject : cursor) {
+		//			BasicDBList listParents = (BasicDBList) dbObject.get("parents");
+		//			if(listParents.size()==1){
+		//			  if(((BasicDBObject) dbObject.get("commit")).get("committer") != null )
+		//				if(((BasicDBObject) ((BasicDBObject) dbObject.get("commit")).get("committer")).get("email")!=null)
+		//					if(!listCommitters.contains(((BasicDBObject) ((BasicDBObject) dbObject.get("commit")).get("committer")).get("email").toString()))
+		//						listCommitters.add(((BasicDBObject) ((BasicDBObject) dbObject.get("commit")).get("committer")).get("email").toString());
+		//			}	
+		//		}
+		//		return ""+listCommitters.size();
 	}
-	
-	public static ArrayList<String> getContributorsList(String repo, String owner) throws UnknownHostException{
+	//retorna os contribuidores para coleta dos dados sociais
+	public static Object [] getContributorsList(String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
 		BasicDBObject queryCommit = new BasicDBObject("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
 		DBCursor cursor = commitsC.find(queryCommit);
+
 		ArrayList<String> listCommitters = new ArrayList<String>();
-		for (DBObject dbObject : cursor) {
-			BasicDBList listParents = (BasicDBList) dbObject.get("parents");
-			if(listParents.size()==1){
-				if((BasicDBObject) dbObject.get("committer") != null){
-					if(!listCommitters.contains(((BasicDBObject) dbObject.get("committer")).get("login").toString()))
-						listCommitters.add(((BasicDBObject) dbObject.get("committer")).get("login").toString());
-				}
-				if((BasicDBObject) dbObject.get("author") != null){
-					if(!listCommitters.contains(((BasicDBObject) dbObject.get("author")).get("login").toString()))
-						listCommitters.add(((BasicDBObject) dbObject.get("author")).get("login").toString());
-				}
-			}	
-		}
-		return listCommitters;
+//		for (DBObject dbObject : cursor) {
+//			BasicDBList listParents = (BasicDBList) dbObject.get("parents");
+//			if(listParents.size()==1){
+//				if((BasicDBObject) dbObject.get("committer") != null){
+//					if(!listCommitters.contains(((BasicDBObject) dbObject.get("committer")).get("login").toString()))
+//						listCommitters.add(((BasicDBObject) dbObject.get("committer")).get("login").toString());
+//				}
+//				if((BasicDBObject) dbObject.get("author") != null){
+//					if(!listCommitters.contains(((BasicDBObject) dbObject.get("author")).get("login").toString()))
+//						listCommitters.add(((BasicDBObject) dbObject.get("author")).get("login").toString());
+//				}
+//			}	
+//		}
+		
+//		ArrayList<String> listCommitters = new ArrayList<String>();
+		
+		
+
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("committer.login", 1);
+		Object[] contributorsList = commitsC.distinct("committer.login", queryCommit).toArray();
+		//listCommitters.add(contributorsList.toString());
+		return contributorsList;
 	}
-	
+
 	//type developer
 	public static String getTypeDeveloper(String user, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
@@ -214,6 +234,6 @@ public class Commits {
 			type = "external";
 		return type;
 	}
-	
-	
+
+
 }

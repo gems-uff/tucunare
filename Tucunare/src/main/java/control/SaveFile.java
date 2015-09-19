@@ -37,6 +37,7 @@ public class SaveFile implements Runnable {
 			saveFile(true, null);
 			retrieveData(repo, settings);
 			tempo += Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ";
+			System.out.println("HERE");
 			DialogStatus.setThreads(finalizedThreads);
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao processar os dados do repositórios "+repo);
@@ -55,18 +56,25 @@ public class SaveFile implements Runnable {
 			query.append("state", "open"); //Apenas pull requests encerrados
 		if (settings.getPrType() == 2)
 			query.append("state", "closed"); //Apenas pull requests encerrados
-		
+//		System.out.println("interface ok!");
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
+//			System.out.println("cursor ok!");
 			for (DBObject dbObject : cursor) {
 				//Variváveis
 				String rep = dbObject.get("repo").toString();
+//				System.out.println("repo ok!");
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
+//				System.out.println("user login ok!");
 				String number = dbObject.get("number").toString();
-				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
+//				System.out.println("number pull ok!"+number);
 				
-				if(dbObject!=null & !closed_by.equals(user)){
+				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
+//				System.out.println("closedby issue ok!");
+//				System.out.println("laço ok!");
+				if(dbObject!=null){// & !closed_by.equals(user)){
+//					System.out.println("object ok!");
 					String owner = dbObject.get("owner").toString();
 					String created = dbObject.get("created_at").toString();
 					String followers = Users.getFollowersUser(user);
@@ -74,7 +82,7 @@ public class SaveFile implements Runnable {
 					String ageUser = Users.getAgeUser(user);
 					String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
 					String shaBase = ((BasicDBObject)dbObject.get("base")).get("sha").toString();
-					
+//					System.out.println("dados iniciais ok!");
 					//Dados do projeto
 					String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String acceptanceRepo="";
@@ -84,7 +92,7 @@ public class SaveFile implements Runnable {
 						acceptanceRepo = "0";
 					else
 						acceptanceRepo = String.valueOf(((mergedPullRepo*100)/totalPullRepoClosed));
-
+//					System.out.println("dados do projeto ok!");
 					//Dados do requester
 					int totalPullUser = Users.getPullUserTotal(user, created, rep, owner);
 					int mergedPullUser = Users.getPullUserMerged(user, created, rep, owner);
@@ -101,11 +109,11 @@ public class SaveFile implements Runnable {
 					}
 					String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
 					String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
-
+					
 					boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
 					boolean followContributors = Users.getFollowersTeam(user, rep, owner);
 					String location = Users.getLocationUser(user);
-
+//					System.out.println("dados do requester ok!");
 					//Dados do Pull Request
 					String assignee = "";
 					if(dbObject.get("assignee")!=null)
@@ -119,19 +127,19 @@ public class SaveFile implements Runnable {
 					//arquivos
 					String filesPath = "";
 					filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
-					String files="", commitsPorArquivos="", authorMoreCommits="";
-
+					String files="", authorMoreCommits="";
+					int commitsPorArquivos=0;
 					if(!filesPath.equals("")){
 						files = filesPath.substring(1, filesPath.length()-1);
 						//commitsNosArquivos na última semana.
-						commitsPorArquivos = Commits.getCommitsByFiles(files, created, rep, settings.getCommitsByFilesDays());
+						commitsPorArquivos = Commits.getCommitsByFiles(files, created, owner+"/"+rep, settings.getCommitsByFilesDays());
 						//Desenvolvedor com mais commits na última semana.
-						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep, settings.getAuthorCommitsDays());
+						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, owner+"/"+rep, settings.getAuthorCommitsDays());
 					}
-
+					
 					String participants = Users.getParticipants(number, rep);
 					participants = participants.substring(1, participants.length()-1).replaceAll(", ", "|");
-
+					
 					//tratamento para caminho dos arquivos para buscar o último diretório
 					String dirFinal = "";
 					String [] path = files.split(", ");
@@ -172,7 +180,7 @@ public class SaveFile implements Runnable {
 					String mergedDate = "";
 					if(dbObject.get("merged_at")!=null)
 						mergedDate = FormatDate.getDate(dbObject.get("merged_at").toString());
-
+//					System.out.println("dados do pull ok!");
 					//String enviada para o arquivo
 					String resultTemp = 
 							owner+"/"+rep+","+dataRepo+","+
@@ -224,11 +232,9 @@ public class SaveFile implements Runnable {
 				DialogStatus.addsPullRequests();
 			}
 			finalizedThreads++;
-			RetrievePullRequest.iniciaThreads();
 			return "sucess!";
 		}catch(Exception ioe){
 			finalizedThreads++;
-			RetrievePullRequest.iniciaThreads();
 			return "Erro ao recuperar dados.";
 		}
 	}	
