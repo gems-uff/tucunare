@@ -461,7 +461,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 		jtxtRepoContributors = new JTextField();
 		jtxtRepoContributors.setToolTipText("Enter the number of days before the current date to recover the repository's contributors.");
-		jtxtRepoContributors.setText("2");
+		jtxtRepoContributors.setText("7");
 		jtxtRepoContributors.setColumns(5);
 
 		panel_2.add(jtxtRepoContributors);
@@ -548,7 +548,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		flowLayout_3.setHgap(0);
 		flowLayout_3.setAlignment(FlowLayout.LEFT);
 		panelAuthorMoreCommitsPR.add(panel_4, BorderLayout.CENTER);
-		jTxtAuthorMoreCommitsPR = new JTextField("10");
+		jTxtAuthorMoreCommitsPR = new JTextField("7");
 		jTxtAuthorMoreCommitsPR.setToolTipText("Enter the number of days before the first commit in the pull request to recover the author with more commits in the pull request.");
 		jTxtAuthorMoreCommitsPR.setColumns(5);
 		panel_4.add(jTxtAuthorMoreCommitsPR);
@@ -568,7 +568,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		flowLayout_2.setHgap(0);
 		flowLayout_2.setAlignment(FlowLayout.LEFT);
 		panelCommByFiles.add(panel_3, BorderLayout.CENTER);
-		jTxtCommByFiles = new JTextField("10");
+		jTxtCommByFiles = new JTextField("7");
 		panel_3.add(jTxtCommByFiles);
 		jTxtCommByFiles.setColumns(5);
 		jTxtCommByFiles.setToolTipText("Number of days prior to the date of creation of the PR to recover the amount of commits by PR files.");
