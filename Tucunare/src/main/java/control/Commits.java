@@ -81,11 +81,6 @@ public class Commits {
 	public static String getAuthorCommits(String filesNames, String shaBase, String repo, Integer days) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
-		BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
-		DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
-		String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(), days);
-		BasicDBObject query = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
-		query.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
 		String files[] = filesNames.split(", ");
 		ArrayList<String> authors = new ArrayList<String>();
 		ArrayList<String> id = new ArrayList<String>();
@@ -94,12 +89,21 @@ public class Commits {
 		int count=0,max=Integer.MIN_VALUE;
 		String author="";
 		for (int i=0 ; i<files.length ; i++) {
-			BasicDBObject eleMatch = new BasicDBObject("filename",files[i]);
-			BasicDBObject up = new BasicDBObject("$elemMatch",eleMatch);
+			BasicDBObject queryBaseCommit = new BasicDBObject("sha", shaBase);
+			DBObject baseCommitPull = commitsC.findOne(queryBaseCommit);
+			String data = FormatDate.dataLimit(((BasicDBObject) ((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString(), days);
+			BasicDBObject query = new BasicDBObject("commit.committer.date", new BasicDBObject("$lt",((BasicDBObject)((BasicDBObject) baseCommitPull.get("commit")).get("committer")).get("date").toString()).append("$gt", data)); //consulta com data menor que a data do pull request
+			query.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
+			
+			query.append("files.filename", files[i]);
+			commitsC.ensureIndex("files.filename");
+			
+//			BasicDBObject eleMatch = new BasicDBObject("filename",files[i]);
+//			BasicDBObject up = new BasicDBObject("$elemMatch",eleMatch);
 			BasicDBObject fields = new BasicDBObject();
 			fields.put("committer.login",1);
 			//fields.put("_id",0);
-			fields.put("filename",up);
+//			fields.put("filename",up);
 			temp = commitsC.find(query,fields).toArray();
 			for (DBObject dbObject : temp) {
 				if(((BasicDBObject)dbObject.get("committer")) != null & !id.contains(dbObject.get("_id").toString())){
