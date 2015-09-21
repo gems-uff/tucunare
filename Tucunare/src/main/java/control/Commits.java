@@ -96,7 +96,7 @@ public class Commits {
 			query.append("html_url", new BasicDBObject("$regex", "("+repo+")"));
 			
 			query.append("files.filename", files[i]);
-			commitsC.ensureIndex("files.filename");
+			//commitsC.ensureIndex("files.filename");
 			
 //			BasicDBObject eleMatch = new BasicDBObject("filename",files[i]);
 //			BasicDBObject up = new BasicDBObject("$elemMatch",eleMatch);
