@@ -1,0 +1,217 @@
+R	tecnica	base			desempenho
+1.0	RF	"gaia
+"			45.93
+1.0	RF	"scala
+"      		60.15
+1.0	RF	"titanium
+_mobile"	60.71
+1.0	RF	"Baystation
+"		44.12
+1.0	RF	"akka"			68.27
+1.0	RF	"ipython
+"		48.98
+1.0	RF	"katello
+"		35.69
+1.0	RF	"pandas
+"		67.44
+1.0	RF	"puppet"		41.95
+1.0	RF	"rosdistro
+"		50.32
+1.0	RF	"rails
+"      		22.45
+1.0	RF	"xbmc"       		39.44
+1.0	RF	"-tg-station
+"		44.22
+1.0	RF	"angular
+"		40.21
+1.0	RF	"bitcoin"		53.90
+1.0	RF	"brackets"		34.72
+1.0	RF	"commcare-hq
+"		52.43
+1.0	RF	"infinispan
+"		39.20
+1.0	RF	"kuma"			61.74
+1.0	RF	"metasploit
+"		52.62
+1.0	RF	"phobos
+"		39.58
+1.0	CM	"gaia
+"			22.59
+1.0	CM	"scala
+"      		33.50
+1.0	CM	"titanium
+_mobile"	18.03
+1.0	CM	"Baystation
+"		22.84
+1.0	CM	"akka"			35.89
+1.0	CM	"ipython
+"		29.90
+1.0	CM	"katello
+"		12.43
+1.0	CM	"pandas
+"		42.69
+1.0	CM	"puppet"		20.44
+1.0	CM	"rosdistro
+"		28.16
+1.0	CM	"rails
+"      		22.96
+1.0	CM	"xbmc"       		24.93
+1.0	CM	"-tg-station
+"		37.86
+1.0	CM	"angular
+"		33.68
+1.0	CM	"bitcoin"		36.04
+1.0	CM	"brackets"		18.25
+1.0	CM	"commcare-hq
+"		40.36
+1.0	CM	"infinispan
+"		24.28
+1.0	CM	"kuma"			43.66
+1.0	CM	"metasploit
+"		40.27
+1.0	CM	"phobos
+"		31.71
+2.0	RF	"gaia
+"			15.59
+2.0	RF	"scala
+"      		21.14
+2.0	RF	"titanium
+_mobile"	16.4
+2.0	RF	"Baystation
+"		23.31
+2.0	RF	"akka"			17.63
+2.0	RF	"ipython
+"		19.75
+2.0	RF	"katello
+"		20.98
+2.0	RF	"pandas
+"		12.84
+2.0	RF	"puppet"		16.97
+2.0	RF	"rosdistro
+"		24.11
+2.0	RF	"rails
+"      		14.67
+2.0	RF	"xbmc"       		15.8
+2.0	RF	"-tg-station
+"		26.00
+2.0	RF	"angular
+"		19.69
+2.0	RF	"bitcoin"		20.57
+2.0	RF	"brackets"		16.65
+2.0	RF	"commcare-hq
+"		17.87
+2.0	RF	"infinispan
+"		22.77
+2.0	RF	"kuma"			25.26
+2.0	RF	"metasploit
+"		18.87
+2.0	RF	"phobos
+"		19.66
+2.0	CM	"gaia
+"			7.52
+2.0	CM	"scala
+"      		30.90
+2.0	CM	"titanium
+_mobile"	13.6
+2.0	CM	"Baystation
+"		18.15
+2.0	CM	"akka"			35.68
+2.0	CM	"ipython
+"		21.9
+2.0	CM	"katello
+"		11.74
+2.0	CM	"pandas
+"		34.86
+2.0	CM	"puppet"		15.43
+2.0	CM	"rosdistro
+"		27.67
+2.0	CM	"rails
+"      		18.29
+2.0	CM	"xbmc"       		12.31
+2.0	CM	"-tg-station
+"		27.04
+2.0	CM	"angular
+"		25.91
+2.0	CM	"bitcoin"		31.82
+2.0	CM	"brackets"		18.21
+2.0	CM	"commcare-hq
+"		22.41
+2.0	CM	"infinispan
+"		18.08
+2.0	CM	"kuma"			29.57
+2.0	CM	"metasploit
+"		21.83
+2.0	CM	"phobos
+"		12.3
+3.0	RF	"gaia
+"			6.62
+3.0	RF	"scala
+"      		8.75
+3.0	RF	"titanium
+_mobile"	8.83
+3.0	RF	"Baystation
+"		11.72
+3.0	RF	"akka"			7.88
+3.0	RF	"ipython
+"		10.92
+3.0	RF	"katello
+"		7.87
+3.0	RF	"pandas
+"		7.2
+3.0	RF	"puppet"		9.49
+3.0	RF	"rosdistro
+"		13.95
+3.0	RF	"rails
+"      		10.21
+3.0	RF	"xbmc"       		9.52
+3.0	RF	"-tg-station
+"		12.9
+3.0	RF	"angular
+"		10.1
+3.0	RF	"bitcoin"		13.58
+3.0	RF	"brackets"		11.51
+3.0	RF	"commcare-hq
+"		10.74
+3.0	RF	"infinispan
+"		15.20
+3.0	RF	"kuma"			8.47
+3.0	RF	"metasploit
+"		10.8
+3.0	RF	"phobos
+"		11.11
+3.0	CM	"gaia
+"			4.85
+3.0	CM	"scala
+"      		10.77
+3.0	CM	"titanium
+_mobile"	9.46
+3.0	CM	"Baystation
+"		11.59
+3.0	CM	"akka"			17.22
+3.0	CM	"ipython
+"		15.39
+3.0	CM	"katello
+"		11.06
+3.0	CM	"pandas
+"		11.06
+3.0	CM	"puppet"		10.09
+3.0	CM	"rosdistro
+"		24.03
+3.0	CM	"rails
+"      		9.85
+3.0	CM	"xbmc"       		11.42
+3.0	CM	"-tg-station
+"		18.69
+3.0	CM	"angular
+"		9.84
+3.0	CM	"bitcoin"		17.42
+3.0	CM	"brackets"		12.2
+3.0	CM	"commcare-hq
+"		8.31
+3.0	CM	"infinispan
+"		14.05
+3.0	CM	"kuma"			11.33
+3.0	CM	"metasploit
+"		14.99
+3.0	CM	"phobos
+"		11.92

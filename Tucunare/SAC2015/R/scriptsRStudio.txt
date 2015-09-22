@@ -1,0 +1,379 @@
+
+
+wmaia
+w18m@ia9604
+
+Grafico de projetos em pizza
+
+ggpie <- function (dat, by, totals) {
+    ggplot(dat, aes_string(x=factor(2), y=totals, fill=by)) +
+        geom_bar(stat='identity', color='black') +
+        guides(fill=FALSE) + # removes black borders from legend
+        coord_polar(theta='y') +
+        theme(axis.ticks=element_blank(),
+              axis.text.y=element_blank(),
+              axis.text.x=element_text(colour='black',size = rel(1.7)),
+              axis.title=element_blank()) +
+        scale_y_continuous(breaks=cumsum(dat[[totals]]) - dat[[totals]] / 2, labels=dat[[by]])    
+}
+
+ggpie(projetos, by='Tipos.de.Projetos', totals='Quantidade') +
++     ggtitle("Projetos Analisados") +
++     theme(axis.ticks.margin=unit(0,"lines"), plot.margin=rep(unit(0, "lines"),4)) +theme(plot.title = element_text(size = rel(2)))
+
+
+Grafico de barras com desvio padrão
+p <- ggplot(ClassificadorCM, aes(x = projeto, y = diferenca, fill = "grey50")) + geom_bar(position = position_dodge(), stat="identity") + geom_errorbar(aes(ymin=10, ymax=27.72), width=0.2) + ggtitle("Diferença entre Melhor Acurácia e Classe Majoritária")+theme(plot.title = element_text(size = rel(2)), axis.title = element_text(size = rel(1.5)), axis.text.x = element_text(size = rel(1.5), angle = 90, hjust=1, vjust=0))+guides(fill=FALSE)
+update_labels(p, list(x = "Projetos", y = "Diferença em %"))
+
+
+
+Grafico continuos x discretos em barras com grids
+v1
+p <- ggplot(discretos_x_continuos2, aes(tecnica, desempenho)) + geom_bar(aes(fill = tecnica), position = "dodge", stat="identity")+facet_grid(. ~ base)
+update_labels(p, list(x = "Técnicas", y = "Acurácia"))+labs(title = "Discreto x Contínuo")+theme(axis.text.x = element_text(size = rel(1.5), angle = 90, hjust=1, vjust=0))
+
+
+v2
+discretos_x_continuos_top10 <- read.table("C:/Users/Júnior/Desktop/discretos_x_continuos_top10.txt", head=TRUE)
+discretos_x_continuos_top10$tecnica <- factor(discretos_x_continuos_top10$tecnica, levels = c("Ibk1_D", "Ibk11_C","RF_D", "RF_C", "SMOPuk_D", "SMOPuk_C", "CM"))
+p <- ggplot(discretos_x_continuos_top10, aes(tecnica, desempenho)) + geom_bar(aes(fill = tecnica), position = "dodge", stat="identity")+facet_grid(. ~ base)
+update_labels(p, list(x = "Técnicas + Classe Majoritária(CM)", y = "Acurácia"))+labs(title = "Discreto x Contínuo")+theme(plot.title = element_text(size = rel(2)), axis.title = element_text(size = rel(1.5)), axis.text.x = element_text(size = rel(1.5), angle = 90, hjust=1, vjust=0))+scale_fill_brewer(palette="Paired")+guides(fill=FALSE)
+
+
+Ranking 
+RF_x_ranking3 <- read.table("C:/Users/Júnior/Desktop/RF_x_ranking3.txt", head=TRUE)
+p <- ggplot(RF_x_ranking3, aes(tecnica, desempenho)) + geom_bar(aes(fill = factor(R)), stat="identity")+scale_fill_brewer(palette="YiGn")+facet_grid(. ~ base)
+update_labels(p, list(x = "Ranking (Random Forest) x Classe Majoritaria", y = "Acurácia"))+labs(title = "Ranking")+theme(plot.title = element_text(size = rel(2)), axis.title = element_text(size = rel(1.5)), axis.text.x = element_text(size = rel(1.5)))
+
+Total
+RF_x_ranking_total <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/ranking/RF_x_ranking_total2.txt", head=TRUE)
+p <- ggplot(RF_x_ranking_total, aes(tecnica, desempenho)) + geom_bar(aes(fill = factor(R)), stat="identity")+scale_fill_grey(start = 0.8, end = 0.3)+facet_grid(. ~ base)+theme(strip.text.x = element_text(size=13, angle=90))+guides(fill=FALSE)
+update_labels(p, list(x = "Majority Class(MC) and Random Forest(RF)", y = "Accuracy"))+theme(axis.title = element_text(size = rel(1.5)), axis.text.x = element_text(size = rel(0.9), colour = "black"), axis.text.y = element_text(colour = "black"))
+
+verde_presentation_1700x600
+RF_x_ranking_total <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/ranking/RF_x_ranking_total_verde.txt", head=TRUE)
+p <- ggplot(RF_x_ranking_total, aes(tecnica, desempenho)) + geom_bar(aes(fill = factor(R)), stat="identity")+scale_fill_brewer(palette=5)+facet_grid(. ~ base)+theme(strip.text.x = element_text(size=20, angle=90))+guides(border=FALSE, fill=FALSE) 
+update_labels(p, list(x = "Majority Class(MC) and Random Forest(RF)", y = "Accuracy"))+theme(axis.title = element_text(size = rel(1.8)), axis.text.x = element_text(size = rel(1.7), colour = "black"), axis.text.y = element_text(size = rel(1.7),colour = "black"))
+
+Versão para latex (688x330)
+RF_x_ranking_total <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/ranking/RF_x_ranking_total2.txt", head=TRUE)
+p <- ggplot(RF_x_ranking_total, aes(tecnica, desempenho)) + geom_bar(aes(fill = factor(R)), stat="identity")+scale_fill_grey(start = 0.8, end = 0.3)+facet_grid(. ~ base)+theme(strip.text.x = element_text(size=8, angle=90))+guides(border=FALSE, fill=FALSE) 
+update_labels(p, list(x = "Majority Class(MC) and Random Forest(RF)", y = "Accuracy"))+theme(axis.title = element_text(size = rel(0.8)), axis.text.x = element_text(size = rel(0.5), colour = "black"), axis.text.y = element_text(size = rel(0.6),colour = "black"))
+
+(EQ)
+RF_x_ranking_total <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/ranking/RF_x_ranking_total2.txt", head=TRUE)
+p <- ggplot(RF_x_ranking_total, aes(tecnica, desempenho)) + geom_bar(aes(fill = factor(R)), stat="identity")+scale_fill_grey(start = 0.8, end = 0.3)+facet_grid(. ~ base)+theme(strip.text.x = element_text(size=8, angle=90))+guides(border=FALSE, fill=FALSE) 
+update_labels(p, list(x = "Classe Majoritária(CM) e Random Forest(RF)", y = "Acurácia"))+theme(axis.title = element_text(size = rel(0.8)), axis.text.x = element_text(size = rel(0.5), colour = "black"), axis.text.y = element_text(size = rel(0.55),colour = "black"))
+
+
+Testes
+> source("http://www.r-statistics.com/wp-content/uploads/2010/02/Friedman-Test-with-Post-Hoc.r.txt")  
+source("C:/Users/Júnior/Desktop/Friedman-Test-with-Post-Hoc.r")  
+
+
+Teste de Friedman com post-hoc
+source("C:/Users/Júnior/Desktop/Friedman-Test-with-Post-Hoc.r")  
+continuos <- read.table("C:/Users/Júnior/Desktop/continuos.txt", head=TRUE)
+friedman.test.with.post.hoc(desempenho ~ tecnica | base, continuos, T, T, F, T, 0.5, T, T)
+
+discretos <- read.table("C:/Users/Júnior/Desktop/discretos.txt", head=TRUE)
+friedman.test.with.post.hoc(desempenho ~ tecnica | base, discretos, T, T, T, T, 0.5, T, T)
+
+BoxPlots
+SMO contínuos
+(Artigo)
+SMO_continuos <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/SMO/SMO_continuos.txt", head=TRUE)
+p <- ggplot(SMO_continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "SMO Kernel", y = "Accuracy")) + theme(axis.text = element_text(size = "6", colour = "black"))+theme(axis.title.y = element_text(size = rel(0.7), angle = 90))+ theme(axis.title.x = element_text(size = rel(0.7)))
+(EQ)
+SMO_continuos <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/SMO/SMO_continuos.txt", head=TRUE)
+p <- ggplot(SMO_continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "Kernel SMO", y = "Acurácia")) + theme(axis.text = element_text(size = "7", colour = "black"))+theme(axis.title.y = element_text(size = rel(0.8), angle = 90))+ theme(axis.title.x = element_text(size = rel(0.8)))
+
+(verde)
+SMO_continuos <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/SMO/SMO_continuos_verde.txt", head=TRUE)
+p <- ggplot(SMO_continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(aes(fill = order),position=position_dodge(0.8))+scale_fill_brewer(palette=5)+guides(fill=FALSE)
+update_labels(p, list(x = "SMO Kernel", y = "Accuracy")) + theme(axis.text = element_text(size = "16", colour = "black"))+theme(axis.title.y = element_text(size = rel(1.5), angle = 90))+ theme(axis.title.x = element_text(size = rel(1.5)))
+
+IBK continuos
+(Artigo)
+Ibk_continuos <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/IBK/Ibk_continuos2.txt", head=TRUE)
+p <- ggplot(Ibk_continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "SMO Kernel", y = "Accuracy")) + theme(axis.text = element_text(size = "6", colour = "black"))+theme(axis.title.y = element_text(size = rel(0.7), angle = 90))+ theme(axis.title.x = element_text(size = rel(0.7)))
+(EQ)
+Ibk_continuos <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/IBK/Ibk_continuos2.txt", head=TRUE)
+p <- ggplot(Ikk_continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "Variações do valor de k", y = "Acurácia")) + theme(axis.text = element_text(size = "7", colour = "black"))+theme(axis.title.y = element_text(size = rel(0.8), angle = 90))+ theme(axis.title.x = element_text(size = rel(0.8)))
+
+
+
+218X-H7C2F9F3F5 password sac
+
+Discreto x continuos melhores
+dc <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/discretos x continous/discretos_x_continuos_boxplot2.txt", head=TRUE)
+p <- ggplot(dc, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "", y = "Acurácia"))+labs(title = "Bases Discretas(D) x Bases Contínuas(C)") + theme(axis.text = element_text(size = "12", colour = "black"))+ theme(plot.title = element_text(size = rel(1.5)))+ theme(axis.title.y = element_text(size = rel(1.2), angle = 90))+ theme(axis.title.x = element_text(size = rel(1)))
+
+Versão 2
+dc <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/discretos x continous/discretos_x_continuos_boxplot3.txt", head=TRUE)
+p <- ggplot(dc, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(aes(fill = Data),position=position_dodge(0.8))+scale_fill_grey(start = 0.8, end = 1)+guides(fill=FALSE)
+update_labels(p, list(x = "Discrete(D) and Continuous(C) Attributes", y = "Accuracy"))+ theme(axis.text = element_text(size = "15", colour = "black"))+ theme(axis.title.y = element_text(size = rel(1.5), angle = 90))+ theme(axis.title.x = element_text(size = rel(1.5)))
+
+verde_versão
+p <- ggplot(dc, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(aes(fill = Data),position=position_dodge(0.8))+scale_fill_brewer(palette=5)+guides(fill=FALSE)
+update_labels(p, list(x = "Discrete(D) and Continuous(C) Attributes", y = "Accuracy"))+ theme(axis.text = element_text(size = "17", colour = "black"))+ theme(axis.title.y = element_text(size = rel(1.7), angle = 90))+ theme(axis.title.x = element_text(size = rel(1.7)))
+
+Versão Latex (338x220)
+dc <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/discretos x continous/discretos_x_continuos_boxplot3.txt", head=TRUE)
+p <- ggplot(dc, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(aes(fill = Data),position=position_dodge(0.8))+scale_fill_grey(start = 0.8, end = 1)+guides(fill=FALSE)
+update_labels(p, list(x = "Discrete(D) and Continuous(C) Attributes", y = "Accuracy"))+ theme(axis.text = element_text(size = "5", colour = "black"))+ theme(axis.title.y = element_text(size = rel(0.7), angle = 90))+ theme(axis.title.x = element_text(size = rel(0.7)))
+
+Versão EQ (550x300)
+dc <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/discretos x continous/discretos_x_continuos_boxplot3.txt", head=TRUE)
+p <- ggplot(dc, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(aes(fill = Data),position=position_dodge(0.8))+scale_fill_grey(start = 0.8, end = 1)+guides(fill=FALSE)
+update_labels(p, list(x = "Atributos Contínuos(C) e Discretos(D)", y = "Acurácia"))+ theme(axis.text = element_text(size = "7", colour = "black"))+ theme(axis.title.y = element_text(size = rel(0.8), angle = 90))+ theme(axis.title.x = element_text(size = rel(0.8)))
+
+SMO das diferenças
+PukRBF <- read.table("C:/Users/Júnior/Desktop/Puk-RBF_continuo.txt", head=TRUE)
+p <- ggplot(PukRBF, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "", y = "%"))+labs(title = "") + theme(axis.text = element_text(size = "14", colour = "black"))+ theme(plot.title = element_text(size = rel(2)))+ theme(axis.title.y = element_text(size = rel(1.5), angle = 90))+ theme(axis.title.x = element_text(size = rel(1.5)))
+
+discretos <- read.table("C:/Users/Júnior/Desktop/discretos.txt", head=TRUE)
+p <- ggplot(discretos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(outlier.color = "green", outlier.size = 3, aes(fill = tecnica))
+update_labels(p, list(x = "Classificador", y = "Acurácia"))+labs(title = "Base com valores discretos")
+
+Versão2
+discretos <- read.table("C:/Users/Júnior/Desktop/discretos.txt", head=TRUE)
+p <- ggplot(discretos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "Classificador", y = "Acurácia"))+labs(title = "Bases com valores discretos") + theme(axis.text = element_text(size = "14", colour = "black"))+ theme(plot.title = element_text(size = rel(2)))+ theme(axis.title.y = element_text(size = rel(1.5), angle = 90))+ theme(axis.title.x = element_text(size = rel(1.5)))
+
+
+continuos <- read.table("C:/Users/Júnior/Desktop/continuos.txt", head=TRUE)
+p <- ggplot(continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(outlier.color = "FFF", outlier.size = 3, aes(fill = tecnica))
+update_labels(p, list(x = "Classificador", y = "Acurácia"))+labs(title = "Base com valores continuos")
+
+p <- ggplot(discretos_x_continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot(aes(fill = tecnica))
+update_labels(p, list(x = "Comparação", y = "Diferença"))+labs(title = "Contínuos x Discretos")
+
+
+Versão2
+continuos <- read.table("C:/Users/Júnior/Desktop/continuos.txt", head=TRUE)
+p <- ggplot(continuos, aes(x = reorder(tecnica, desempenho, FUN=median), y = desempenho)) + geom_boxplot()
+update_labels(p, list(x = "Classificador", y = "Acurácia"))+labs(title = "Bases com valores contínuos") + theme(axis.text = element_text(size = "14", colour = "black"))+ theme(plot.title = element_text(size = rel(2)))+ theme(axis.title.y = element_text(size = rel(1.5), angle = 90))+ theme(axis.title.x = element_text(size = rel(1.5)))
+
+
+Testes
+> boxplot(continuos$desempenho ~ continuos$tecnica)
+> boxplot(discretos$desempenho ~ discretos$tecnica, las = 2)
+
+bp + theme(axis.title.x = element_text(face="bold", colour="#990000", size=20),axis.text.x  = element_text(angle=90, vjust=0.5, size=16))
+
+1,524157875019052e+18
+ 1524157875019052100
+
+
+Friedman+Nemenyi(discretos)
+d <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/melhores/melhores_discretos1.txt", head=TRUE)
+friedman.test(d$desempenho,d$tecnica,d$base)
+posthoc.friedman.nemenyi.test(d$desempenho,d$tecnica,d$base)
+
+discretos <- read.table("C:/Users/Júnior/Desktop/discretos.txt", head=TRUE)
+friedman.test(discretos$desempenho, discretos$tecnica,discretos$base)
+
+dc <- read.table("D:/Downloads/results new/data/base artigo/Artigo/R/discretos x continous/discretos_x_continuos_boxplot2.txt", head=TRUE)
+friedman.test(dc$desempenho, dc$tecnica,dc$base)
+
+
+library(PMCMR)
+posthoc.friedman.nemenyi.test(dc$desempenho, dc$tecnica,dc$base)
+
+
+posthoc.friedman.nemenyi.test(discretos$desempenho, discretos$tecnica,discretos$base)
+
+Friedman+Nemenyi(continuos)
+library(PMCMR)
+continuos <- read.table("C:/Users/Júnior/Desktop/continuos.txt", head=TRUE)
+friedman.test(continuos$desempenho, continuos$tecnica, continuos$base)
+posthoc.friedman.nemenyi.test(continuos$desempenho, continuos$tecnica, continuos$base)
+
+n <- read.table("C:/Users/Júnior/Desktop/Nemenyi_continuos.txt", head=TRUE)
+grafico heatmap
+nemenyi_continuos <- read.table(file.choose(),header=TRUE)
+row.names(nemenyi_continuos) <- nemenyi_continuos$Name
+nemenyi_continuos <- nemenyi_continuos[,2:13]
+nemenyi_continuos_m <- data.matrix(nemenyi_continuos)
+nemenyi_continuos_heatmap <- heatmap(nemenyi_continuos_m, Rowv=NA, Colv=NA, heat.colors(256), scale="column", margins=c(5,10))
+
+
+
+Continuos heatmap
+c <- read.table("C:/Users/Júnior/Desktop/Nemenyi_continuos.txt", head=TRUE)
+row.names(c) <- c$Classe
+c_matrix <- data.matrix(c)
+c_heatmap <- heatmap(c_matrix, Rowv=NA, Colv=NA, col = heat.colors(256), scale="column", margins=c(5,10))
+
+
+ggplot2
+library(ggplot2)
+nba.m <- melt(nba)
+nba.m <- ddply(nba.m, .(variable), transform,rescale = rescale(value))
+(p <- ggplot(nba.m, aes(variable, Name)) + geom_tile(aes(fill = rescale),colour = "white") + scale_fill_gradient(low = "white",high = "steelblue"))
+
+Continuos ggplot2
+library(ggplot2)
+c <- read.table("C:/Users/Júnior/Desktop/Nemenyi_continuos.txt", head=TRUE)
+c.m <- melt(c)
+c.m <- ddply(c.m, .(variable), transform,rescale = rescale(value))
+(p <- ggplot(nba.m, aes(variable, Name)) + geom_tile(aes(fill = rescale),colour = "white") + scale_fill_gradient(low = "white",high = "steelblue"))
+
+Grafico heatmap de nemenyi (continuos) ok
+library(ggplot2)
+library(reshape)
+library(scales)
+library(plyr)
+# read in the data frame including pair-wise distances
+dist.m <- read.table("C:/Users/Júnior/Desktop/Nemenyi_continuos.txt", head=TRUE)
+head(dist.m) # in fact, dist.m is a data.frame of R
+# convert the data.frame of distance to a real matrix of distance
+# be care of setting the right row/column names
+dist.m2 <- as.matrix(dist.m[,2:15], dimnames=lsit(as.vector(dist.m[,1]), as.vector(dist.m[,1])))
+row.names(dist.m2) <- as.vector(dist.m[,1])
+#dist.m2 <- ddply(dist.m2, .(variable), transform, rescale = rescale(value,to=c(0,0.3))
+head(dist.m2)
+dist.m2[1,1]
+# convert the distance matrix to data.frame 
+dist.m3 <- melt(dist.m2)
+dist.m3 <- dist.m3
+head(dist.m3)
+# set the order of rows/columns
+dist.m3$X1 <- factor(dist.m3$X1, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+dist.m3$X2 <- factor(dist.m3$X2, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+g.m <- ggplot(dist.m3, aes(X1, X2)) + geom_tile(aes(fill=value),colour = "white") + labs(title = "P-value (Nemenyi) - Bases com valores Continuos") + xlab("")+ ylab("")+ scale_fill_gradient(na.value="transparent",low = "white", high = "steelblue")+ geom_text(aes(fill = dist.m3$value, label = dist.m3$value))+ theme(axis.text = element_text(size = "12", colour = "black"))+ theme(plot.title = element_text(size = rel(2)))
+g.m
+---------------------------------------------------------------------------------------------
+Versão 2
+--------------------------------------------------------------
+library(ggplot2)
+library(gtable)
+library(grid)
+library(ggplot2)
+library(reshape)
+library(scales)
+library(plyr)
+grid.newpage()
+# read in the data frame including pair-wise distances
+dist.m <- read.table("C:/Users/Júnior/Desktop/Nemenyi_continuos.txt", head=TRUE)
+head(dist.m) # in fact, dist.m is a data.frame of R
+# convert the data.frame of distance to a real matrix of distance
+# be care of setting the right row/column names
+dist.m2 <- as.matrix(dist.m[,2:15], dimnames=lsit(as.vector(dist.m[,1]), as.vector(dist.m[,1])))
+row.names(dist.m2) <- as.vector(dist.m[,1])
+#dist.m2 <- ddply(dist.m2, .(variable), transform, rescale = rescale(value,to=c(0,0.3))
+head(dist.m2)
+dist.m2[1,1]
+# convert the distance matrix to data.frame 
+dist.m3 <- melt(dist.m2)
+dist.m3 <- dist.m3
+head(dist.m3)
+# set the order of rows/columns
+dist.m3$X1 <- factor(dist.m3$X1, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+dist.m3$X2 <- factor(dist.m3$X2, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+g.m <- ggplot(dist.m3, aes(X1, X2)) + geom_tile(aes(fill=value),colour = "white") + labs(title = "P-value (Nemenyi) - Bases com valores contínuos") + xlab("")+ ylab("")+ scale_fill_gradient(na.value="transparent",low = "white", high = "steelblue")+ geom_text(aes(fill = dist.m3$value, label = dist.m3$value))+ theme(axis.text = element_text(size = "12", colour = "black"))+ theme(axis.text.y = element_text(hjust = 0), legend.position = "left", plot.title = element_text(size = rel(2)))
+g.m
+# extract gtable
+g <- ggplot_gtable(ggplot_build(g.m))
+# axis tweaks
+ia <- which(g$layout$name == "axis-l")
+ax <- g$grobs[[ia]]$children[[2]]
+ax$widths <- rev(ax$widths)
+ax$grobs <- rev(ax$grobs)
+ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
+pp <- c(subset(g$layout, name == "panel", select = t:r))
+g <- gtable_add_cols(g, g$widths[g$layout[ia, ]$l], length(g$widths) - 1)
+g <-  gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
+g$grobs[[ia]]$children[[2]] <- NULL
+##############################
+ia <- which(g$layout$name == "ylab")
+ylab <- g$grobs[[ia]]
+g <- gtable_add_cols(g, g$widths[g$layout[ia, ]$l], length(g$widths) - 1)
+g <-  gtable_add_grob(g, ylab, pp$t, length(g$widths) - 1, pp$b)
+g$grobs[[ia]]$label = ''
+grid.draw(g)
+---------------------------------------------------------------------------
+Grafico heatmap de nemenyi (DISCRETOS) ok
+library(ggplot2)
+library(reshape)
+library(scales)
+library(plyr)
+# read in the data frame including pair-wise distances
+dist.m <- read.table("C:/Users/Júnior/Desktop/Nemenyi_discretos.txt", head=TRUE)
+head(dist.m) # in fact, dist.m is a data.frame of R
+# convert the data.frame of distance to a real matrix of distance
+# be care of setting the right row/column names
+dist.m2 <- as.matrix(dist.m[,2:15], dimnames=lsit(as.vector(dist.m[,1]), as.vector(dist.m[,1])))
+row.names(dist.m2) <- as.vector(dist.m[,1])
+#dist.m2 <- ddply(dist.m2, .(variable), transform, rescale = rescale(value,to=c(0,0.3))
+head(dist.m2)
+dist.m2[1,1]
+# convert the distance matrix to data.frame 
+dist.m3 <- melt(dist.m2)
+dist.m3 <- dist.m3
+head(dist.m3)
+# set the order of rows/columns
+dist.m3$X1 <- factor(dist.m3$X1, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+dist.m3$X2 <- factor(dist.m3$X2, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+g.m <- ggplot(dist.m3, aes(X1, X2)) + geom_tile(aes(fill=value),colour = "white") + labs(title = "P-value (Nemenyi) - Bases com valores Discretos") + xlab("")+ ylab("")+ scale_fill_gradient(na.value="transparent",low = "white", high = "steelblue")+ geom_text(aes(fill = dist.m3$value, label = dist.m3$value))+ theme(axis.text = element_text(size = "12", colour = "black"))+ theme(plot.title = element_text(size = rel(2)))
+g.m
+
+---------------------------------------------------------------------------------------------
+Versão 2
+--------------------------------------------------------------
+library(ggplot2)
+library(gtable)
+library(grid)
+library(ggplot2)
+library(reshape)
+library(scales)
+library(plyr)
+grid.newpage()
+# read in the data frame including pair-wise distances
+dist.m <- read.table("C:/Users/Júnior/Desktop/Nemenyi_discretos.txt", head=TRUE)
+head(dist.m) # in fact, dist.m is a data.frame of R
+# convert the data.frame of distance to a real matrix of distance
+# be care of setting the right row/column names
+dist.m2 <- as.matrix(dist.m[,2:15], dimnames=lsit(as.vector(dist.m[,1]), as.vector(dist.m[,1])))
+row.names(dist.m2) <- as.vector(dist.m[,1])
+#dist.m2 <- ddply(dist.m2, .(variable), transform, rescale = rescale(value,to=c(0,0.3))
+head(dist.m2)
+dist.m2[1,1]
+# convert the distance matrix to data.frame 
+dist.m3 <- melt(dist.m2)
+dist.m3 <- dist.m3
+head(dist.m3)
+# set the order of rows/columns
+dist.m3$X1 <- factor(dist.m3$X1, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+dist.m3$X2 <- factor(dist.m3$X2, levels = c("Ibk1","Ibk11","Ibk13","Ibk15","Ibk3","Ibk5","Ibk7","Ibk9","J48","NB","RF","SMOPoly","SMOPuk","SMORBF"))
+g.m <- ggplot(dist.m3, aes(X1, X2)) + geom_tile(aes(fill=value),colour = "white") + labs(title = "P-value (Nemenyi) - Bases com valores discretos") + xlab("")+ ylab("")+ scale_fill_gradient(na.value="transparent",low = "white", high = "steelblue")+ geom_text(aes(fill = dist.m3$value, label = dist.m3$value))+ theme(axis.text = element_text(size = "12", colour = "black"))+ theme(axis.text.y = element_text(hjust = 0), legend.position = "left", plot.title = element_text(size = rel(2)))
+g.m
+# extract gtable
+g <- ggplot_gtable(ggplot_build(g.m))
+# axis tweaks
+ia <- which(g$layout$name == "axis-l")
+ax <- g$grobs[[ia]]$children[[2]]
+ax$widths <- rev(ax$widths)
+ax$grobs <- rev(ax$grobs)
+ax$grobs[[1]]$x <- ax$grobs[[1]]$x - unit(1, "npc") + unit(0.15, "cm")
+pp <- c(subset(g$layout, name == "panel", select = t:r))
+g <- gtable_add_cols(g, g$widths[g$layout[ia, ]$l], length(g$widths) - 1)
+g <-  gtable_add_grob(g, ax, pp$t, length(g$widths) - 1, pp$b)
+g$grobs[[ia]]$children[[2]] <- NULL
+##############################
+ia <- which(g$layout$name == "ylab")
+ylab <- g$grobs[[ia]]
+g <- gtable_add_cols(g, g$widths[g$layout[ia, ]$l], length(g$widths) - 1)
+g <-  gtable_add_grob(g, ylab, pp$t, length(g$widths) - 1, pp$b)
+g$grobs[[ia]]$label = ''
+grid.draw(g)
+---------------------------------------------------------------------------
+

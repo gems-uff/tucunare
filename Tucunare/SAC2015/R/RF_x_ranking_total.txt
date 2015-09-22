@@ -1,0 +1,135 @@
+R	tecnica	base		desempenho
+0.0	RF_C	"gaia
+		(107)"		0.0
+1.0	RF_C	"gaia
+		(107)"		45.93
+1.0	RF_C	scala(10)      	60.15
+1.0	RF_C	titanium(26)	60.71
+1.0	RF_C	Baystation(14)	44.12
+1.0	RF_C	akka(7)		68.27
+1.0	RF_C	ipython(11)	48.98
+1.0	RF_C	katello(20)	35.69
+1.0	RF_C	pandas(10)	67.44
+1.0	RF_C	puppet(45)	41.95
+1.0	RF_C	rosdistro(8)	50.32
+1.0	RF_C	rails(29)      	22.45
+1.0	RF_C	xbmc(41)       	39.44
+1.0	RF_C	-tg-station(9)	44.22
+1.0	RF_C	angular(15)	40.21
+1.0	RF_C	bitcoin(7)	53.90
+1.0	RF_C	brackets(27)	34.72
+1.0	RF_C	commcare-hq(11)	52.43
+1.0	RF_C	infinispan(14)	39.20
+1.0	RF_C	kuma(6)		61.74
+1.0	RF_C	metasploit(22)	52.62
+1.0	RF_C	phobos(21)	39.58
+1.0	CM	"gaia
+		(107)"		22.59
+1.0	CM	scala(10)      	33.50
+1.0	CM	titanium(26)	18.03
+1.0	CM	Baystation(14)	22.84
+1.0	CM	akka(7)		35.89
+1.0	CM	ipython(11)	29.90
+1.0	CM	katello(20)	12.43
+1.0	CM	pandas(10)	42.69
+1.0	CM	puppet(45)	20.44
+1.0	CM	rosdistro(8)	28.16
+1.0	CM	rails(29)      	22.96
+1.0	CM	xbmc(41)       	24.93
+1.0	CM	-tg-station(9)	37.86
+1.0	CM	angular(15)	33.68
+1.0	CM	bitcoin(7)	36.04
+1.0	CM	brackets(27)	18.25
+1.0	CM	commcare-hq(11)	40.36
+1.0	CM	infinispan(14)	24.28
+1.0	CM	kuma(6)		43.66
+1.0	CM	metasploit(22)	40.27
+1.0	CM	phobos(21)	31.71
+2.0	RF_C	"gaia
+		(107)"		15.59
+2.0	RF_C	scala(10)      	21.14
+2.0	RF_C	titanium(26)	16.4
+2.0	RF_C	Baystation(14)	23.31
+2.0	RF_C	akka(7)		17.63
+2.0	RF_C	ipython(11)	19.75
+2.0	RF_C	katello(20)	20.98
+2.0	RF_C	pandas(10)	12.84
+2.0	RF_C	puppet(45)	16.97
+2.0	RF_C	rosdistro(8)	24.11
+2.0	RF_C	rails(29)      	14.67
+2.0	RF_C	xbmc(41)       	15.8
+2.0	RF_C	-tg-station(9)	26.00
+2.0	RF_C	angular(15)	19.69
+2.0	RF_C	bitcoin(7)	20.57
+2.0	RF_C	brackets(27)	16.65
+2.0	RF_C	commcare-hq(11)	17.87
+2.0	RF_C	infinispan(14)	22.77
+2.0	RF_C	kuma(6)		25.26
+2.0	RF_C	metasploit(22)	18.87
+2.0	RF_C	phobos(21)	19.66
+2.0	CM	"gaia
+		(107)"		7.52
+2.0	CM	scala(10)      	30.90
+2.0	CM	titanium(26)	13.6
+2.0	CM	Baystation(14)	18.15
+2.0	CM	akka(7)		35.68
+2.0	CM	ipython(11)	21.9
+2.0	CM	katello(20)	11.74
+2.0	CM	pandas(10)	34.86
+2.0	CM	puppet(45)	15.43
+2.0	CM	rosdistro(8)	27.67
+2.0	CM	rails(29)      	18.29
+2.0	CM	xbmc(41)       	12.31
+2.0	CM	-tg-station(9)	27.04
+2.0	CM	angular(15)	25.91
+2.0	CM	bitcoin(7)	31.82
+2.0	CM	brackets(27)	18.21
+2.0	CM	commcare-hq(11)	22.41
+2.0	CM	infinispan(14)	18.08
+2.0	CM	kuma(6)		29.57
+2.0	CM	metasploit(22)	21.83
+2.0	CM	phobos(21)	12.3
+3.0	RF_C	"gaia
+		(107)"		6.62
+3.0	RF_C	scala(10)      	8.75
+3.0	RF_C	titanium(26)	8.83
+3.0	RF_C	Baystation(14)	11.72
+3.0	RF_C	akka(7)		7.88
+3.0	RF_C	ipython(11)	10.92
+3.0	RF_C	katello(20)	7.87
+3.0	RF_C	pandas(10)	7.2
+3.0	RF_C	puppet(45)	9.49
+3.0	RF_C	rosdistro(8)	13.95
+3.0	RF_C	rails(29)      	10.21
+3.0	RF_C	xbmc(41)       	9.52
+3.0	RF_C	-tg-station(9)	12.9
+3.0	RF_C	angular(15)	10.1
+3.0	RF_C	bitcoin(7)	13.58
+3.0	RF_C	brackets(27)	11.51
+3.0	RF_C	commcare-hq(11)	10.74
+3.0	RF_C	infinispan(14)	15.20
+3.0	RF_C	kuma(6)		8.47
+3.0	RF_C	metasploit(22)	10.8
+3.0	RF_C	phobos(21)	11.11
+3.0	CM	"gaia
+		(107)"		4.85
+3.0	CM	scala(10)      	10.77
+3.0	CM	titanium(26)	9.46
+3.0	CM	Baystation(14)	11.59
+3.0	CM	akka(7)		17.22
+3.0	CM	ipython(11)	15.39
+3.0	CM	katello(20)	11.06
+3.0	CM	pandas(10)	11.06
+3.0	CM	puppet(45)	10.09
+3.0	CM	rosdistro(8)	24.03
+3.0	CM	rails(29)      	9.85
+3.0	CM	xbmc(41)       	11.42
+3.0	CM	-tg-station(9)	18.69
+3.0	CM	angular(15)	9.84
+3.0	CM	bitcoin(7)	17.42
+3.0	CM	brackets(27)	12.2
+3.0	CM	commcare-hq(11)	8.31
+3.0	CM	infinispan(14)	14.05
+3.0	CM	kuma(6)		11.33
+3.0	CM	metasploit(22)	14.99
+3.0	CM	phobos(21)	11.92

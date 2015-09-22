@@ -1,0 +1,12 @@
+"Tipos de Projetos"	Quantidade
+"Poucos 
+desenvolvedores 
+13%"			9 
+"Classe 
+majoritária 
+37%"			25
+"Sem dados dos 
+desenvenvolvedores
+19%"			13
+"Selecionados 
+31%"			21
