@@ -234,11 +234,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		if(evt.getSource()==jButtonSave){
 			if (hasCheckBoxSelected()){
 				if (jTextRepo==null || jTextRepo.equals("") || jTextRepo.getText().length()<1){
-					jTextArea.setText("Clique no botão \"Repositories\" e escolha pelo menos 1 repositório.\n\n\n");
+					jTextArea.setText("Clique no botÃ£o \"Repositories\" e escolha pelo menos 1 repositÃ³rio.\n\n\n");
 					return;
 				}
 				if (jTxtFePath == null || jTxtFePath.equals("") || jTxtFePath.getText().length()<1){
-					jTextArea.setText("Escolha um diretório para armazenar o arquivo.\n\n\n");
+					jTextArea.setText("Escolha um diretÃ³rio para armazenar o arquivo.\n\n\n");
 					return;
 				}
 				else{
@@ -263,11 +263,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					//	e.printStackTrace();
 					//}
 					//catch (NumberFormatException e) {
-					//	JOptionPane.showMessageDialog(null, "Entre com valores válidos nos campos de dias");
+					//	JOptionPane.showMessageDialog(null, "Entre com valores vÃ¡lidos nos campos de dias");
 					//}
 				}
 			}else
-				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informação para ser recuperada.");
+				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informaÃ§Ã£o para ser recuperada.");
 		}
 		else
 			if(evt.getSource()==jButtonFile){
@@ -290,7 +290,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					else
 						if (evt.getSource() == jButtonRepositories){
 							JOptionPane.showMessageDialog(
-									null, new JScrollPane(repositoryList), "Seleção de repositórios:", JOptionPane.PLAIN_MESSAGE);
+									null, new JScrollPane(repositoryList), "SeleÃ§Ã£o de repositÃ³rios:", JOptionPane.PLAIN_MESSAGE);
 							String result = "";
 							for (String s : selectedRepositories) {
 								result += s+"; ";
@@ -309,13 +309,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		for (String repository : selectedRepositories) {
 			try {
 				totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
-				System.out.println(settings.getPrType());
 			} catch (UnknownHostException e) {
-				System.err.println("Erro ao iniciar a contagem de pull requests dos repositórios selecionados.");
+				System.err.println("Erro ao iniciar a contagem de pull requests dos repositÃ³rios selecionados.");
 			}
 		}
 
-		//caso sejam selecionados no máximo 3 repositórios, realiza a recuperação de todos ao mesmo tempo.
+		//caso sejam selecionados no mÃ¡ximo 3 repositÃ³rios, realiza a recuperaÃ§Ã£o de todos ao mesmo tempo.
 		if (selectedRepositories.size() <=3){
 			for (String repository : selectedRepositories) {
 				try {
@@ -327,7 +326,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			}
 		}
 		else
-		{//Se forem selecionados mais de 3 repositórios, será iniciada a recuperação de 3, após isso ao final de cada thread uma nova é iniciada.
+		{//Se forem selecionados mais de 3 repositÃ³rios, serÃ¡ iniciada a recuperaÃ§Ã£o de 3, apÃ³s isso ao final de cada thread uma nova Ã© iniciada.
 			threadAtual +=3; 
 			for (int i=0; 1<3; i++){
 				try {
@@ -429,7 +428,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		centerPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Selecione os dados a serem recuperados pela ferramenta: ", 
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
 
-		//Painel de dados do RepositÃ³rio
+		//Painel de dados do RepositÃƒÂ³rio
 		centerPanelNorth = new JPanel(new GridLayout(1,4));
 		centerPanelNorth.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Repository: ", 
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
@@ -727,9 +726,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		Settings s = null;
 		JSONObject jo = new JSONObject();
 		try{
-			//dados do repositório
-			jo.put("repo", jcbAllRepoData.isSelected());
+			//dados do repositÃ³rio
+			jo.put("allrepodata", jcbAllRepoData.isSelected());
+			jo.put("contributors", jcbContributors.isSelected());
+			
 			//dados core do PR
+			jo.put("allprdata", jcbAllPRData.isSelected());
 			jo.put("number", jcbNumPR.isSelected());
 			jo.put("state", jcbStatePR.isSelected());
 			jo.put("title", jcbTitlePR.isSelected());
@@ -738,6 +740,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			jo.put("closedmergedby", jcbClosedMergedByPR.isSelected());
 			jo.put("lifetime", jcbLifetimePR.isSelected());
 			jo.put("assignee", jcbAssigneePR.isSelected());
+			jo.put("authormorecommits", jcbAuthorMoreCommitsPR.isSelected());
+			jo.put("commitsbyfiles", jcbCommitsByFilesPR.isSelected());
 
 			//dados files PR
 			jo.put("comments", jcbCommentsPR.isSelected());
@@ -749,6 +753,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			jo.put("modifiedlines", jcbModifiedLinesPR.isSelected());
 
 			//dados user
+			jo.put("allauthordata", jcbAllAuthorData.isSelected());
 			jo.put("user", jcbUser.isSelected());
 			jo.put("age", jcbAgeUser.isSelected());
 			jo.put("type", jcbUserType.isSelected());
@@ -758,7 +763,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			jo.put("following", jcbUserFollowing.isSelected());
 			jo.put("location", jcbUserLocation.isSelected());
 			jo.put("prtype", jcbPRType.getSelectedIndex());
-			jo.put("contributors", jcbContributors.isSelected());
 
 			s = new Settings(jo);
 			System.out.println("Valid settings: "+s.tryParseValues());
@@ -830,7 +834,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			window.jFrame.setLocationRelativeTo(null); 
 			window.jFrame.setVisible(true);
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, "Servidor de banco de dados não encontrado.","Erro",1);
+			JOptionPane.showMessageDialog(null, "Servidor de banco de dados nÃ£o encontrado.","Erro",1);
 			System.err.println(e.getMessage());
 		}
 	}
