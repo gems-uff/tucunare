@@ -140,6 +140,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JPanel panel_12;
 	private static int threadAtual=0;
 	private static String file="";
+	private JCheckBox jcbPRParticipants;
 
 
 	public RetrievePullRequest() throws UnknownHostException{
@@ -217,7 +218,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 					}else
 						if (e.getSource() == jcbUserPulls){
-							jcbUserAverages.setSelected(jcbUserPulls.isSelected());
+							System.out.println(jcbUserPulls.isSelected());
+							boolean aux = jcbUserPulls.isSelected();
+							jcbUserAverages.setEnabled(aux);
+							jcbUserAverages.setSelected(aux);
 						}else
 							if (e.getSource() == jcbAllPRData)
 								loadPRComponents(jcbAllPRData.isSelected());
@@ -234,11 +238,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		if(evt.getSource()==jButtonSave){
 			if (hasCheckBoxSelected()){
 				if (jTextRepo==null || jTextRepo.equals("") || jTextRepo.getText().length()<1){
-					jTextArea.setText("Clique no botÃ£o \"Repositories\" e escolha pelo menos 1 repositÃ³rio.\n\n\n");
+					jTextArea.setText("Clique no botão \"Repositories\" e escolha pelo menos 1 repositório.\n\n\n");
 					return;
 				}
 				if (jTxtFePath == null || jTxtFePath.equals("") || jTxtFePath.getText().length()<1){
-					jTextArea.setText("Escolha um diretÃ³rio para armazenar o arquivo.\n\n\n");
+					jTextArea.setText("Escolha um diretório para armazenar o arquivo.\n\n\n");
 					return;
 				}
 				else{
@@ -267,7 +271,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					//}
 				}
 			}else
-				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informaÃ§Ã£o para ser recuperada.");
+				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informaÃ§ão para ser recuperada.");
 		}
 		else
 			if(evt.getSource()==jButtonFile){
@@ -290,7 +294,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					else
 						if (evt.getSource() == jButtonRepositories){
 							JOptionPane.showMessageDialog(
-									null, new JScrollPane(repositoryList), "SeleÃ§Ã£o de repositÃ³rios:", JOptionPane.PLAIN_MESSAGE);
+									null, new JScrollPane(repositoryList), "SeleÃ§ão de repositórios:", JOptionPane.PLAIN_MESSAGE);
 							String result = "";
 							for (String s : selectedRepositories) {
 								result += s+"; ";
@@ -310,11 +314,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			try {
 				totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
 			} catch (UnknownHostException e) {
-				System.err.println("Erro ao iniciar a contagem de pull requests dos repositÃ³rios selecionados.");
+				System.err.println("Erro ao iniciar a contagem de pull requests dos repositórios selecionados.");
 			}
 		}
 
-		//caso sejam selecionados no mÃ¡ximo 3 repositÃ³rios, realiza a recuperaÃ§Ã£o de todos ao mesmo tempo.
+		//caso sejam selecionados no mÃ¡ximo 3 repositórios, realiza a recuperaÃ§ão de todos ao mesmo tempo.
 		if (selectedRepositories.size() <=3){
 			for (String repository : selectedRepositories) {
 				try {
@@ -326,7 +330,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			}
 		}
 		else
-		{//Se forem selecionados mais de 3 repositÃ³rios, serÃ¡ iniciada a recuperaÃ§Ã£o de 3, apÃ³s isso ao final de cada thread uma nova Ã© iniciada.
+		{//Se forem selecionados mais de 3 repositórios, serÃ¡ iniciada a recuperaÃ§ão de 3, após isso ao final de cada thread uma nova Ã© iniciada.
 			threadAtual +=3; 
 			for (int i=0; 1<3; i++){
 				try {
@@ -573,7 +577,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jTxtCommByFiles.setToolTipText("Number of days prior to the date of creation of the PR to recover the amount of commits by PR files.");
 		jcbChangedFilesPR = new JCheckBox("changed files");
 		jcbChangedFilesPR.setToolTipText("Retrieves the number of files modifieds in the pull request.");
-		
+
 		centerPanelMidIn.add(jcbChangedFilesPR);
 		jcbFilesPR = new JCheckBox("files");
 		centerPanelMidIn.add(jcbFilesPR);
@@ -630,6 +634,9 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 		centerPanelMid.add(centerPanelMidBot, BorderLayout.SOUTH);
 		centerPanelMid.add(centerPanelMidIn);
+		
+		jcbPRParticipants = new JCheckBox("participants");
+		centerPanelMidIn.add(jcbPRParticipants);
 		centerPanel.add(centerPanelMid, BorderLayout.CENTER);
 		centerPanel.add(centerPanelNorth, BorderLayout.NORTH);
 		jFrame.getContentPane().add(centerPanel, BorderLayout.CENTER);
@@ -674,10 +681,13 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbAssigneePR.setSelected(value);
 		jcbCommentsPR.setSelected(value);
 		jcbCommitsPR.setSelected(value);
-		jcbAuthorMoreCommitsPR.setSelected(value);
-		jcbCommitsByFilesPR.setSelected(value);
+		jcbPRParticipants.setSelected(value);
+		if (value == true){
+			jcbAuthorMoreCommitsPR.setSelected(value);
+			jcbCommitsByFilesPR.setSelected(value);
+			jcbFilesPR.setSelected(value);
+		}
 		jcbChangedFilesPR.setSelected(value);
-		jcbFilesPR.setSelected(value);
 		jcbRootDirectoryPR.setSelected(value);
 		jcbModifiedLinesPR.setSelected(value);
 
@@ -691,10 +701,13 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbAssigneePR.setEnabled(!value);
 		jcbCommentsPR.setEnabled(!value);
 		jcbCommitsPR.setEnabled(!value);
-		jcbAuthorMoreCommitsPR.setEnabled(!value);
-		jcbCommitsByFilesPR.setEnabled(!value);
+		jcbPRParticipants.setEnabled(!value);
+		if (value == true){
+			jcbAuthorMoreCommitsPR.setEnabled(!value);
+			jcbCommitsByFilesPR.setEnabled(!value);
+			jcbFilesPR.setEnabled(!value);
+		}
 		jcbChangedFilesPR.setEnabled(!value);
-		jcbFilesPR.setEnabled(!value);
 		jcbRootDirectoryPR.setEnabled(!value);
 		jcbModifiedLinesPR.setEnabled(!value);
 
@@ -706,16 +719,17 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbAgeUser.setSelected(value);
 		jcbUserType.setSelected(value);
 		jcbUserPulls.setSelected(value);
-		jcbUserAverages.setSelected(value);
+		if (value == true){
+			jcbUserAverages.setSelected(value);
+			jcbUserAverages.setEnabled(!value);
+		}
 		jcbUserFollowers.setSelected(value);
 		jcbUserFollowing.setSelected(value);
 		jcbUserLocation.setSelected(value);
-
 		jcbUser.setEnabled(!value);
 		jcbAgeUser.setEnabled(!value);
 		jcbUserType.setEnabled(!value);
 		jcbUserPulls.setEnabled(!value);
-		jcbUserAverages.setEnabled(!value);
 		jcbUserFollowers.setEnabled(!value);
 		jcbUserFollowing.setEnabled(!value);
 		jcbUserLocation.setEnabled(!value);
@@ -726,10 +740,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		Settings s = null;
 		JSONObject jo = new JSONObject();
 		try{
-			//dados do repositÃ³rio
+			//dados do repositório
 			jo.put("allrepodata", jcbAllRepoData.isSelected());
 			jo.put("contributors", jcbContributors.isSelected());
-			
+
 			//dados core do PR
 			jo.put("allprdata", jcbAllPRData.isSelected());
 			jo.put("number", jcbNumPR.isSelected());
@@ -742,6 +756,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			jo.put("assignee", jcbAssigneePR.isSelected());
 			jo.put("authormorecommits", jcbAuthorMoreCommitsPR.isSelected());
 			jo.put("commitsbyfiles", jcbCommitsByFilesPR.isSelected());
+			jo.put("participants", jcbPRParticipants.isSelected());
 
 			//dados files PR
 			jo.put("comments", jcbCommentsPR.isSelected());
@@ -834,7 +849,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			window.jFrame.setLocationRelativeTo(null); 
 			window.jFrame.setVisible(true);
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, "Servidor de banco de dados nÃ£o encontrado.","Erro",1);
+			JOptionPane.showMessageDialog(null, "Servidor de banco de dados não encontrado.","Erro",1);
 			System.err.println(e.getMessage());
 		}
 	}

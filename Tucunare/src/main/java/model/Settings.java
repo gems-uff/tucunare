@@ -8,12 +8,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public  class Settings {
-
+	private String header = "";
 	private JSONObject data;
 	private boolean allRepoData, contributors;
 	private int contributorsMonths = -1;
 	private boolean allAuthorData, prNumber, prState, title, prDates, prLifeTime, prClosedMergedBy, prShas, prAuthorMoreCommits, prCommitsByFiles; 
-	private boolean allPRData, prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prRootDirectory, prFiles;
+	private boolean allPRData, prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prRootDirectory, prFiles, prParticipants;
 	private boolean user, userAge, userType, userPulls, userAverages, userFollowers, userFollowing, userLocation; 
 	private int prType = 0;
 	private int authorCommitsDays, commitsByFilesDays;
@@ -68,6 +68,7 @@ public  class Settings {
 		prChangedFiles = data.getBoolean("changedfiles");
 		prRootDirectory = data.getBoolean("dirfinal");
 		prFiles = data.getBoolean("files");
+		prParticipants = data.getBoolean("participants");
 	}
 
 	//"number":"true","state":"true","title":"true","dates":"true","lifetime":"true","closedmergedby":"true","shas":"true","assignee":"true",
@@ -122,13 +123,18 @@ public  class Settings {
 		userFollowers = true;
 		userFollowing = true; 
 		userLocation = true;
+		prParticipants = true;
 
+	}
+
+	public String getHeader() {
+		return header;
 	}
 
 	public int getPrType(){
 		return prType;
 	}
-	
+
 	public int getContributorsMonths() {
 		return contributorsMonths;
 	}
@@ -154,69 +160,132 @@ public  class Settings {
 	}
 
 	public List<String> getMethods(){
-		List<String> methods = new ArrayList<String>(); 
+		List<String> methods = new ArrayList<String>();
 
-		if (allRepoData)
+		if (allRepoData){
 			methods.add("getAllRepoData");
-		if (contributors)
-			methods.add("getContributors");
+			header += "owner/repo,ageRepo,stargazers_count,watchers_count,language,forks_count,open_issues_count,subscribers_count,has_wiki,acceptanceRepo,watchRepo,";
+		}
 
-		if (allPRData)
+		if (contributors){
+			methods.add("getContributors");
+			header += "contributors,followContributors,";
+		}
+		//pelo menos o método de recuperação do id e o state do PR será executado.
+		methods.add("getId");
+		methods.add("getPRState");
+		header += "idPull,state,";
+
+		if (allPRData){
 			methods.add("getAllPRData");
+			header += "numberPull,title,commitHeadSha,commitBaseSha,createdDate,closedDate,mergedDate,closedBy,mergedBy,"+
+					"lifetimeDays,lifetimeHours,lifetimeMinutes,assignee,comments,commitsPull,files,authorMoreCommits,commitsbyFilesPull,"+
+					"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants,";
+		}
 		else{
-			if (prNumber)
-				methods.add("getPRNumber");
-			if (prState)
-				methods.add("getPRState");
-			if (title)
-				methods.add("getPRTitle");
-			if (prShas)
-				methods.add("getPRSHAs");
-			if (prDates)
-				methods.add("getPRDates");
-			if (prClosedMergedBy)
-				methods.add("getPRClosedMergedBy");
-			if (prLifeTime)
-				methods.add("getPRLifeTime");
-			if (prAssignee)
-				methods.add("getPRAssignee");
-			if (prComments)
-				methods.add("getPRComments");
-			if (prCommits)
-				methods.add("getPRcommits");
-			if(prAuthorMoreCommits)
-				methods.add("getPRAuthorMoreCommits");
-			if (prCommitsByFiles)
-				methods.add("getPRCommitsByFiles");
-			if (prChangedFiles)
-				methods.add("getPRChangedFiles");
-			if (prFiles)
+			if (prFiles){
 				methods.add("getPRFiles");
-			if (prRootDirectory)
+				header += "files,";
+			}
+			if (prNumber){
+				methods.add("getPRNumber");
+				header += "numberPull,";
+			}
+			if (title){
+				methods.add("getPRTitle");
+				header += "title,";
+			}
+			if (prShas){
+				methods.add("getPRSHAs");
+				header += "commitHeadSha,commitBaseSha,";
+			}
+			if (prDates){
+				methods.add("getPRDates");
+				header += "createdDate,closedDate,mergedDate,";
+			}
+			if (prClosedMergedBy){
+				methods.add("getPRClosedMergedBy");
+				header += "closedBy,mergedBy,";
+			}
+			if (prLifeTime){
+				methods.add("getPRLifeTime");
+				header += "lifetimeDays,lifetimeHours,lifetimeMinutes,";
+			}
+			if (prAssignee){
+				methods.add("getPRAssignee");
+				header += "assignee,";
+			}
+			if (prComments){
+				methods.add("getPRComments");
+				header += "comments,";
+			}
+			if (prCommits){
+				methods.add("getPRCommits");
+				header += "commitsPull,";
+			}
+			if(prAuthorMoreCommits){
+				methods.add("getPRAuthorMoreCommits");
+				header += "authorMoreCommits,";
+			}
+			if (prCommitsByFiles){
+				methods.add("getPRCommitsByFiles");
+				header += "commitsbyFilesPull,";
+			}
+			if (prChangedFiles){
+				methods.add("getPRChangedFiles");
+				header += "changedFiles,";
+			}
+			if (prRootDirectory){
 				methods.add("getPRRootDirectory");
-			if (prModifiedLines)
+				header += "dirFinal,";
+			}
+			if (prModifiedLines){
 				methods.add("getPRModifiedLines");
+				header += "additionsLines,deletionsLines,totalLines,";
+			}
+			if (prParticipants){
+				methods.add("participants");
+				header += "participants,";
+			}
 		}
 
 		if (allAuthorData){
 			methods.add("getAllAuthorData");
+			header += "login,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser, acceptanceUser,"+
+					"userFollowers,userFollowing,location,";
 		}else{
-			if (user)
+			if (user){
 				methods.add("getUser");
-			if (userAge)
+				header += "login,";
+			}
+			if (userAge){
 				methods.add("getUserAge");
-			if (userType)
+				header += "ageUser,";
+			}
+			if (userType){
 				methods.add("getUserType");
-			if (userPulls)
+				header += "typeDeveloper,"; 
+			}
+			if (userPulls){
 				methods.add("getUserPulls");
-			if (userAverages)
+				header += "totalPullDeveloper,mergedPullUser,closedPullUser,";
+			}
+			if (userAverages){
 				methods.add("getUserAverages");
-			if (userFollowers)
+				header += "rejectUser, acceptanceUser,";
+			}
+			if (userFollowers){
 				methods.add("getUserFollowers");
-			if (userFollowing)
+				header += "userFollowers,";
+			}
+			if (userFollowing){
 				methods.add("getUserFollowing");
-			if (userLocation)
+				header += "userFollowing,";
+			}
+			if (userLocation){
 				methods.add("getUserLocation");
+				header += "location,";
+			}
 		} 
 
 		return methods;
@@ -243,7 +312,7 @@ public  class Settings {
 				+ userFollowing + ", userLocation=" + userLocation
 				+ ", prType=" + prType + ", authorCommitsDays="
 				+ authorCommitsDays + ", commitsByFilesDays="
-				+ commitsByFilesDays + "]";
+				+ commitsByFilesDays + ", prParticipants="+prParticipants+"]";
 	}
 
 
