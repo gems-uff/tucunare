@@ -101,11 +101,6 @@ public class DataRecoveryMethods {
 				getPRModifiedLines() + 
 				getPRParticipants();
 		
-		//System.out.println("numberPull,title,commitHeadSha,commitBaseSha,createdDate,closedDate,mergedDate,closedBy,mergedBy,"+
-		//			"lifetimeDays,lifetimeHours,lifetimeMinutes,assignee,comments,commitsPull, files,authorMoreCommits,commitsbyFilesPull,"+
-		//			"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants,");
-		//System.out.println(result);
-		
 		return result;
 	}
 

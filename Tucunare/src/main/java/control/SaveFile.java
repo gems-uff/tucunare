@@ -37,7 +37,6 @@ public class SaveFile implements Runnable {
 		try {
 			retrieveData(repo, settings);
 			tempo += Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ";
-			System.out.println("HERE");
 			DialogStatus.setThreads(finalizedThreads);
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao processar os dados do repositórios "+repo);
@@ -53,14 +52,12 @@ public class SaveFile implements Runnable {
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
 		//query.append("number", new BasicDBObject("$gt", Integer.parseInt("1243")));//maiores que number
 		if (settings.getPrType() == 1)
-			query.append("state", "open"); //Apenas pull requests encerrados
+			query.append("state", "open"); //Apenas pull requests abertos
 		if (settings.getPrType() == 2)
 			query.append("state", "closed"); //Apenas pull requests encerrados
-		//		System.out.println("interface ok!");
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
-			//			System.out.println("cursor ok!");
 
 			/**	
 			 *  Início da Recuperação dos métodos. 
@@ -82,14 +79,7 @@ public class SaveFile implements Runnable {
 			
 			//Escrevendo o cabeçalho do arquivo
 			writeHeader(settings.getHeader());
-			System.out.println("Header: "+settings.getHeader());
 			
-			//listando métodos:
-			int aux = 0;
-			for (Method method : meth) {
-				aux++;
-				System.out.println(aux+") Method: "+method.getName());
-			}
 			for (DBObject dbObject : cursor) {
 				String result = "";
 
@@ -100,7 +90,7 @@ public class SaveFile implements Runnable {
 				}
 				result += "\r\n";
 				
-				System.out.println((Integer) dbObject.get("number"));
+				System.out.println((Integer) dbObject.get("number")+": "+repo);
 				
 				if (!saveFile(result))
 					System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
