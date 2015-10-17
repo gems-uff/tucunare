@@ -47,7 +47,8 @@ public class FormatDate {
 	public static String getLifetime(String closedData, String createdData){
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		Date cloDate, creDate;
-		long diferencaDias = 0L, diferencaHoras = 0L, diferencaMinutos= 0L;
+//		long diferencaDias = 0L, diferencaHoras = 0L; 
+		long diferencaMinutos= 0L;
 		try {
 			cloDate = formatter.parse(closedData);
 			Calendar clocDate = Calendar.getInstance();
@@ -58,15 +59,17 @@ public class FormatDate {
 			crecDate.setTime(creDate);
 			
 			long lifetime = clocDate.getTimeInMillis() - crecDate.getTimeInMillis();
-			int tempoDia = 1000*60*60*24, tempoHoras = 1000*60*60, tempoMinutos = 1000*60;
-			diferencaDias = lifetime/tempoDia;
-			diferencaHoras = lifetime/tempoHoras;
+//			int tempoDia = 1000*60*60*24, tempoHoras = 1000*60*60; 
+			int tempoMinutos = 1000*60;
+//			diferencaDias = lifetime/tempoDia;
+//			diferencaHoras = lifetime/tempoHoras;
 			diferencaMinutos = lifetime/tempoMinutos;
 		} catch (ParseException e){
 			System.err.println("Erro na conversão de data do autor do commit.");
 		}
-		return ""+diferencaDias+", "+diferencaHoras+", "+diferencaMinutos;	
+		return ""+diferencaMinutos;	
 	}
+	
 	
 	public static String getAge(String data){
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");

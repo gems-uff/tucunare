@@ -19,7 +19,9 @@ public class Users {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
-		DBObject dboUser = users.findOne(query);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("followers", 1);
+		DBObject dboUser = users.findOne(query,fields);
 		String followers = "";
 		if(dboUser.get("followers") != null)
 			followers = dboUser.get("followers").toString(); 
@@ -30,7 +32,9 @@ public class Users {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
-		DBObject dboUser = users.findOne(query);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("following", 1);
+		DBObject dboUser = users.findOne(query,fields);
 		String following = "";
 		if(dboUser.get("following") != null)
 			following = dboUser.get("following").toString(); 
@@ -41,7 +45,9 @@ public class Users {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
-		DBObject dboUser = users.findOne(query);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("location", 1);
+		DBObject dboUser = users.findOne(query,fields);
 		String location="";
 		if(dboUser.get("location")!=null)
 			location = dboUser.get("location").toString();
@@ -52,7 +58,9 @@ public class Users {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
 		BasicDBObject query = new BasicDBObject("login", user);
-		DBObject dboUser = users.findOne(query);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("created_at", 1);
+		DBObject dboUser = users.findOne(query,fields);
 		String created_at="";
 		if(dboUser.get("created_at")!=null)
 			created_at = FormatDate.getAge(dboUser.get("created_at").toString());
@@ -93,20 +101,41 @@ public class Users {
 		else
 			return false;
 	}
-	
-	public static boolean getFollowersTeam (String user, String repo, String owner) throws UnknownHostException{
+
+	public static boolean getFollowingCoreTeam (String user, String repo) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection followers = db.getCollection("followers");
 		BasicDBObject query = new BasicDBObject("login", user);
-		DBCursor cursor = followers.find(query);
-		Object [] listContributors = Commits.getContributorsList(repo, owner);
-		List<Object> list;
-		list = Arrays.asList(listContributors);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("follows", 1);
+		DBCursor cursor = followers.find(query,fields);
+		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		for (DBObject dbFollower : cursor) {
-			if(list.contains(dbFollower.get("follows").toString()))
-				return true;
+			if(dbFollower != null)
+				if(listCoreTeam.contains(dbFollower.get("follows").toString()))
+					return true;
 		}
 		return false;
+	}
+	
+	public static boolean getFollowersCoreTeam (String user, String repo) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection followers = db.getCollection("followers");
+		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
+		boolean followerCoreTeam = false;
+		for (String string : listCoreTeam) {
+			BasicDBObject query = new BasicDBObject("login", string);
+			BasicDBObject fields = new BasicDBObject();
+			fields.put("follows", 1);
+			DBCursor cursor = followers.find(query,fields);
+			for (DBObject dbFollower : cursor) {
+				if(dbFollower != null)
+					if(dbFollower.get("follows").toString().equals(user))
+						followerCoreTeam = true;
+			}
+			followerCoreTeam = false;
+		}
+		return followerCoreTeam;
 	}
 	
 	public static String getParticipants(String idPullRequest, String repo) throws UnknownHostException{

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import model.Settings;
 import teste.DialogStatus;
@@ -56,25 +57,20 @@ public class SaveFile implements Runnable {
 			query.append("state", "open"); //Apenas pull requests encerrados
 		if (settings.getPrType() == 2)
 			query.append("state", "closed"); //Apenas pull requests encerrados
-//		System.out.println("interface ok!");
+
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
-//			System.out.println("cursor ok!");
+			int countCreateDate = 1, total_pull = 0;
 			for (DBObject dbObject : cursor) {
 				//Variváveis
 				String rep = dbObject.get("repo").toString();
-//				System.out.println("repo ok!");
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
-//				System.out.println("user login ok!");
 				String number = dbObject.get("number").toString();
-//				System.out.println("number pull ok!"+number);
 				
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
-//				System.out.println("closedby issue ok!");
-//				System.out.println("laço ok!");
-				if(dbObject!=null){// & !closed_by.equals(user)){
-//					System.out.println("object ok!");
+				if(!closed_by.equals(""))
+				if(dbObject!=null && !closed_by.equals(user)){
 					String owner = dbObject.get("owner").toString();
 					String created = dbObject.get("created_at").toString();
 					String followers = Users.getFollowersUser(user);
@@ -82,7 +78,7 @@ public class SaveFile implements Runnable {
 					String ageUser = Users.getAgeUser(user);
 					String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
 					String shaBase = ((BasicDBObject)dbObject.get("base")).get("sha").toString();
-//					System.out.println("dados iniciais ok!");
+					
 					//Dados do projeto
 					String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String acceptanceRepo="";
@@ -92,7 +88,7 @@ public class SaveFile implements Runnable {
 						acceptanceRepo = "0";
 					else
 						acceptanceRepo = String.valueOf(((mergedPullRepo*100)/totalPullRepoClosed));
-//					System.out.println("dados do projeto ok!");
+
 					//Dados do requester
 					int totalPullUser = Users.getPullUserTotal(user, created, rep, owner);
 					int mergedPullUser = Users.getPullUserMerged(user, created, rep, owner);
@@ -107,13 +103,15 @@ public class SaveFile implements Runnable {
 						acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
 						rejectUser = String.valueOf(((closedPullUser*100)/totalPullUser));
 					}
+					
+//					verificar uso do listTeam no lugar de contributors
 					String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
 					String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
 					
 					boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
-					boolean followContributors = Users.getFollowersTeam(user, rep, owner);
+//					boolean followContributors = Users.getFollowersContributors(user, rep, owner);
 					String location = Users.getLocationUser(user);
-//					System.out.println("dados do requester ok!");
+
 					//Dados do Pull Request
 					String assignee = "";
 					if(dbObject.get("assignee")!=null)
@@ -167,12 +165,13 @@ public class SaveFile implements Runnable {
 					if((dbObject.get("closed_at")!=null)){
 						lifetime = FormatDate.getLifetime(dbObject.get("closed_at").toString(), created);
 					}else{
-						lifetime = ",,"; 
+						lifetime = ""; 
 					}
-
+//
 					//Desenvolvedor que integrou ou rejeitou o código do pull request
 					if((dbObject.get("merged_by"))!=null)
 						merged_by = ((BasicDBObject)dbObject.get("merged_by")).get("login").toString();
+					
 					//Datas
 					String closedDate = "";
 					if(dbObject.get("closed_at")!=null)
@@ -180,10 +179,63 @@ public class SaveFile implements Runnable {
 					String mergedDate = "";
 					if(dbObject.get("merged_at")!=null)
 						mergedDate = FormatDate.getDate(dbObject.get("merged_at").toString());
-//					System.out.println("dados do pull ok!");
+					//String createDate = FormatDate.getDate(dbObject.get("created_at").toString());
+					
+					String ano = created.substring(0, 4);
+					String mes = created.substring(5, 7);
+					String mesAno = mes+ano;
+					
+					String status = "";
+					if(mergedDate.equals(""))
+						status = "closed";
+					else
+						status = "merged";
+					
+//					Dados da equipe principal
+					ArrayList<String> listCoreTeam = Commits.getCoreTeamList(rep);
+					
+					String typeDeveloper2="";
+					if(listCoreTeam.contains(user))
+						typeDeveloper2 = "core";
+					else
+						typeDeveloper2 = "external";
+					
+					boolean followerCoreTeam = Users.getFollowersCoreTeam(user, rep);
+					boolean followingCoreTeam = Users.getFollowingCoreTeam(user, rep);
+					
+					String firstCreateDate = "";
+					if(countCreateDate == 1)
+						firstCreateDate = created;
+					countCreateDate++;
+					
+					String prior_evalution = Issues.getPrior_Pull(user, created, firstCreateDate, repo);
+					prior_evalution = prior_evalution.substring(1, prior_evalution.length()-1).replaceAll(", ", ",");
+					
+					String recent_pull = Issues.getRecentPulls(rep, created, firstCreateDate, 30);
+					recent_pull = recent_pull.substring(1, recent_pull.length()-1).replaceAll(", ", ",");
+					
+					String evaluation_pull = Issues.getEvaluatePulls(rep, created, firstCreateDate);
+					evaluation_pull = evaluation_pull.substring(1, evaluation_pull.length()-1).replaceAll(", ", ",");
+					
+					String recent_evaluation = Issues.getRecentEvaluatePulls(user, rep, created, firstCreateDate, 30);
+					recent_evaluation = recent_evaluation.substring(1, recent_evaluation.length()-1).replaceAll(", ", ",");
+							
+					String evaluate_time = Issues.getEvaluateTime(rep, created, firstCreateDate, 30);
+					evaluate_time = evaluate_time.substring(1, evaluate_time.length()-1).replaceAll(", ", ",");
+							
+					String latest_time = Issues.getLatestTime(rep, created);
+					latest_time = latest_time.substring(1, latest_time.length()-1).replaceAll(", ", ",");
+							
+					String first_time = Issues.getFirstTime(rep, created);
+					first_time = first_time.substring(1, first_time.length()-1).replaceAll(", ", ",");
+							
+//					String total_pull = ""+Issues.getTotalPull(rep, created, firstCreateDate);
+					total_pull++;
+					
 					//String enviada para o arquivo
 					String resultTemp = 
-							owner+"/"+rep+","+dataRepo+","+
+							owner+"/"+rep+","+
+							dataRepo+","+
 							contributors+","+
 							acceptanceRepo+","+
 							followers+","+
@@ -196,19 +248,21 @@ public class SaveFile implements Runnable {
 							rejectUser+","+
 							acceptanceUser+","+
 							watchRepo+","+
-							followContributors+","+
+//							followContributors+","+
 							location.replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ').replace('/', ' ')+","+
 							(Integer) dbObject.get("id")+","+
 							(Integer) dbObject.get("number")+","+
 							((BasicDBObject)dbObject.get("user")).get("login")+","+
 							dbObject.get("state")+","+
 							dbObject.get("title").toString().replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ')+","+
-							FormatDate.getDate(dbObject.get("created_at").toString())+","+
+							created+","+
+							mesAno+","+
 							closedDate+","+
 							mergedDate+","+
 							lifetime+","+
 							closed_by+","+
 							merged_by+","+
+							status+","+
 							((BasicDBObject)dbObject.get("head")).get("sha")+","+
 							((BasicDBObject)dbObject.get("base")).get("sha")+","+
 							assignee+","+
@@ -222,7 +276,20 @@ public class SaveFile implements Runnable {
 							(Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString()))+","+
 							dbObject.get("changed_files")+","+
 							dirFinal+","+
-							files.replace(", ", "|");
+							files.replace(", ", "|")+","+
+							
+							typeDeveloper2+","+
+							followerCoreTeam+","+
+							followingCoreTeam+","+
+							prior_evalution+","+
+							recent_pull+","+
+							evaluation_pull+","+
+							recent_evaluation+","+
+							evaluate_time+","+
+							latest_time+","+
+							first_time+","+
+							total_pull
+							;
 					resultTemp += "\r\n";
 					System.out.println((Integer) dbObject.get("number"));
 					if (!saveFile(false, resultTemp))
@@ -245,11 +312,56 @@ public class SaveFile implements Runnable {
 		try {
 			if (firstWritten){
 				fw = new FileWriter(fileTemp);
+				ArrayList<String> prior_evalutionList = Commits.getCoreTeamList(repo);
+				for (int index = 0; index < prior_evalutionList.size(); index++)
+					prior_evalutionList.set(index, "pe_"+prior_evalutionList.get(index));
+				String pe = prior_evalutionList.toString();
+				pe = pe.substring(1, pe.length()-1).replaceAll(", ", ",");
+				
+				ArrayList<String> recent_pullList = Commits.getCoreTeamList(repo);
+				for (int index = 0; index < recent_pullList.size(); index++)
+					recent_pullList.set(index, "rp_"+recent_pullList.get(index));
+				String rp = recent_pullList.toString();
+				rp = rp.substring(1, rp.length()-1).replaceAll(", ", ",");
+
+				ArrayList<String> evaluation_pullList = Commits.getCoreTeamList(repo);
+				for (int index = 0; index < evaluation_pullList.size(); index++)
+					evaluation_pullList.set(index, "ep_"+evaluation_pullList.get(index));
+				String ep = evaluation_pullList.toString();
+				ep = ep.substring(1, ep.length()-1).replaceAll(", ", ",");
+				
+				ArrayList<String> recent_evaluationList = Commits.getCoreTeamList(repo);
+				for (int index = 0; index < recent_evaluationList.size(); index++)
+					recent_evaluationList.set(index, "re_"+recent_evaluationList.get(index));
+				String re = recent_evaluationList.toString();
+				re = re.substring(1, re.length()-1).replaceAll(", ", ",");
+				
+				ArrayList<String> evaluate_timeList = Commits.getCoreTeamList(repo);
+				for (int index = 0; index < evaluate_timeList.size(); index++)
+					evaluate_timeList.set(index, "et_"+evaluate_timeList.get(index));
+				String et = evaluate_timeList.toString();
+				et = et.substring(1, et.length()-1).replaceAll(", ", ",");
+				
+				ArrayList<String> latest_timeList = Commits.getCoreTeamList(repo);
+				for (int index = 0; index < latest_timeList.size(); index++)
+					latest_timeList.set(index, "lt_"+latest_timeList.get(index));
+				String lt = latest_timeList.toString();
+				lt = lt.substring(1, lt.length()-1).replaceAll(", ", ",");
+				
+				ArrayList<String> first_timeList = Commits.getCoreTeamList(repo);
+				for (int index = 0; index < first_timeList.size(); index++)
+					first_timeList.set(index, "ft_"+first_timeList.get(index));
+				String ft = first_timeList.toString();
+				ft = ft.substring(1, ft.length()-1).replaceAll(", ", ",");
+				
 				fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,contributors,acceptanceRepo,"
-						+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,followContributors,location,"
-						+ "idPull,numberPull,login,state,title,createdDate,closedDate,mergedDate,lifetimeDays,lifetimeHours,lifetimeMinutes,closedBy,"
-						+ "mergedBy,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants,"
-						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files");
+						+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,location,"
+						+ "idPull,numberPull,login,state,title,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"
+						+ "status,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants,"
+						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files,typeDeveloper2,followerCoreTeam,followingCoreTeam,"
+						//+ "prior_evalution,recent_pull,evaluation_pull,recent_evaluation,evaluate_time,latest_time,first_time,total_pull");
+						+pe+","+rp+","+ep+","+re+","+et+","+lt+","+ft+","
+						+ "total_pull");
 				fw.write("\r\n");
 			}else{
 				fw = new FileWriter(fileTemp, true);
