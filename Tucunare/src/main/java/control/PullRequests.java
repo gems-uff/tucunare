@@ -26,7 +26,8 @@ public class PullRequests extends Thread{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		System.out.println(Connect.getInstance() == null?"db é nulo":"db não é nulo");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
-		
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("number", 1);
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
 		if (prType == 1)
 			query.append("state", "open"); //Apenas pull requests encerrados
@@ -34,6 +35,6 @@ public class PullRequests extends Thread{
 			if (prType == 2)
 				query.append("state", "closed"); //Apenas pull requests encerrados
 		
-		return dbcPullRequest.find(query).count();
+		return dbcPullRequest.find(query,fields).count();
 	}
 }
