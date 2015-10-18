@@ -28,6 +28,7 @@ public class PullRequests extends Thread{
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("number", 1);
+		fields.put("_id", 0);
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
 		if (prType == 1)
 			query.append("state", "open"); //Apenas pull requests encerrados

@@ -32,6 +32,7 @@ public class Commits {
 				fields.put("parents", 1);
 				fields.put("files", 1);
 				fields.put("sha", 1);
+				fields.put("_id", 0);
 				commit = dbcCommits.findOne(queryHead,fields);
 				listCommit = (BasicDBList) commit.get("parents");
 				listFiles = (BasicDBList) commit.get("files");	
@@ -109,6 +110,7 @@ public class Commits {
 		Arrays.sort(files);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("files", 1);
+		fields.put("_id", 0);
 		DBCursor c = commitsC.find(queryHead);
 		for (DBObject dbo: c)
 			if((BasicDBObject)dbo != null){	
@@ -135,6 +137,7 @@ public class Commits {
 		query.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("committer.login", 1);
+		fields.put("_id", 0);
 		Object[] contributorsList = commitsC.distinct("committer.login", query).toArray();
 		return ""+contributorsList.length;
 	}
@@ -146,6 +149,7 @@ public class Commits {
 		BasicDBObject queryCommit = new BasicDBObject("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("committer.login", 1);
+		fields.put("_id", 0);
 		Object[] contributorsList = commitsC.distinct("committer.login", queryCommit).toArray();
 		return contributorsList;
 	}
@@ -161,6 +165,7 @@ public class Commits {
 		fields.put("closed_by.login", 1);
 		fields.put("user.login", 1);
 		fields.put("pull_request.url", 1);
+		fields.put("_id", 0);
 //		primeira forma
 		DBCursor teste =  issueC.find(queryIssue,fields);
 		ArrayList<String> list = new ArrayList<String>();
@@ -195,4 +200,34 @@ public class Commits {
 		return type;
 	}
 
+	public static String getTypeDeveloper3(String user, String repo, String owner) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection dbcCommit= db.getCollection("commits");
+		BasicDBObject queryCommit = new BasicDBObject("committer.login", user); 		
+		queryCommit.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
+		BasicDBObject fieldsCommit = new BasicDBObject();
+		fieldsCommit.put("sha", 1);
+		fieldsCommit.put("_id", 0);
+		DBCollection dbcPull = db.getCollection("pull_requests");
+		BasicDBObject fieldsPull = new BasicDBObject();
+		fieldsPull.put("head.sha", 1);
+		fieldsPull.put("_id", 0);
+		BasicDBObject queryPull = new BasicDBObject("repo",repo);
+		
+		DBCursor objListCommit = dbcCommit.find(queryCommit,fieldsCommit);
+		
+		String type="";
+		for (DBObject dbObject : objListCommit) {
+			queryPull.append("head.sha", dbObject.get("sha").toString());
+			DBObject objSHA =  dbcPull.findOne(queryPull,fieldsPull);
+			String sha="";
+			if(objSHA != null)
+				sha = (((BasicDBObject)objSHA.get("head")).get("sha").toString());
+			if(!dbObject.get("sha").toString().equals(sha))
+				type = "core";
+			else 
+				type = "external";
+		}
+		return type;
+	}
 }

@@ -200,6 +200,8 @@ public class SaveFile implements Runnable {
 					else
 						typeDeveloper2 = "external";
 					
+					String typeDeveloper3 = Commits.getTypeDeveloper3(user, rep, owner);
+					
 					boolean followerCoreTeam = Users.getFollowersCoreTeam(user, rep);
 					boolean followingCoreTeam = Users.getFollowingCoreTeam(user, rep);
 					
@@ -279,6 +281,7 @@ public class SaveFile implements Runnable {
 							files.replace(", ", "|")+","+
 							
 							typeDeveloper2+","+
+							typeDeveloper3+","+
 							followerCoreTeam+","+
 							followingCoreTeam+","+
 							prior_evalution+","+
@@ -358,7 +361,7 @@ public class SaveFile implements Runnable {
 						+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,location,"
 						+ "idPull,numberPull,login,state,title,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"
 						+ "status,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants,"
-						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files,typeDeveloper2,followerCoreTeam,followingCoreTeam,"
+						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files,typeDeveloper2,typeDeveloper3,followerCoreTeam,followingCoreTeam,"
 						//+ "prior_evalution,recent_pull,evaluation_pull,recent_evaluation,evaluate_time,latest_time,first_time,total_pull");
 						+pe+","+rp+","+ep+","+re+","+et+","+lt+","+ft+","
 						+ "total_pull");

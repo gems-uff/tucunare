@@ -51,6 +51,7 @@ public class Issues {
 		fields.put("number", 1);
 		fields.put("closed_by.login", 1);
 		fields.put("user.login", 1);
+		fields.put("_id", 0);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
@@ -82,6 +83,7 @@ public class Issues {
 		fields.put("number", 1);
 		fields.put("closed_by.login", 1);
 		fields.put("user.login", 1);
+		fields.put("_id", 0);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
@@ -109,6 +111,7 @@ public class Issues {
 		fields.put("number", 1);
 		fields.put("closed_by.login", 1);
 		fields.put("user.login", 1);
+		fields.put("_id", 0);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
@@ -141,6 +144,7 @@ public class Issues {
 		fields.put("number", 1);
 		fields.put("closed_by.login", 1);
 		fields.put("user.login", 1);
+		fields.put("_id", 0);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
@@ -170,6 +174,7 @@ public class Issues {
 		fields.put("closed_at", 1);
 		fields.put("closed_by.login", 1);
 		fields.put("created_at", 1);
+		fields.put("_id", 0);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
@@ -205,6 +210,7 @@ public class Issues {
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("closed_at", 1);
 		fields.put("closed_by.login", 1);
+		fields.put("_id", 0);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
@@ -232,6 +238,7 @@ public class Issues {
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("closed_at", 1);
 		fields.put("closed_by.login", 1);
+		fields.put("_id", 0);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
@@ -259,6 +266,7 @@ public class Issues {
 		query.append("user", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("number", 1);
+		fields.put("_id", 0);
 		return issues.find(query).count();
 	}
 	

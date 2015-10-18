@@ -21,6 +21,7 @@ public class Users {
 		BasicDBObject query = new BasicDBObject("login", user);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("followers", 1);
+		fields.put("_id", 0);
 		DBObject dboUser = users.findOne(query,fields);
 		String followers = "";
 		if(dboUser.get("followers") != null)
@@ -34,6 +35,7 @@ public class Users {
 		BasicDBObject query = new BasicDBObject("login", user);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("following", 1);
+		fields.put("_id", 0);
 		DBObject dboUser = users.findOne(query,fields);
 		String following = "";
 		if(dboUser.get("following") != null)
@@ -47,6 +49,7 @@ public class Users {
 		BasicDBObject query = new BasicDBObject("login", user);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("location", 1);
+		fields.put("_id", 0);
 		DBObject dboUser = users.findOne(query,fields);
 		String location="";
 		if(dboUser.get("location")!=null)
@@ -60,6 +63,7 @@ public class Users {
 		BasicDBObject query = new BasicDBObject("login", user);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("created_at", 1);
+		fields.put("_id", 0);
 		DBObject dboUser = users.findOne(query,fields);
 		String created_at="";
 		if(dboUser.get("created_at")!=null)
@@ -108,6 +112,7 @@ public class Users {
 		BasicDBObject query = new BasicDBObject("login", user);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("follows", 1);
+		fields.put("_id", 0);
 		DBCursor cursor = followers.find(query,fields);
 		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
 		for (DBObject dbFollower : cursor) {
@@ -127,6 +132,7 @@ public class Users {
 			BasicDBObject query = new BasicDBObject("login", string);
 			BasicDBObject fields = new BasicDBObject();
 			fields.put("follows", 1);
+			fields.put("_id", 0);
 			DBCursor cursor = followers.find(query,fields);
 			for (DBObject dbFollower : cursor) {
 				if(dbFollower != null)
@@ -147,7 +153,7 @@ public class Users {
 		
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("user.login",1);
-		
+		fields.put("_id", 0);
 		DBCursor cursorIssueComment = dbcIssueComment.find(queryIssueComment,fields);
 		ArrayList<String> participants = new ArrayList<String>();
 		if( cursorIssueComment != null )
@@ -177,7 +183,7 @@ public class Users {
 		
 		BasicDBObject fields2 = new BasicDBObject();
 		fields.put("actor.login",1);
-		
+		fields.put("_id", 0);
 		DBCursor cursorIssueEvent = dbcIssueEvent.find(queryIssueEvent,fields2);
 		if( cursorIssueEvent != null )
 		for (DBObject issueEvent : cursorIssueEvent) {
@@ -193,7 +199,7 @@ public class Users {
 		
 		BasicDBObject fields3 = new BasicDBObject();
 		fields.put("closed_by.login",1);
-		
+		fields.put("_id", 0);
 		DBObject issue = dbcIssues.findOne(queryIssue,fields3);
 		if(((BasicDBObject) issue) != null )
 		if( ((BasicDBObject) issue).get("closed_by") != null)
@@ -203,7 +209,7 @@ public class Users {
 		DBCollection dbcPull = db.getCollection("pull_requests");
 		BasicDBObject queryPull = new BasicDBObject("number",Integer.parseInt(idPullRequest)); //consulta com query
 		queryPull.append("repo", repo);
-		
+		fields.put("_id", 0);
 		DBObject pull = dbcPull.findOne(queryPull,fields);
 		  if(((BasicDBObject) pull) != null )
 			if((BasicDBObject) pull.get("user") != null)
