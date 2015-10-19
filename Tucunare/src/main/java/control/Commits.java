@@ -211,7 +211,7 @@ public class Commits {
 		fieldsPull.put("head.sha", 1);
 		fieldsPull.put("_id", 0);
 		BasicDBObject queryPull = new BasicDBObject("repo",repo);
-		
+		queryPull.append("owner", owner);
 		DBCursor objListCommit = dbcCommit.find(queryCommit,fieldsCommit);
 		
 		String type="";

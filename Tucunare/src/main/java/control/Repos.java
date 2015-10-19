@@ -42,6 +42,7 @@ public class Repos {
 		DBCollection issues = db.getCollection("issues");
 		BasicDBObject query = new BasicDBObject("created_at", new BasicDBObject("$lt",date).append("$gte", firstCreateDate)); //consulta com data menor que a data do pull request
 		query.append("repo", repo);
+		query.append("owner", owner);
 		query.append("pull_request", new BasicDBObject("$exists", true));
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("number", 1);

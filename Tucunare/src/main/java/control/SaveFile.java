@@ -124,8 +124,8 @@ public class SaveFile implements Runnable {
 						assignee = (String) ((BasicDBObject)dbObject.get("assignee")).get("login");
 
 					//comentários
-					int commentsPull = PullRequestsComments.getPullComments(number, rep); 
-					int commentsIssue = Issues.getIssueComments(number, dbObject.get("repo").toString());
+					int commentsPull = PullRequestsComments.getPullComments(number, rep, owner); 
+					int commentsIssue = Issues.getIssueComments(number, rep, owner);
 					long comments = commentsPull + commentsIssue;
 
 					//arquivos
@@ -141,7 +141,7 @@ public class SaveFile implements Runnable {
 						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, owner+"/"+rep, settings.getAuthorCommitsDays());
 					}
 					
-					String participants = Users.getParticipants(number, rep, user, closed_by);
+					String participants = Users.getParticipants(number, rep, user, closed_by, owner);
 					participants = participants.substring(1, participants.length()-1).replaceAll(", ", "|");
 					
 					//tratamento para caminho dos arquivos para buscar o último diretório
@@ -211,25 +211,25 @@ public class SaveFile implements Runnable {
 					boolean followerCoreTeam = Users.getFollowersCoreTeam(user, rep);
 					boolean followingCoreTeam = Users.getFollowingCoreTeam(user, rep);
 					
-					String prior_evalution = Issues.getPrior_Pull(user, created, firstCreateDate, repo, listCoreTeam);
+					String prior_evalution = Issues.getPrior_Pull(user, created, firstCreateDate, rep, owner, listCoreTeam);
 					prior_evalution = prior_evalution.substring(1, prior_evalution.length()-1).replaceAll(", ", ",");
 					
-					String recent_pull = Issues.getRecentPulls(rep, created, firstCreateDate, 30, listCoreTeam);
+					String recent_pull = Issues.getRecentPulls(rep, owner, created, firstCreateDate, 30, listCoreTeam);
 					recent_pull = recent_pull.substring(1, recent_pull.length()-1).replaceAll(", ", ",");
 					
-					String evaluation_pull = Issues.getEvaluatePulls(rep, created, firstCreateDate, listCoreTeam);
+					String evaluation_pull = Issues.getEvaluatePulls(rep, owner, created, firstCreateDate, listCoreTeam);
 					evaluation_pull = evaluation_pull.substring(1, evaluation_pull.length()-1).replaceAll(", ", ",");
 					
-					String recent_evaluation = Issues.getRecentEvaluatePulls(user, rep, created, firstCreateDate, 30, listCoreTeam);
+					String recent_evaluation = Issues.getRecentEvaluatePulls(user, owner, rep, created, firstCreateDate, 30, listCoreTeam);
 					recent_evaluation = recent_evaluation.substring(1, recent_evaluation.length()-1).replaceAll(", ", ",");
 							
-					String evaluate_time = Issues.getEvaluateTime(rep, created, firstCreateDate, 30, listCoreTeam);
+					String evaluate_time = Issues.getEvaluateTime(rep, owner, created, firstCreateDate, 30, listCoreTeam);
 					evaluate_time = evaluate_time.substring(1, evaluate_time.length()-1).replaceAll(", ", ",");
 							
-					String latest_time = Issues.getLatestTime(rep, created, listCoreTeam);
+					String latest_time = Issues.getLatestTime(rep, owner, created, listCoreTeam);
 					latest_time = latest_time.substring(1, latest_time.length()-1).replaceAll(", ", ",");
 							
-					String first_time = Issues.getFirstTime(rep, created, listCoreTeam);
+					String first_time = Issues.getFirstTime(rep, owner, created, listCoreTeam);
 					first_time = first_time.substring(1, first_time.length()-1).replaceAll(", ", ",");
 							
 //					String total_pull = ""+Issues.getTotalPull(rep, created, firstCreateDate);

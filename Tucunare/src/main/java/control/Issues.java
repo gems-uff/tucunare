@@ -32,11 +32,12 @@ public class Issues {
 		return closedbyPull;
 	}
 	
-	public static int getIssueComments(String idPullRequest, String repo) throws UnknownHostException{
+	public static int getIssueComments(String idPullRequest, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("issue_comments");
 		BasicDBObject query = new BasicDBObject("pullreq_id",Integer.parseInt(idPullRequest));
 		query.append("repo", repo);
+		query.append("owner", owner);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("issue_id", 1);
 		fields.put("_id", 0);
@@ -44,11 +45,12 @@ public class Issues {
 		return comments;
 	}
 	
-	public static String getPrior_Pull(String requester, String createDate, String firstCreateDate, String repo, ArrayList<String> listCoreTeam) throws UnknownHostException{		
+	public static String getPrior_Pull(String requester, String createDate, String firstCreateDate, String repo, String owner, ArrayList<String> listCoreTeam) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		BasicDBObject query = new BasicDBObject("created_at", new BasicDBObject("$lt",createDate).append("$gte", firstCreateDate)); //consulta com data menor que a data do pull request
 		query.append("repo", repo);
+		query.append("owner", owner);
 		query.append("pull_request", new BasicDBObject("$exists", true));
 		query.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		query.append("user", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
@@ -71,11 +73,12 @@ public class Issues {
 	}
 
 	//recent recent pulls
-	public static String getRecentPulls(String repo, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
+	public static String getRecentPulls(String repo, String owner, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		String data = FormatDate.dataLimit(createDate, days);
 		BasicDBObject query = new BasicDBObject("repo", repo);
+		query.append("owner", owner);
 		query.append("pull_request", new BasicDBObject("$exists", true));
 		query.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		query.append("user", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
@@ -101,11 +104,12 @@ public class Issues {
 		return list.toString();
 	}
 	
-	public static String getEvaluatePulls(String repo, String createDate, String firstCreateDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
+	public static String getEvaluatePulls(String repo, String owner, String createDate, String firstCreateDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		BasicDBObject query = new BasicDBObject("created_at", new BasicDBObject("$lt",createDate).append("$gte", firstCreateDate));
 		query.append("repo", repo);
+		query.append("owner", owner);
 		query.append("pull_request", new BasicDBObject("$exists", true));
 		query.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		query.append("user", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
@@ -127,11 +131,12 @@ public class Issues {
 		return list.toString();
 	}
 	
-	public static String getRecentEvaluatePulls(String requester, String repo, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
+	public static String getRecentEvaluatePulls(String requester, String repo, String owner, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		String data = FormatDate.dataLimit(createDate, days);
-		BasicDBObject query = new BasicDBObject("repo", repo); 
+		BasicDBObject query = new BasicDBObject("repo", repo);
+		query.append("owner", owner);
 		if(data.compareTo(firstCreateDate)<=1)
 			query.append("created_at", new BasicDBObject("$lt",createDate).append("$gte",firstCreateDate));
 		else
@@ -157,11 +162,12 @@ public class Issues {
 		return list.toString();
 	}
 	
-	public static String getEvaluateTime(String repo, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
+	public static String getEvaluateTime(String repo, String owner, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		String data = FormatDate.dataLimit(createDate, days);
 		BasicDBObject query = new BasicDBObject("repo", repo); 
+		query.append("owner", owner);
 		if(data.compareTo(firstCreateDate)<=1)
 			query.append("created_at", new BasicDBObject("$lt",createDate).append("$gte",firstCreateDate));
 		else
@@ -197,11 +203,12 @@ public class Issues {
 		return list.toString();
 	}
 	
-	public static String getLatestTime(String repo, String createDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
+	public static String getLatestTime(String repo, String owner, String createDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		BasicDBObject query = new BasicDBObject("closed_at", new BasicDBObject("$lte",createDate).append("$not", new BasicDBObject("$type", 10)));
 		query.append("repo", repo);
+		query.append("owner", owner);
 		query.append("pull_request", new BasicDBObject("$exists", true));
 		query.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		BasicDBObject fields = new BasicDBObject();
@@ -224,11 +231,12 @@ public class Issues {
 		return list.toString();
 	}
 	
-	public static String getFirstTime(String repo, String createDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
+	public static String getFirstTime(String repo, String owner, String createDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		BasicDBObject query = new BasicDBObject("closed_at", new BasicDBObject("$lte",createDate).append("$not", new BasicDBObject("$type", 10)));
 		query.append("repo", repo);
+		query.append("owner", owner);
 		query.append("pull_request", new BasicDBObject("$exists", true));
 		query.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		BasicDBObject fields = new BasicDBObject();
@@ -251,11 +259,12 @@ public class Issues {
 		return list.toString();
 	}
 	
-	public static int getTotalPull(String repo, String createDate, String firstCreateDate) throws UnknownHostException{		
+	public static int getTotalPull(String repo, String owner, String createDate, String firstCreateDate) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
 		BasicDBObject query = new BasicDBObject("created_at", new BasicDBObject("$lt",createDate).append("$gte", firstCreateDate)); //consulta com data menor que a data do pull request
 		query.append("repo", repo);
+		query.append("owner", owner);
 		query.append("pull_request", new BasicDBObject("$exists", true));
 		query.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		query.append("user", new BasicDBObject("$not", new BasicDBObject("$type", 10)));

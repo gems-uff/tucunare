@@ -152,12 +152,13 @@ public class Users {
 		return followerCoreTeam;
 	}
 	
-	public static String getParticipants(String idPullRequest, String repo, String user, String closed_by) throws UnknownHostException{
+	public static String getParticipants(String idPullRequest, String repo, String user, String closed_by, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		
 		DBCollection dbcIssueComment = db.getCollection("issue_comments");
 		BasicDBObject queryIssueComment = new BasicDBObject("issue_id",Integer.parseInt(idPullRequest)); //consulta com query
 		queryIssueComment.append("repo", repo);
+		queryIssueComment.append("owner", owner);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("user.login",1);
 		fields.put("_id", 0);
@@ -175,6 +176,7 @@ public class Users {
 		DBCollection dbcPullComment = db.getCollection("pull_request_comments");
 		BasicDBObject queryPullComment = new BasicDBObject("pullreq_id",Integer.parseInt(idPullRequest)); //consulta com query
 		queryPullComment.append("repo", repo);
+		queryPullComment.append("owner", owner);
 		DBCursor cursorPullComment = dbcPullComment.find(queryPullComment,fields);
 		if( cursorPullComment != null )
 		for (DBObject pullComments : cursorPullComment) {
@@ -187,6 +189,7 @@ public class Users {
 		DBCollection dbcIssueEvent = db.getCollection("issue_events");
 		BasicDBObject queryIssueEvent = new BasicDBObject("issue_id",Integer.parseInt(idPullRequest)); //consulta com query
 		queryIssueEvent.append("repo", repo);
+		queryIssueEvent.append("owner", owner);
 		BasicDBObject fields2 = new BasicDBObject();
 		fields.put("actor.login",1);
 		fields.put("_id", 0);
