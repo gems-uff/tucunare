@@ -5,13 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
 import model.Settings;
 import teste.DialogStatus;
 import util.Connect;
 import util.FormatDate;
-import view.RetrievePullRequest;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -24,7 +21,7 @@ public class SaveFile implements Runnable {
 	public static int finalizedThreads = 0;
 	public static String tempo="";
 	private Settings settings;
-
+	
 	public SaveFile(String repo, String file, Settings settings) throws UnknownHostException{
 		this.repo = repo; 
 		this.file = file;
@@ -58,6 +55,9 @@ public class SaveFile implements Runnable {
 		if (settings.getPrType() == 2)
 			query.append("state", "closed"); //Apenas pull requests encerrados
 
+		//Dados globais para o projeto
+		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
+		
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
@@ -71,7 +71,9 @@ public class SaveFile implements Runnable {
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
 				if(!closed_by.equals(""))
 				if(dbObject!=null && !closed_by.equals(user)){
-					String owner = dbObject.get("owner").toString();
+					
+					String owner = dbObject.get("owner").toString();//Repos.getOwner(repo);
+					String dataRepo = Repos.getRepoData(owner+"/"+repo);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String created = dbObject.get("created_at").toString();
 					String followers = Users.getFollowersUser(user);
 					String following = Users.getFollowingUser(user);
@@ -79,19 +81,23 @@ public class SaveFile implements Runnable {
 					String shaHead = ((BasicDBObject)dbObject.get("head")).get("sha").toString();
 					String shaBase = ((BasicDBObject)dbObject.get("base")).get("sha").toString();
 					
+					String firstCreateDate = "";
+					if(countCreateDate == 1)
+						firstCreateDate = created;
+					countCreateDate++;
+					
 					//Dados do projeto
-					String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String acceptanceRepo="";
-					int totalPullRepoClosed = Repos.getPullRepoClosed(created, rep, owner);
-					int mergedPullRepo = Repos.getPullRepoMerged(created, rep, owner);
+					int totalPullRepoClosed = Repos.getPullRepoClosed(created, firstCreateDate, rep, owner);
+					int mergedPullRepo = Repos.getPullRepoMerged(created, firstCreateDate, rep, owner);
 					if(totalPullRepoClosed==0)
 						acceptanceRepo = "0";
 					else
 						acceptanceRepo = String.valueOf(((mergedPullRepo*100)/totalPullRepoClosed));
-
+					
 					//Dados do requester
-					int totalPullUser = Users.getPullUserTotal(user, created, rep, owner);
-					int mergedPullUser = Users.getPullUserMerged(user, created, rep, owner);
+					int totalPullUser = Users.getPullUserTotal(user, created, rep, firstCreateDate);
+					int mergedPullUser = Users.getPullUserMerged(user, created, rep, firstCreateDate, owner);
 					int closedPullUser = totalPullUser - mergedPullUser;
 
 					String rejectUser;
@@ -105,8 +111,8 @@ public class SaveFile implements Runnable {
 					}
 					
 //					verificar uso do listTeam no lugar de contributors
-					String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
-					String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
+					//String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
+					//String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
 					
 					boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
 //					boolean followContributors = Users.getFollowersContributors(user, rep, owner);
@@ -135,7 +141,7 @@ public class SaveFile implements Runnable {
 						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, owner+"/"+rep, settings.getAuthorCommitsDays());
 					}
 					
-					String participants = Users.getParticipants(number, rep);
+					String participants = Users.getParticipants(number, rep, user, closed_by);
 					participants = participants.substring(1, participants.length()-1).replaceAll(", ", "|");
 					
 					//tratamento para caminho dos arquivos para buscar o último diretório
@@ -192,7 +198,7 @@ public class SaveFile implements Runnable {
 						status = "merged";
 					
 //					Dados da equipe principal
-					ArrayList<String> listCoreTeam = Commits.getCoreTeamList(rep);
+					
 					
 					String typeDeveloper2="";
 					if(listCoreTeam.contains(user))
@@ -200,35 +206,30 @@ public class SaveFile implements Runnable {
 					else
 						typeDeveloper2 = "external";
 					
+					//Atributos CoreDevRec
 					String typeDeveloper3 = Commits.getTypeDeveloper3(user, rep, owner);
-					
 					boolean followerCoreTeam = Users.getFollowersCoreTeam(user, rep);
 					boolean followingCoreTeam = Users.getFollowingCoreTeam(user, rep);
 					
-					String firstCreateDate = "";
-					if(countCreateDate == 1)
-						firstCreateDate = created;
-					countCreateDate++;
-					
-					String prior_evalution = Issues.getPrior_Pull(user, created, firstCreateDate, repo);
+					String prior_evalution = Issues.getPrior_Pull(user, created, firstCreateDate, repo, listCoreTeam);
 					prior_evalution = prior_evalution.substring(1, prior_evalution.length()-1).replaceAll(", ", ",");
 					
-					String recent_pull = Issues.getRecentPulls(rep, created, firstCreateDate, 30);
+					String recent_pull = Issues.getRecentPulls(rep, created, firstCreateDate, 30, listCoreTeam);
 					recent_pull = recent_pull.substring(1, recent_pull.length()-1).replaceAll(", ", ",");
 					
-					String evaluation_pull = Issues.getEvaluatePulls(rep, created, firstCreateDate);
+					String evaluation_pull = Issues.getEvaluatePulls(rep, created, firstCreateDate, listCoreTeam);
 					evaluation_pull = evaluation_pull.substring(1, evaluation_pull.length()-1).replaceAll(", ", ",");
 					
-					String recent_evaluation = Issues.getRecentEvaluatePulls(user, rep, created, firstCreateDate, 30);
+					String recent_evaluation = Issues.getRecentEvaluatePulls(user, rep, created, firstCreateDate, 30, listCoreTeam);
 					recent_evaluation = recent_evaluation.substring(1, recent_evaluation.length()-1).replaceAll(", ", ",");
 							
-					String evaluate_time = Issues.getEvaluateTime(rep, created, firstCreateDate, 30);
+					String evaluate_time = Issues.getEvaluateTime(rep, created, firstCreateDate, 30, listCoreTeam);
 					evaluate_time = evaluate_time.substring(1, evaluate_time.length()-1).replaceAll(", ", ",");
 							
-					String latest_time = Issues.getLatestTime(rep, created);
+					String latest_time = Issues.getLatestTime(rep, created, listCoreTeam);
 					latest_time = latest_time.substring(1, latest_time.length()-1).replaceAll(", ", ",");
 							
-					String first_time = Issues.getFirstTime(rep, created);
+					String first_time = Issues.getFirstTime(rep, created, listCoreTeam);
 					first_time = first_time.substring(1, first_time.length()-1).replaceAll(", ", ",");
 							
 //					String total_pull = ""+Issues.getTotalPull(rep, created, firstCreateDate);
@@ -238,12 +239,12 @@ public class SaveFile implements Runnable {
 					String resultTemp = 
 							owner+"/"+rep+","+
 							dataRepo+","+
-							contributors+","+
+							//contributors+","+
 							acceptanceRepo+","+
 							followers+","+
 							following+","+
 							ageUser+","+
-							typeDeveloper+","+
+							//typeDeveloper+","+
 							totalPullUser+","+
 							mergedPullUser+","+
 							closedPullUser+","+
@@ -357,8 +358,8 @@ public class SaveFile implements Runnable {
 				String ft = first_timeList.toString();
 				ft = ft.substring(1, ft.length()-1).replaceAll(", ", ",");
 				
-				fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,contributors,acceptanceRepo,"
-						+ "followers,following,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,location,"
+				fw.write("owner/repo,ageRepoDays,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,acceptanceRepo,"
+						+ "followers,following,ageUser,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,location,"
 						+ "idPull,numberPull,login,state,title,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"
 						+ "status,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants,"
 						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files,typeDeveloper2,typeDeveloper3,followerCoreTeam,followingCoreTeam,"

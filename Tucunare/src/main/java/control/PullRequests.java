@@ -1,21 +1,13 @@
 package control;
 
 import java.net.UnknownHostException;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-
 import util.Connect;
-import util.FormatDate;
 
 public class PullRequests extends Thread{
-	@SuppressWarnings("unchecked")
 	public static List<String> getAllRepos() throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");

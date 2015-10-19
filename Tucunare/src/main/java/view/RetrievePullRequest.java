@@ -11,7 +11,6 @@ import java.awt.event.ItemListener;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -35,12 +34,9 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import model.Settings;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import teste.DialogStatus;
 import control.PullRequests;
 import control.SaveFile;
@@ -140,7 +136,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JPanel panel_12;
 	private static int threadAtual=0;
 	private static String file="";
-
 
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
