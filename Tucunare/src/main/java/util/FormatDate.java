@@ -66,6 +66,8 @@ public class FormatDate {
 			diferencaMinutos = lifetime/tempoMinutos;
 		} catch (ParseException e){
 			System.err.println("Erro na conversão de data do autor do commit.");
+		}catch (Exception e){
+			System.err.println("Erro geral de data do autor do commit.");
 		}
 		return ""+diferencaMinutos;	
 	}

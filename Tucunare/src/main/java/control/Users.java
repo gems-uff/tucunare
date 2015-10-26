@@ -114,7 +114,7 @@ public class Users {
 			return false;
 	}
 
-	public static boolean getFollowingCoreTeam (String user, String repo) throws UnknownHostException{
+	public static boolean getFollowingCoreTeam (String user, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection followers = db.getCollection("followers");
 		BasicDBObject query = new BasicDBObject("login", user);
@@ -122,7 +122,7 @@ public class Users {
 		fields.put("follows", 1);
 		fields.put("_id", 0);
 		DBCursor cursor = followers.find(query,fields);
-		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
+		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo, owner);
 		for (DBObject dbFollower : cursor) {
 			if(dbFollower != null)
 				if(listCoreTeam.contains(dbFollower.get("follows").toString()))
@@ -131,10 +131,10 @@ public class Users {
 		return false;
 	}
 	
-	public static boolean getFollowersCoreTeam (String user, String repo) throws UnknownHostException{
+	public static boolean getFollowersCoreTeam (String user, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection followers = db.getCollection("followers");
-		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo);
+		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo, owner);
 		boolean followerCoreTeam = false;
 		for (String string : listCoreTeam) {
 			BasicDBObject query = new BasicDBObject("login", string);

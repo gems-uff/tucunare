@@ -153,11 +153,12 @@ public class Commits {
 	}
 
 	//retorna os contribuidores para coleta dos dados sociais
-	public static ArrayList<String> getCoreTeamList(String repo) throws UnknownHostException{
+	public static ArrayList<String> getCoreTeamList(String repo,String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issueC = db.getCollection("issues");
 		BasicDBObject queryIssue = new BasicDBObject("repo", repo);
 		queryIssue.append("pull_request", new BasicDBObject("$exists", true));
+		queryIssue.append("owner", owner);
 		queryIssue.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("closed_by.login", 1);

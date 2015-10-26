@@ -14,11 +14,12 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class Issues {
-	public static String getClosedbyPull(Integer numberPull, String repo) throws UnknownHostException{
+	public static String getClosedbyPull(Integer numberPull, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcIssues = db.getCollection("issues");
 		BasicDBObject queryIssue = new BasicDBObject("number",numberPull); 
 		queryIssue.append("repo", repo);
+		queryIssue.append("owner", owner);
 		queryIssue.append("pull_request", new BasicDBObject("$exists", true));
 		queryIssue.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
 		BasicDBObject fields = new BasicDBObject();
@@ -27,7 +28,7 @@ public class Issues {
 		DBObject issue = dbcIssues.findOne(queryIssue,fields);
 		String closedbyPull="";
 		if(((BasicDBObject) issue) != null )
-			//if( ((BasicDBObject) issue).get("closed_by") != null  )
+			if( ((BasicDBObject) issue).get("closed_by") != null  )
 				closedbyPull = ((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString() ;
 		return closedbyPull;
 	}
@@ -179,16 +180,18 @@ public class Issues {
 		fields.put("closed_at", 1);
 		fields.put("closed_by.login", 1);
 		fields.put("created_at", 1);
+		//fields.put("number", 1);
 		fields.put("_id", 0);
 		ArrayList<String> list = new ArrayList<String>();
 		for (Object memberCoreTeam : listCoreTeam) {
 			double time = 0, count = 0, memberCount = 0;
 			query.append("closed_by.login", memberCoreTeam.toString());
 			DBCursor cursorIssue = issues.find(query, fields);
-			for (DBObject dbObject : cursorIssue) {
-				if(dbObject != null && memberCount == 0){
-					time += Integer.parseInt(FormatDate.getLifetime(dbObject.get("closed_at").toString(), dbObject.get("created_at").toString()));
-					count++;
+			for (DBObject dbObject : cursorIssue) {//((BasicDBObject) object).get("filename") != null
+				if((BasicDBObject)dbObject != null && memberCount == 0)
+					if(((BasicDBObject)dbObject).get("created_at")!=null && ((BasicDBObject)dbObject).get("closed_at")!=null){
+						time += Double.parseDouble(FormatDate.getLifetime(dbObject.get("closed_at").toString(), dbObject.get("created_at").toString()));
+						count++;
 				}	
 			}
 			
@@ -221,8 +224,8 @@ public class Issues {
 			query.append("closed_by.login", memberCoreTeam.toString());
 			BasicDBObject dbo = new BasicDBObject("closed_at",-1);
 			DBObject issue = issues.findOne(query, fields, dbo);
-			if(issue != null)
-				time = Integer.parseInt(FormatDate.getLifetime(createDate, issue.get("closed_at").toString()));
+			if(issue != null && ((BasicDBObject)issue).get("closed_by")!=null)
+				time = Double.parseDouble(FormatDate.getLifetime(createDate, issue.get("closed_at").toString()));
 			if(time == 0)
 				list.add("");
 			else
@@ -249,8 +252,8 @@ public class Issues {
 			query.append("closed_by.login", memberCoreTeam.toString());
 			BasicDBObject dbo = new BasicDBObject("closed_at",1);
 			DBObject issue = issues.findOne(query, fields, dbo);//.sort(new BasicDBObject("closed_at",-1)).limit(1);
-			if(issue != null)
-					time = Integer.parseInt(FormatDate.getLifetime(createDate, issue.get("closed_at").toString()));
+			if(issue != null && ((BasicDBObject)issue).get("closed_by")!=null)
+					time = Double.parseDouble(FormatDate.getLifetime(createDate, issue.get("closed_at").toString()));
 			if(time == 0)
 				list.add("");
 			else

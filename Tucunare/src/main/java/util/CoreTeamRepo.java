@@ -14,9 +14,9 @@ import control.Commits;
 //para executar no GHTorrent basta digitar o nome do aqruivo gerado no diretório 
 public class CoreTeamRepo {
 	public static void main(String[] args) throws UnknownHostException {
-		ArrayList<String> list = Commits.getCoreTeamList("katello", "katello");
-		Collections.sort(list);
-		File file = new File("d:/Ruby200/lib/ruby/gems/2.0.0/gems/ghtorrent-0.10/","katelloCoreTeam2.sh");
+		ArrayList<String> list = Commits.getCoreTeamList("bower","bower");
+		//Collections.sort(list);
+		File file = new File("c:/Ruby200/lib/ruby/gems/2.0.0/gems/ghtorrent-0.10/projects/","bowerCoreTeam.sh");
 		try{
 			FileWriter fw = new FileWriter(file, false);
 			fw.write("#!/bin/bash"+"\n");

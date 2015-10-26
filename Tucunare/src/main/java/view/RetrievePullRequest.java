@@ -300,10 +300,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 	private void iniciaThreads(List<String> selectedRepositories,
 			Settings settings) {
-
+		
 		for (String repository : selectedRepositories) {
 			try {
-				totalPullRequests += PullRequests.getPulls(repository, settings.getPrType());
+				String [] r = repository.split("/");
+				totalPullRequests += PullRequests.getPulls(r[1], r[0], settings.getPrType());
 				System.out.println(settings.getPrType());
 			} catch (UnknownHostException e) {
 				System.err.println("Erro ao iniciar a contagem de pull requests dos repositórios selecionados.");
