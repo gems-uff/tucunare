@@ -11,6 +11,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class Users {
+	//Quantidade de seguidores do requester
 	public static String getFollowersUser (String user) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
@@ -24,7 +25,7 @@ public class Users {
 			followers = dboUser.get("followers").toString(); 
 		return followers;
 	}
-	
+	//Quantidade de seguidos pelo requester
 	public static String getFollowingUser (String user) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
@@ -38,7 +39,7 @@ public class Users {
 			following = dboUser.get("following").toString(); 
 		return following;
 	}
-	
+	//Localização geográfica do requester
 	public static String getLocationUser (String user) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
@@ -52,7 +53,7 @@ public class Users {
 			location = dboUser.get("location").toString();
 		return location; 
 	}
-	
+	//Idade em dias do requester no GitHub
 	public static String getAgeUser (String user) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection users = db.getCollection("users");
@@ -66,7 +67,7 @@ public class Users {
 			created_at = FormatDate.getAge(dboUser.get("created_at").toString());
 		return created_at;
 	}
-	
+	//Total de pull requests enviados pelo requester anteriormente
 	public static int getPullUserTotal (String user, String date, String repo, String firstCreateDate) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -81,7 +82,7 @@ public class Users {
 		int count = issues.find(query, fields).count();
 		return count;
 	}
-	
+	//Total de pull requests aceitos enviados pelo requester anteriormente
 	public static int getPullUserMerged (String user, String date, String repo, String firstCreateDate, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection pulls = db.getCollection("pull_requests");
@@ -96,7 +97,7 @@ public class Users {
 		int numberPull = pulls.find(query,fields).count();
 		return numberPull;
 	}
-	
+	//Se o requester é obervador do projeto
 	public static boolean getWatcherRepo (String user, String date, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection watchers = db.getCollection("watchers");
@@ -113,21 +114,34 @@ public class Users {
 		else
 			return false;
 	}
-
-	public static boolean getFollowingCoreTeam (String user, String repo, String owner) throws UnknownHostException{
+	//Se o requester segue o desenvolvedor do time principal
+	public static boolean getRequesterFollowsCoreTeam (String user, String closed_by) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection followers = db.getCollection("followers");
 		BasicDBObject query = new BasicDBObject("login", user);
+		query.append("follows", closed_by);
 		BasicDBObject fields = new BasicDBObject();
+		fields.put("login", 1);
 		fields.put("follows", 1);
 		fields.put("_id", 0);
-		DBCursor cursor = followers.find(query,fields);
-		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo, owner);
-		for (DBObject dbFollower : cursor) {
-			if(dbFollower != null)
-				if(listCoreTeam.contains(dbFollower.get("follows").toString()))
-					return true;
-		}
+		DBObject f = followers.findOne(query,fields);
+		if(f != null)
+			return true;
+		return false;
+	}
+	//Se o desenvolvedor do time primcipal segue o requester
+	public static boolean getCoreTeamFollowsRequester (String user, String closed_by) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection followers = db.getCollection("followers");
+		BasicDBObject query = new BasicDBObject("login", closed_by);
+		query.append("follows", user);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("login", 1);
+		fields.put("follows", 1);
+		fields.put("_id", 0);
+		DBObject f = followers.findOne(query,fields);
+		if(f != null)
+			return true;
 		return false;
 	}
 	
@@ -144,14 +158,16 @@ public class Users {
 			DBCursor cursor = followers.find(query,fields);
 			for (DBObject dbFollower : cursor) {
 				if(dbFollower != null)
-					if(dbFollower.get("follows").toString().equals(user))
+					if(dbFollower.get("follows").toString().equals(user)){
 						followerCoreTeam = true;
+						break;
+					}	
 			}
 			followerCoreTeam = false;
 		}
 		return followerCoreTeam;
 	}
-	
+	//Nome dos desenvolvedores que participaram do ciclo de vida do pull request
 	public static String getParticipants(String idPullRequest, String repo, String user, String closed_by, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		

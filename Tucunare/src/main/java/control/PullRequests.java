@@ -10,6 +10,7 @@ import com.mongodb.DBCollection;
 import util.Connect;
 
 public class PullRequests extends Thread{
+//	Nome dos repositórios no formato owner+repo
 	public static List<String> getAllRepos() throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
@@ -25,7 +26,7 @@ public class PullRequests extends Thread{
 		}
 		return fullName;
 	}
-	
+//	Quantidade de pull requests em um projeto
 	public static int getPulls(String repo, String owner, int prType) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		System.out.println(Connect.getInstance() == null?"db é nulo":"db não é nulo");

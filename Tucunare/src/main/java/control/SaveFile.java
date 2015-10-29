@@ -53,7 +53,7 @@ public class SaveFile implements Runnable {
 		String ownerRepo = r[0];
 		BasicDBObject query = new BasicDBObject("repo",r[1]); //consulta com query
 		query.append("owner", ownerRepo);
-		//query.append("number", new BasicDBObject("$gt", Integer.parseInt("5437")));//maiores que number
+		query.append("number", new BasicDBObject("$gt", Integer.parseInt("4610")));//maiores que number
 		if (settings.getPrType() == 1)
 			query.append("state", "open"); //Apenas pull requests encerrados
 		if (settings.getPrType() == 2)
@@ -64,7 +64,7 @@ public class SaveFile implements Runnable {
 		String firstCreateDate = "";
 		BasicDBObject queryData = new BasicDBObject("repo",nameRepo);
 		queryData.append("owner", ownerRepo);
-		//queryData.append("number", 30);//primeiro pull
+		queryData.append("number", 2);//primeiro pull
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("created_at", 1);
 		fields.put("_id", 0);
@@ -205,19 +205,17 @@ public class SaveFile implements Runnable {
 						else
 							status = "merged";
 
-						//					Dados da equipe principal
-
-
-						String typeDeveloper2="";
-						if(listCoreTeam.contains(user))
-							typeDeveloper2 = "core";
-						else
-							typeDeveloper2 = "external";
+						//Dados da equipe principal
+//						String pullClosed="";
+//						if(listCoreTeam.contains(user))
+//							pullClosed = "true";
+//						else
+//							pullClosed = "false";
 
 						//Atributos CoreDevRec
-						String typeDeveloper3 = Commits.getTypeDeveloper3(user, nameRepo,ownerRepo);
-						boolean followerCoreTeam = Users.getFollowersCoreTeam(user, nameRepo,ownerRepo);
-						boolean followingCoreTeam = Users.getFollowingCoreTeam(user, nameRepo,ownerRepo);
+						String typeDeveloper = Commits.getTypeDeveloper3(user, nameRepo,ownerRepo);
+						boolean requesterFollowsCoreTeam = Users.getRequesterFollowsCoreTeam(user, closed_by);
+						boolean coreTeamFollowsRequester = Users.getCoreTeamFollowsRequester(user, closed_by);
 
 						String prior_evalution = Issues.getPrior_Pull(user, created, firstCreateDate, nameRepo,ownerRepo, listCoreTeam);
 						prior_evalution = prior_evalution.substring(1, prior_evalution.length()-1).replaceAll(", ", ",");
@@ -288,10 +286,10 @@ public class SaveFile implements Runnable {
 										dbObject.get("changed_files")+","+
 										dirFinal+","+
 										files.replace(", ", "|")+","+
-										typeDeveloper2+","+
-										typeDeveloper3+","+
-										followerCoreTeam+","+
-										followingCoreTeam+","+
+//										pullClosed+","+
+										typeDeveloper+","+
+										requesterFollowsCoreTeam+","+
+										coreTeamFollowsRequester+","+
 										prior_evalution+","+
 										recent_pull+","+
 										evaluation_pull+","+
@@ -376,7 +374,7 @@ public class SaveFile implements Runnable {
 						+ "followers,following,ageUser,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser,acceptanceDeveloper,watchRepo,location,"
 						+ "idPull,numberPull,login,state,title,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"
 						+ "status,commitHeadSha,commitBaseSha,assignee,comments,commitsPull,commitsbyFilesPull,authorMoreCommits,participants,"
-						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files,typeDeveloper2,typeDeveloper3,followerCoreTeam,followingCoreTeam,"
+						+ "additionsLines,deletionsLines,totalLines,changedFiles,dirFinal,files,typeDeveloper,requesterFollowsCoreTeam,coreTeamFollowsRequester,"
 						//+ "prior_evalution,recent_pull,evaluation_pull,recent_evaluation,evaluate_time,latest_time,first_time,total_pull");
 						+pe+","+rp+","+ep+","+re+","+et+","+lt+","+ft+","
 						+ "total_pull");

@@ -14,6 +14,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class Issues {
+	//Desenvolvedor que encerrou o pull request
 	public static String getClosedbyPull(Integer numberPull, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcIssues = db.getCollection("issues");
@@ -32,7 +33,7 @@ public class Issues {
 				closedbyPull = ((BasicDBObject) ((BasicDBObject) issue).get("closed_by")).get("login").toString() ;
 		return closedbyPull;
 	}
-	
+	//Quantidade de comentários pela coleção de Issues
 	public static int getIssueComments(String idPullRequest, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("issue_comments");
@@ -45,7 +46,7 @@ public class Issues {
 		int comments = dbc.find(query,fields).count();
 		return comments;
 	}
-	
+	//Quantidade de pull requests enviados anteriormente pelo requester e avaliados por cada desenvolvedor da equipe principal
 	public static String getPrior_Pull(String requester, String createDate, String firstCreateDate, String repo, String owner, ArrayList<String> listCoreTeam) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -73,7 +74,7 @@ public class Issues {
 		return list.toString();
 	}
 
-	//recent recent pulls
+	//Quantidade de pull requests enviados anteriormente pelo requester e avaliados por cada desenvolvedor da equipe principal nos últimos 30 dias
 	public static String getRecentPulls(String repo, String owner, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -104,7 +105,7 @@ public class Issues {
 		}
 		return list.toString();
 	}
-	
+	//Quantidade de pull requests avaliados anteriormente por cada membro da equipe principal
 	public static String getEvaluatePulls(String repo, String owner, String createDate, String firstCreateDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -131,7 +132,7 @@ public class Issues {
 		}
 		return list.toString();
 	}
-	
+	//Quantidade de pull requests avaliados anteriormente por cada membro da equipe principal nos últimos 30 dias
 	public static String getRecentEvaluatePulls(String requester, String repo, String owner, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -162,7 +163,7 @@ public class Issues {
 		}
 		return list.toString();
 	}
-	
+	//A média de tempo entre o envio do pull request e a as avaliações de cada desenvolvedor nos últimos 30 dias
 	public static String getEvaluateTime(String repo, String owner, String createDate, String firstCreateDate, Integer days, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -205,7 +206,7 @@ public class Issues {
 		}
 		return list.toString();
 	}
-	
+	//Intervalo de tempo entre o envio do pull request e a última avaliação de cada desenvolvedor
 	public static String getLatestTime(String repo, String owner, String createDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -233,7 +234,7 @@ public class Issues {
 		}
 		return list.toString();
 	}
-	
+	//Intervalo de tempo entre o envio do pull request e a primeira avaliação de cada desenvolvedor
 	public static String getFirstTime(String repo, String owner, String createDate, ArrayList<String> listCoreTeam) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -261,7 +262,7 @@ public class Issues {
 		}
 		return list.toString();
 	}
-	
+    //Total de pull requests	
 	public static int getTotalPull(String repo, String owner, String createDate, String firstCreateDate) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");

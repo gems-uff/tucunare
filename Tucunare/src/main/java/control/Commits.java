@@ -15,6 +15,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 public class Commits {
+//	Caminho completos dos arquivos alterados pelo pull request
 	public static String getCommitsFilesPath(String shaHead, String shaBase, Integer commits, Integer filesPull) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcCommits = db.getCollection("commits");
@@ -49,7 +50,7 @@ public class Commits {
 		}
 		return files.toString();
 	}
-
+//	Desenvolvedor com a maior quantidade de commits nos arquivos enviados pelo pull request
 	public static String getAuthorCommits(String filesNames, String shaBase, String repo, Integer days) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
@@ -94,7 +95,7 @@ public class Commits {
 		} 
 		return author;
 	}
-
+//	Quantidade de commits nos arquivos enviados pelo pull request
 	public static int getCommitsByFiles (String filesNames, String pullRequestDate, String repo, Integer days) throws UnknownHostException{
 		String files[] = filesNames.split(", ");
 		int numCommitsNoArquivo = 0;
@@ -124,7 +125,7 @@ public class Commits {
 		return numCommitsNoArquivo;
 	}
 
-	//recent contributors (1 mont)
+	//não utilizamos mais - V1
 	public static String getContributors(String shaBase, String repo, String owner, Integer days) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
@@ -140,7 +141,7 @@ public class Commits {
 		return ""+contributorsList.length;
 	}
 
-	//retorna os contribuidores para coleta dos dados sociais
+	//retorna os contribuidores para coleta dos dados sociais (V1)
 	public static Object [] getContributorsList(String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection commitsC = db.getCollection("commits");
@@ -152,7 +153,7 @@ public class Commits {
 		return contributorsList;
 	}
 
-	//retorna os contribuidores para coleta dos dados sociais
+	//retorna os contribuidores para coleta dos dados sociais V1
 	public static ArrayList<String> getCoreTeamList(String repo,String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issueC = db.getCollection("issues");
@@ -184,7 +185,7 @@ public class Commits {
 	}
 
 
-	//type developer
+	//type developer V1
 	public static String getTypeDeveloper(String user, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("commits");
@@ -198,7 +199,7 @@ public class Commits {
 			type = "external";
 		return type;
 	}
-
+//	Tipo de desenvolvedor
 	public static String getTypeDeveloper3(String user, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcCommit= db.getCollection("commits");

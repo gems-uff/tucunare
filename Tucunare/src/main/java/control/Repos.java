@@ -9,7 +9,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 public class Repos {	
-	
+	//Proprietário do projeto
 	public static String getOwner(String repo) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcRepos = db.getCollection("repos");
@@ -21,7 +21,7 @@ public class Repos {
 		String owner = ((BasicDBObject)((BasicDBObject) repoObject).get("owner")).get("login").toString();
 		return owner;
 	}
-	
+	//Dados do projeto
 	public static String getRepoData(String repo) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcRepos = db.getCollection("repos");
@@ -36,7 +36,7 @@ public class Repos {
 				((BasicDBObject) repoObject).get("subscribers_count")+","+
 				((BasicDBObject) repoObject).get("has_wiki");
 	}
-	
+	//Quantidade de pull requests fechados em um projeto
 	public static int getPullRepoClosed (String date, String firstCreateDate, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -50,7 +50,7 @@ public class Repos {
 		int count = issues.find(query, fields).count();
 		return count;
 	}
-	
+	//Quantidade de pull requests aceitos em um projeto
 	public static int getPullRepoMerged (String date, String firstCreateDate, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection pulls = db.getCollection("pull_requests");

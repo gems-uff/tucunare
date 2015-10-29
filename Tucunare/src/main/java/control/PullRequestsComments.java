@@ -9,6 +9,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 
 public class PullRequestsComments {
+//	Quantidade de comentários emum pull request
 	public static int getPullComments(String idPullRequest, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbc = db.getCollection("pull_request_comments");
