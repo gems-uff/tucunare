@@ -53,18 +53,19 @@ public class SaveFile implements Runnable {
 		String ownerRepo = r[0];
 		BasicDBObject query = new BasicDBObject("repo",r[1]); //consulta com query
 		query.append("owner", ownerRepo);
-		query.append("number", new BasicDBObject("$gt", Integer.parseInt("4610")));//maiores que number
+//		query.append("number", new BasicDBObject("$gt", Integer.parseInt("5")));//maiores que number
 		if (settings.getPrType() == 1)
 			query.append("state", "open"); //Apenas pull requests encerrados
 		if (settings.getPrType() == 2)
 			query.append("state", "closed"); //Apenas pull requests encerrados
 
 		//Dados globais para o projeto
-		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(nameRepo,ownerRepo);
+		ArrayList<String> listCoreTeam = Commits.getCoreTeamPullList(nameRepo,ownerRepo);
+		//ArrayList<String> listCoreTeamTeste = Commits.getCoreTeamList3(nameRepo,ownerRepo);
 		String firstCreateDate = "";
 		BasicDBObject queryData = new BasicDBObject("repo",nameRepo);
 		queryData.append("owner", ownerRepo);
-		queryData.append("number", 2);//primeiro pull
+//		queryData.append("number", 1);//primeiro pull
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("created_at", 1);
 		fields.put("_id", 0);
@@ -206,14 +207,14 @@ public class SaveFile implements Runnable {
 							status = "merged";
 
 						//Dados da equipe principal
-//						String pullClosed="";
-//						if(listCoreTeam.contains(user))
-//							pullClosed = "true";
+//						String coreTeamTeste="";
+//						if(listCoreTeamTeste.contains(user))
+//							coreTeamTeste = "core";
 //						else
-//							pullClosed = "false";
+//							coreTeamTeste = "external";
 
 						//Atributos CoreDevRec
-						String typeDeveloper = Commits.getTypeDeveloper3(user, nameRepo,ownerRepo);
+						String typeDeveloper = Commits.getTypeDeveloper3(user, nameRepo, ownerRepo, created);
 						boolean requesterFollowsCoreTeam = Users.getRequesterFollowsCoreTeam(user, closed_by);
 						boolean coreTeamFollowsRequester = Users.getCoreTeamFollowsRequester(user, closed_by);
 
@@ -238,7 +239,7 @@ public class SaveFile implements Runnable {
 						String first_time = Issues.getFirstTime(nameRepo,ownerRepo, created, listCoreTeam);
 						first_time = first_time.substring(1, first_time.length()-1).replaceAll(", ", ",");
 
-						//					String total_pull = ""+Issues.getTotalPull(rep, created, firstCreateDate);
+						//String total_pull = ""+Issues.getTotalPull(rep, created, firstCreateDate);
 						total_pull++;
 
 						//String enviada para o arquivo
@@ -286,7 +287,7 @@ public class SaveFile implements Runnable {
 										dbObject.get("changed_files")+","+
 										dirFinal+","+
 										files.replace(", ", "|")+","+
-//										pullClosed+","+
+//										coreTeamTeste+","+
 										typeDeveloper+","+
 										requesterFollowsCoreTeam+","+
 										coreTeamFollowsRequester+","+
@@ -328,43 +329,43 @@ public class SaveFile implements Runnable {
 		try {
 			if (firstWritten){
 				fw = new FileWriter(fileTemp);
-				ArrayList<String> prior_evalutionList = Commits.getCoreTeamList(nameRepo, ownerRepo);
+				ArrayList<String> prior_evalutionList = Commits.getCoreTeamPullList(nameRepo, ownerRepo);
 				for (int index = 0; index < prior_evalutionList.size(); index++)
 					prior_evalutionList.set(index, "pe_"+prior_evalutionList.get(index));
 				String pe = prior_evalutionList.toString();
 				pe = pe.substring(1, pe.length()-1).replaceAll(", ", ",");
 
-				ArrayList<String> recent_pullList = Commits.getCoreTeamList(nameRepo, ownerRepo);
+				ArrayList<String> recent_pullList = Commits.getCoreTeamPullList(nameRepo, ownerRepo);
 				for (int index = 0; index < recent_pullList.size(); index++)
 					recent_pullList.set(index, "rp_"+recent_pullList.get(index));
 				String rp = recent_pullList.toString();
 				rp = rp.substring(1, rp.length()-1).replaceAll(", ", ",");
 
-				ArrayList<String> evaluation_pullList = Commits.getCoreTeamList(nameRepo, ownerRepo);
+				ArrayList<String> evaluation_pullList = Commits.getCoreTeamPullList(nameRepo, ownerRepo);
 				for (int index = 0; index < evaluation_pullList.size(); index++)
 					evaluation_pullList.set(index, "ep_"+evaluation_pullList.get(index));
 				String ep = evaluation_pullList.toString();
 				ep = ep.substring(1, ep.length()-1).replaceAll(", ", ",");
 
-				ArrayList<String> recent_evaluationList = Commits.getCoreTeamList(nameRepo, ownerRepo);
+				ArrayList<String> recent_evaluationList = Commits.getCoreTeamPullList(nameRepo, ownerRepo);
 				for (int index = 0; index < recent_evaluationList.size(); index++)
 					recent_evaluationList.set(index, "re_"+recent_evaluationList.get(index));
 				String re = recent_evaluationList.toString();
 				re = re.substring(1, re.length()-1).replaceAll(", ", ",");
 
-				ArrayList<String> evaluate_timeList = Commits.getCoreTeamList(nameRepo, ownerRepo);
+				ArrayList<String> evaluate_timeList = Commits.getCoreTeamPullList(nameRepo, ownerRepo);
 				for (int index = 0; index < evaluate_timeList.size(); index++)
 					evaluate_timeList.set(index, "et_"+evaluate_timeList.get(index));
 				String et = evaluate_timeList.toString();
 				et = et.substring(1, et.length()-1).replaceAll(", ", ",");
 
-				ArrayList<String> latest_timeList = Commits.getCoreTeamList(nameRepo, ownerRepo);
+				ArrayList<String> latest_timeList = Commits.getCoreTeamPullList(nameRepo, ownerRepo);
 				for (int index = 0; index < latest_timeList.size(); index++)
 					latest_timeList.set(index, "lt_"+latest_timeList.get(index));
 				String lt = latest_timeList.toString();
 				lt = lt.substring(1, lt.length()-1).replaceAll(", ", ",");
 
-				ArrayList<String> first_timeList = Commits.getCoreTeamList(nameRepo, ownerRepo);
+				ArrayList<String> first_timeList = Commits.getCoreTeamPullList(nameRepo, ownerRepo);
 				for (int index = 0; index < first_timeList.size(); index++)
 					first_timeList.set(index, "ft_"+first_timeList.get(index));
 				String ft = first_timeList.toString();

@@ -154,7 +154,7 @@ public class Commits {
 	}
 
 	//retorna os contribuidores para coleta dos dados sociais V1
-	public static ArrayList<String> getCoreTeamList(String repo,String owner) throws UnknownHostException{
+	public static ArrayList<String> getCoreTeamPullList(String repo,String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issueC = db.getCollection("issues");
 		BasicDBObject queryIssue = new BasicDBObject("repo", repo);
@@ -166,7 +166,6 @@ public class Commits {
 		fields.put("user.login", 1);
 		fields.put("pull_request.url", 1);
 		fields.put("_id", 0);
-//		primeira forma
 		DBCursor teste =  issueC.find(queryIssue,fields);
 		ArrayList<String> list = new ArrayList<String>();
 		for (DBObject dbObject : teste) {
@@ -177,13 +176,21 @@ public class Commits {
 					if(!list.contains((((BasicDBObject)dbObject.get("closed_by")).get("login").toString())))
 						list.add((((BasicDBObject)dbObject.get("closed_by")).get("login").toString()));
 		}
-//		Object[] coreTeamList = list.toArray();
-//		Segunda forma
-//		Object[] coreTeamList2 = issueC.distinct("closed_by.login", queryIssue).toArray();
 		Collections.sort(list);
 		return list;
 	}
-
+	//retorna os contribuidores para coleta dos dados sociais V2
+	public static ArrayList<String> getCoreTeamList2(String repo,String owner) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection issueC = db.getCollection("issues");
+		BasicDBObject queryIssue = new BasicDBObject("repo", repo);
+		queryIssue.append("pull_request", new BasicDBObject("$exists", true));
+		queryIssue.append("owner", owner);
+		queryIssue.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
+		ArrayList<String> list = (ArrayList<String>) issueC.distinct("closed_by.login",queryIssue);
+		Collections.sort(list);
+		return list;
+	}
 
 	//type developer V1
 	public static String getTypeDeveloper(String user, String repo, String owner) throws UnknownHostException{
@@ -199,13 +206,53 @@ public class Commits {
 			type = "external";
 		return type;
 	}
-//	Tipo de desenvolvedor
-	public static String getTypeDeveloper3(String user, String repo, String owner) throws UnknownHostException{
+//	Lista dos desenvolvedores do time principal considerando o novo critério
+	public static String getTypeDeveloper3(String user, String repo, String owner, String pullDate) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcCommit= db.getCollection("commits");
 		BasicDBObject queryCommit = new BasicDBObject("committer.login", user); 		
 		queryCommit.append("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
+		queryCommit.append("committer", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
+		queryCommit.append("sha", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
+		queryCommit.append("commit.committer.date", new BasicDBObject("$lt",pullDate));
 		BasicDBObject fieldsCommit = new BasicDBObject();
+		fieldsCommit.put("sha", 1);
+		fieldsCommit.put("parents", 1);
+		//fieldsCommit.put("commit.committer.date", 1);
+		fieldsCommit.put("_id", 0);
+		DBCollection dbcPull = db.getCollection("pull_requests");
+		BasicDBObject fieldsPull = new BasicDBObject();
+		fieldsPull.put("head.sha", 1);
+		fieldsPull.put("_id", 0);
+		BasicDBObject queryPull = new BasicDBObject("repo",repo);
+		queryPull.append("owner", owner);
+		DBCursor objListCommit = dbcCommit.find(queryCommit,fieldsCommit);
+		//ArrayList<String> list = new ArrayList<String>();
+		String type="external";
+		for (DBObject dbObject : objListCommit) {
+			BasicDBList merge = (BasicDBList) dbObject.get("parents");
+			if(dbObject != null && merge.size()<=1){
+				queryPull.append("head.sha", dbObject.get("sha").toString());
+				DBObject objPull =  dbcPull.findOne(queryPull,fieldsPull);
+				if(objPull != null){
+					type = "external"; break;
+				}else 
+					type = "core";
+			}
+		}
+		return type;
+	}
+	
+//	Lista dos desenvolvedores do time principal considerando o novo critério
+	public static ArrayList<String> getCoreTeamList3(String repo, String owner) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection dbcCommit= db.getCollection("commits");
+		BasicDBObject queryCommit = new BasicDBObject("html_url", new BasicDBObject("$regex", "("+owner+"/"+repo+")"));
+		queryCommit.append("committer", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
+		queryCommit.append("sha", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
+		BasicDBObject fieldsCommit = new BasicDBObject();
+		fieldsCommit.put("committer.login", 1);
+		fieldsCommit.put("parents", 1);
 		fieldsCommit.put("sha", 1);
 		fieldsCommit.put("_id", 0);
 		DBCollection dbcPull = db.getCollection("pull_requests");
@@ -215,19 +262,20 @@ public class Commits {
 		BasicDBObject queryPull = new BasicDBObject("repo",repo);
 		queryPull.append("owner", owner);
 		DBCursor objListCommit = dbcCommit.find(queryCommit,fieldsCommit);
-		
-		String type="";
+		ArrayList<String> list = new ArrayList<String>();
 		for (DBObject dbObject : objListCommit) {
-			queryPull.append("head.sha", dbObject.get("sha").toString());
-			DBObject objSHA =  dbcPull.findOne(queryPull,fieldsPull);
-			String sha="";
-			if(objSHA != null)
-				sha = (((BasicDBObject)objSHA.get("head")).get("sha").toString());
-			if(!dbObject.get("sha").toString().equals(sha))
-				type = "core";
-			else 
-				type = "external";
+			BasicDBList merge = (BasicDBList) dbObject.get("parents");
+			if(dbObject != null && merge.size()<=1){
+				queryPull.append("head.sha", dbObject.get("sha").toString());
+				DBObject objPull =  dbcPull.findOne(queryPull,fieldsPull);
+				if(objPull == null)
+					if(!list.contains(((BasicDBObject) dbObject.get("committer")).get("login").toString()))
+						list.add((((BasicDBObject)dbObject.get("committer")).get("login")).toString());
+			}
 		}
-		return type;
+		Collections.sort(list);
+		return list;
 	}
+	
+	
 }

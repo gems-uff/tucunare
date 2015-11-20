@@ -148,7 +148,7 @@ public class Users {
 	public static boolean getFollowersCoreTeam (String user, String repo, String owner) throws UnknownHostException{
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection followers = db.getCollection("followers");
-		ArrayList<String> listCoreTeam = Commits.getCoreTeamList(repo, owner);
+		ArrayList<String> listCoreTeam = Commits.getCoreTeamPullList(repo, owner);
 		boolean followerCoreTeam = false;
 		for (String string : listCoreTeam) {
 			BasicDBObject query = new BasicDBObject("login", string);
