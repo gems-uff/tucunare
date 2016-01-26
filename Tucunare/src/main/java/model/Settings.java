@@ -15,6 +15,9 @@ public  class Settings {
 	private boolean allAuthorData, prNumber, prState, title, prDates, prLifeTime, prClosedMergedBy, prShas, prAuthorMoreCommits, prCommitsByFiles; 
 	private boolean allPRData, prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prRootDirectory, prFiles, prParticipants;
 	private boolean user, userAge, userType, userPulls, userAverages, userFollowers, userFollowing, userLocation; 
+
+	private boolean allCoreDevRecData, follower_relation, following_relation, total_pulls, prior_evaluation, recent_evaluation, evaluate_pulls, recent_pulls, evaluate_time, latest_time, first_time, path_files;
+
 	private int prType = 0;
 	private int authorCommitsDays, commitsByFilesDays;
 
@@ -31,7 +34,8 @@ public  class Settings {
 			tryParseRepoData();
 			tryParsePRCore();
 			tryParsePRFiles();
-			tryparseAuthorPR();
+			tryParseAuthorPR();
+			tryParseCoreDevRec();
 			return true;
 		} catch (JSONException e) {
 			System.err.println(e.getMessage());
@@ -41,7 +45,23 @@ public  class Settings {
 	}
 
 
-	private void tryparseAuthorPR() throws JSONException {
+	private void tryParseCoreDevRec() throws JSONException{
+		allCoreDevRecData = data.getBoolean("allcoredevrecdata");
+		follower_relation = data.getBoolean("followerrelation");
+		following_relation = data.getBoolean("followingrelation");
+		total_pulls = data.getBoolean("totalpulls");
+		prior_evaluation = data.getBoolean("priorevaluation");
+		recent_evaluation = data.getBoolean("recentevaluation");
+		evaluate_pulls = data.getBoolean("evaluatepulls");
+		recent_pulls = data.getBoolean("recentpulls");
+		evaluate_time = data.getBoolean("evaluatetime");
+		latest_time = data.getBoolean("latesttime");
+		first_time = data.getBoolean("firsttime");
+		path_files = data.getBoolean("pathfiles");
+
+	}
+
+	private void tryParseAuthorPR() throws JSONException {
 		allAuthorData = data.getBoolean("allauthordata");
 		user = data.getBoolean("user");
 		userAge = data.getBoolean("age");
@@ -124,6 +144,19 @@ public  class Settings {
 		userFollowing = true; 
 		userLocation = true;
 		prParticipants = true;
+
+		allCoreDevRecData = true;
+		follower_relation = true;
+		following_relation  = true;
+		total_pulls  = true;
+		prior_evaluation = true;
+		recent_evaluation = true;
+		evaluate_pulls = true;
+		recent_pulls = true;
+		evaluate_time = true;
+		latest_time = true;
+		first_time = true;
+		path_files = true;
 
 	}
 
@@ -288,6 +321,57 @@ public  class Settings {
 			}
 		} 
 
+		if (allCoreDevRecData){
+			methods.add("getAllCoreDevRecData");
+			header += "follower_relation,following_relation,total_pulls,prior_evaluation,recent_evaluation,evaluate_pulls,recent_pulls,evaluate_time,latest_time,first_time,path_files,";
+		}else
+		{
+			if (follower_relation){
+				methods.add("getFollowerRelation");
+				header += "follower_relation,";
+			}
+			if (following_relation){
+				methods.add("getFollowingRelation");
+				header += "following_relation,";
+			}
+			if (total_pulls){
+				methods.add("getTotalPulls");
+				header += "total_pulls,";
+			}
+			if (prior_evaluation){
+				methods.add("getPriorEvaluation");
+				header += "prior_evaluation,";
+			}
+			if (recent_evaluation){
+				methods.add("getRecentEvaluation");
+				header += "recent_evaluation,";
+			}
+			if (evaluate_pulls){
+				methods.add("getEvaluatePulls");
+				header += "evaluate_pulls,";
+			}
+			if (recent_pulls){
+				methods.add("getRecentPulls");
+				header += "recent_pulls,";
+			}
+			if (evaluate_time){
+				methods.add("getEvaluateTime");
+				header += "evaluate_time,";
+			}
+			if (latest_time){
+				methods.add("getLatestTime");
+				header += "latest_time";
+			}
+			if (first_time){
+				methods.add("getFirstTime");
+				header += "first_time,";
+			}
+			if (path_files){
+				methods.add("getPathFiles");
+				header += "path_files,";
+			}
+		}
+		
 		return methods;
 	}
 

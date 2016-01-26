@@ -129,6 +129,7 @@ public class SaveFile implements Runnable {
 
 	public boolean writeHeader(String header){
 		File fileTemp = new File(file+File.separator+repo+".csv");
+		
 		FileWriter fw = null;
 		try {
 			fw = new FileWriter(fileTemp);
