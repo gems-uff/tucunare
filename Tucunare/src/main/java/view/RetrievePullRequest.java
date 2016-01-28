@@ -349,8 +349,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		if (selectedRepositories.size() <=3){
 			for (String repository : selectedRepositories) {
 				try {
-					String[] repos = repository.split("/");
-					new Thread(new SaveFile(repos[1], file, settings), "Thread-"+repository).start();	
+					String[] aux = repository.split("/");
+					new Thread(new SaveFile(aux[0], aux[1], file, settings), "Thread-"+repository).start();	
 				} catch (UnknownHostException e) {
 					e.printStackTrace();
 				}
@@ -359,10 +359,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		else
 		{//Se forem selecionados mais de 3 repositórios, será iniciada a recuperação de 3, após isso ao final de cada thread uma nova é iniciada.
 			threadAtual +=3; 
-			for (int i=0; 1<3; i++){
+			for (int i=0; i<3; i++){
 				try {
-					String[] repos = selectedRepositories.get(i).split("/");
-					new Thread(new SaveFile(repos[1], file, settings), "Thread-"+repos[1]).start();	
+					String[] aux = selectedRepositories.get(i).split("/");
+					new Thread(new SaveFile(aux[0], aux[1], file, settings), "Thread-"+aux[1]).start();	
 				} catch (UnknownHostException e) {
 					e.printStackTrace();
 				}
@@ -375,7 +375,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	public static void iniciaThreads(){
 		if (threadAtual>3){
 			try {
-				new Thread(new SaveFile(selectedRepositories.get(threadAtual), file, settings), "Thread-"+selectedRepositories.get(threadAtual)).start();
+				String[] aux = selectedRepositories.get(threadAtual).split("/");
+				new Thread(new SaveFile(aux[0], aux[1], file, settings), "Thread-"+selectedRepositories.get(threadAtual)).start();
 				threadAtual++;
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
@@ -390,7 +391,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		ds.setModal(true);
 		ds.setVisible(true);
 	}
-
+	
 	public void addTopPanel(){
 		topPanel = new JPanel();
 
@@ -671,7 +672,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		centerPanelBotAuthorPR.add(jcbUser);
 
 		centerPanelBotAuthorPR.add(jcbAgeUser);
-		jcbUserType = new JCheckBox("Type");
+		jcbUserType = new JCheckBox("Type Old");
 		jcbUserType.setToolTipText("Retrieves the type of the author of the pull request (core member or contributor)");
 		centerPanelBotAuthorPR.add(jcbUserType);
 
@@ -882,8 +883,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			jo.put("pathfiles", path_files.isSelected());
 			
 			s = new Settings(jo);
-			System.out.println("Valid settings: "+s.tryParseValues());
-			//System.out.println("Settings: "+s);
 		}catch(JSONException je){
 			s = new Settings();
 			System.err.println("erro.");

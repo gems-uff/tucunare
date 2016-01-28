@@ -10,8 +10,7 @@ import org.json.JSONObject;
 public  class Settings {
 	private String header = "";
 	private JSONObject data;
-	private boolean allRepoData, contributors;
-	private int contributorsMonths = -1;
+	private boolean allRepoData;
 	private boolean allAuthorData, prNumber, prState, title, prDates, prLifeTime, prClosedMergedBy, prShas, prAuthorMoreCommits, prCommitsByFiles; 
 	private boolean allPRData, prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prRootDirectory, prFiles, prParticipants;
 	private boolean user, userAge, userType, userPulls, userAverages, userFollowers, userFollowing, userLocation; 
@@ -20,7 +19,7 @@ public  class Settings {
 
 	private int prType = 0;
 	private int authorCommitsDays, commitsByFilesDays;
-
+	
 	public Settings() {
 		setDefaultValues();
 	}
@@ -29,7 +28,7 @@ public  class Settings {
 		this.data = data;
 	}
 
-	public boolean tryParseValues(){
+	public boolean tryParseValues(String repo, String owner){
 		try {
 			tryParseRepoData();
 			tryParsePRCore();
@@ -44,13 +43,13 @@ public  class Settings {
 		}
 	}
 
-
 	private void tryParseCoreDevRec() throws JSONException{
 		allCoreDevRecData = data.getBoolean("allcoredevrecdata");
 		follower_relation = data.getBoolean("followerrelation");
 		following_relation = data.getBoolean("followingrelation");
 		total_pulls = data.getBoolean("totalpulls");
 		prior_evaluation = data.getBoolean("priorevaluation");
+		System.out.println("PE true: " + data.getBoolean("priorevaluation"));
 		recent_evaluation = data.getBoolean("recentevaluation");
 		evaluate_pulls = data.getBoolean("evaluatepulls");
 		recent_pulls = data.getBoolean("recentpulls");
@@ -82,7 +81,6 @@ public  class Settings {
 		//dias do author, dias dos arquivos
 		authorCommitsDays = ja.getInt(0);
 		commitsByFilesDays = ja.getInt(1);
-		contributorsMonths = ja.getInt(2);
 
 		prModifiedLines = data.getBoolean("modifiedlines");
 		prChangedFiles = data.getBoolean("changedfiles");
@@ -110,12 +108,10 @@ public  class Settings {
 	//"repo":"true",
 	private void tryParseRepoData() throws JSONException {
 		allRepoData = data.getBoolean("allrepodata");
-		contributors = data.getBoolean("contributors");
 	}
 
 	public void setDefaultValues(){
 		prType = 0;
-		contributorsMonths = 1;
 		authorCommitsDays = 7;
 		commitsByFilesDays = 7;
 
@@ -163,17 +159,13 @@ public  class Settings {
 	public String getHeader() {
 		return header;
 	}
+	
+	public void setHeader(String data) {
+		header = data;
+	}
 
 	public int getPrType(){
 		return prType;
-	}
-
-	public int getContributorsMonths() {
-		return contributorsMonths;
-	}
-
-	public void setContributorsMonths(int contributorsMonths) {
-		this.contributorsMonths = contributorsMonths;
 	}
 
 	public int getAuthorCommitsDays() {
@@ -192,17 +184,12 @@ public  class Settings {
 		this.commitsByFilesDays = commitsByFilesDays;
 	}
 
-	public List<String> getMethods(){
+	public List<String> getMethods() {
 		List<String> methods = new ArrayList<String>();
 
 		if (allRepoData){
 			methods.add("getAllRepoData");
 			header += "owner/repo,ageRepo,stargazers_count,watchers_count,language,forks_count,open_issues_count,subscribers_count,has_wiki,acceptanceRepo,watchRepo,";
-		}
-
-		if (contributors){
-			methods.add("getContributors");
-			header += "contributors,followContributors,";
 		}
 		//pelo menos o método de recuperação do id e o state do PR será executado.
 		methods.add("getId");
@@ -216,10 +203,6 @@ public  class Settings {
 					"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants,";
 		}
 		else{
-			if (prFiles){
-				methods.add("getPRFiles");
-				header += "files,";
-			}
 			if (prNumber){
 				methods.add("getPRNumber");
 				header += "numberPull,";
@@ -255,6 +238,9 @@ public  class Settings {
 			if (prCommits){
 				methods.add("getPRCommits");
 				header += "commitsPull,";
+			}if (prFiles){
+				methods.add("getPRFiles");
+				header += "files,";
 			}
 			if(prAuthorMoreCommits){
 				methods.add("getPRAuthorMoreCommits");
@@ -323,62 +309,77 @@ public  class Settings {
 
 		if (allCoreDevRecData){
 			methods.add("getAllCoreDevRecData");
-			header += "follower_relation,following_relation,total_pulls,prior_evaluation,recent_evaluation,evaluate_pulls,recent_pulls,evaluate_time,latest_time,first_time,path_files,";
+			header += "requesterFollowsCoreTeam,coreTeamFollowsRequester,";
 		}else
 		{
 			if (follower_relation){
 				methods.add("getFollowerRelation");
-				header += "follower_relation,";
+				header += "requesterFollowsCoreTeam,";
 			}
 			if (following_relation){
 				methods.add("getFollowingRelation");
-				header += "following_relation,";
+				header += "coreTeamFollowsRequester,";
 			}
-			if (total_pulls){
-				methods.add("getTotalPulls");
-				header += "total_pulls,";
-			}
-			if (prior_evaluation){
+			if (prior_evaluation)
 				methods.add("getPriorEvaluation");
-				header += "prior_evaluation,";
-			}
-			if (recent_evaluation){
-				methods.add("getRecentEvaluation");
-				header += "recent_evaluation,";
-			}
-			if (evaluate_pulls){
-				methods.add("getEvaluatePulls");
-				header += "evaluate_pulls,";
-			}
-			if (recent_pulls){
+
+			if (recent_pulls)
 				methods.add("getRecentPulls");
-				header += "recent_pulls,";
-			}
-			if (evaluate_time){
+			
+			if (evaluate_pulls)
+				methods.add("getEvaluatePulls");
+			
+			if (recent_evaluation)
+				methods.add("getRecentEvaluation");
+			
+			if (evaluate_time)
 				methods.add("getEvaluateTime");
-				header += "evaluate_time,";
-			}
-			if (latest_time){
+			
+			if (latest_time)
 				methods.add("getLatestTime");
-				header += "latest_time";
-			}
-			if (first_time){
+			
+			if (first_time)
 				methods.add("getFirstTime");
-				header += "first_time,";
-			}
-			if (path_files){
-				methods.add("getPathFiles");
-				header += "path_files,";
-			}
+			
 		}
-		
+
 		return methods;
+	}
+
+	
+	
+	public boolean isPrior_evaluation() {
+		return prior_evaluation;
+	}
+
+	public boolean isRecent_evaluation() {
+		return recent_evaluation;
+	}
+
+	public boolean isEvaluate_pulls() {
+		return evaluate_pulls;
+	}
+
+	public boolean isRecent_pulls() {
+		return recent_pulls;
+	}
+
+	public boolean isEvaluate_time() {
+		return evaluate_time;
+	}
+
+	public boolean isLatest_time() {
+		return latest_time;
+	}
+
+	public boolean isFirst_time() {
+		return first_time;
 	}
 
 	@Override
 	public String toString() {
-		return "Settings [allRepoData=" + allRepoData + ", contributors="
-				+ contributors + ", contributorsMonths=" + contributorsMonths
+		return "Settings [header=" + header + ", data=" + data
+				+ ", allRepoData=" + allRepoData 
 				+ ", allAuthorData=" + allAuthorData + ", prNumber=" + prNumber
 				+ ", prState=" + prState + ", title=" + title + ", prDates="
 				+ prDates + ", prLifeTime=" + prLifeTime
@@ -389,15 +390,22 @@ public  class Settings {
 				+ prComments + ", prCommits=" + prCommits
 				+ ", prModifiedLines=" + prModifiedLines + ", prChangedFiles="
 				+ prChangedFiles + ", prRootDirectory=" + prRootDirectory
-				+ ", prFiles=" + prFiles + ", user=" + user + ", userAge="
-				+ userAge + ", userType=" + userType + ", userPulls="
-				+ userPulls + ", userAverages=" + userAverages
-				+ ", userFollowers=" + userFollowers + ", userFollowing="
-				+ userFollowing + ", userLocation=" + userLocation
-				+ ", prType=" + prType + ", authorCommitsDays="
-				+ authorCommitsDays + ", commitsByFilesDays="
-				+ commitsByFilesDays + ", prParticipants="+prParticipants+"]";
+				+ ", prFiles=" + prFiles + ", prParticipants=" + prParticipants
+				+ ", user=" + user + ", userAge=" + userAge + ", userType="
+				+ userType + ", userPulls=" + userPulls + ", userAverages="
+				+ userAverages + ", userFollowers=" + userFollowers
+				+ ", userFollowing=" + userFollowing + ", userLocation="
+				+ userLocation + ", allCoreDevRecData=" + allCoreDevRecData
+				+ ", follower_relation=" + follower_relation
+				+ ", following_relation=" + following_relation
+				+ ", total_pulls=" + total_pulls + ", prior_evaluation="
+				+ prior_evaluation + ", recent_evaluation=" + recent_evaluation
+				+ ", evaluate_pulls=" + evaluate_pulls + ", recent_pulls="
+				+ recent_pulls + ", evaluate_time=" + evaluate_time
+				+ ", latest_time=" + latest_time + ", first_time=" + first_time
+				+ ", path_files=" + path_files + ", prType=" + prType
+				+ ", authorCommitsDays=" + authorCommitsDays
+				+ ", commitsByFilesDays=" + commitsByFilesDays + "]";
 	}
-
-
+	
 }
