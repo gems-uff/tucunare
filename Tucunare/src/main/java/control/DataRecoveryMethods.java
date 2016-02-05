@@ -318,7 +318,6 @@ public class DataRecoveryMethods {
 		String result = "";
 		try {
 			result = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep, owner)+",";
-			System.out.println("closedBy: "+result);
 		} catch (UnknownHostException e) {
 			result = ",";
 		}

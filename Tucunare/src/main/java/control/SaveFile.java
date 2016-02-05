@@ -34,7 +34,6 @@ public class SaveFile implements Runnable {
 	}
 
 	public void run() {
-		System.out.println("Processando dados do Pull Request "+ repo+"\nThread utilizada: "+ Thread.currentThread().getId());
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
 			retrieveData(settings);
@@ -95,8 +94,6 @@ public class SaveFile implements Runnable {
 				}
 				result += "\r\n";
 
-				System.out.println("PullRequest ("+(Integer) dbObject.get("number")+") "+repo);
-
 				if (!saveFile(result))
 					System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
 				DialogStatus.addsPullRequests();
@@ -117,7 +114,6 @@ public class SaveFile implements Runnable {
 		
 		try {
 			fw = new FileWriter(fileTemp, true);
-			System.out.println(pullRequestData);
 			fw.write(pullRequestData);
 
 		} catch (IOException e) {
@@ -142,7 +138,6 @@ public class SaveFile implements Runnable {
 		try {
 			fw = new FileWriter(fileTemp);
 			header += getCoreDevRecHeader();
-			System.out.println("HEADER:\n"+header);
 			fw.write(header);
 			fw.write("\r\n");
 
