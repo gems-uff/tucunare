@@ -42,6 +42,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import teste.DialogStatus;
+import util.Connect;
 import control.PullRequests;
 import control.SaveFile;
 
@@ -156,6 +157,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JLabel label;
 	private JCheckBox jcbPRId;
 	
+	private DialogStatus ds;
 
 
 	public RetrievePullRequest() throws UnknownHostException{
@@ -281,12 +283,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 						showStatusWindow();
 
 					}
-					//} catch (UnknownHostException e) {
-					//	e.printStackTrace();
-					//}
-					//catch (NumberFormatException e) {
-					//	JOptionPane.showMessageDialog(null, "Entre com valores vÃ¡lidos nos campos de dias");
-					//}
 				}
 			}else
 				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informaÃ§ão para ser recuperada.");
@@ -336,6 +332,22 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 				System.err.println("Erro ao iniciar a contagem de pull requests dos repositórios selecionados.");
 			} catch(UnknownHostException e){
 				System.err.println("Não foi possível encontrar o host ao iniciar as threads.");
+			}catch(IllegalStateException ise){
+				System.err.println("Tentando criar nova conexão.");
+				Connect.resetConnection();
+				DialogStatus.setCurrentPR(0);
+				DialogStatus.setThreads(0);
+				DialogStatus.setTotalPullRequests(0);
+				DialogStatus.setTotalRepositories(0);
+				SaveFile.setFinalizedThreads(0);
+				SaveFile.setTempo("");
+				
+				try {
+					String [] r = repository.split("/");
+					totalPullRequests += PullRequests.getPulls(r[1], r[0], settings.getPrType());
+				} catch (UnknownHostException e) {
+					System.err.println("Erro na tentativa de executar novamente a aplicação.\n"+e.getMessage());
+				}
 			}
 		}
 
@@ -380,7 +392,9 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	}
 
 	private void showStatusWindow() {
-		DialogStatus ds = new DialogStatus(jFrame, selectedRepositories.size() ,totalPullRequests);
+		System.out.println("Repositórios selecionados: "+selectedRepositories);
+		System.out.println("TotalPullRequests: "+totalPullRequests);
+		ds = new DialogStatus(jFrame, selectedRepositories.size() ,totalPullRequests);
 		ds.setLocationRelativeTo(jFrame);
 		ds.setModal(true);
 		ds.setVisible(true);
@@ -891,6 +905,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		ls.add(panelCommByFiles.getComponents());
 		ls.add(panelAuthorMoreCommitsPR.getComponents());
 		ls.add(centerPanelBotAuthorPR.getComponents());
+		ls.add(centerPanelSouth.getComponents());
 		for (Component[] comp : ls) {
 			for (Component component : comp) {
 				if (component instanceof JCheckBox && ((JCheckBox) component).isSelected())

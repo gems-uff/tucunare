@@ -1,12 +1,15 @@
 package control;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import model.Settings;
 import teste.DialogStatus;
@@ -22,8 +25,8 @@ public class SaveFile implements Runnable {
 	private String repo = ""; 
 	private String owner = "";
 	private String file;
-	public static int finalizedThreads = 0;
-	public static String tempo="";
+	private static int finalizedThreads = 0;
+	private static String tempo="";
 	private Settings settings;
 
 	public SaveFile(String owner, String repo, String file, Settings settings) throws UnknownHostException{
@@ -37,7 +40,7 @@ public class SaveFile implements Runnable {
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
 			retrieveData(settings);
-			tempo += Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ";
+			setTempo(getTempo() + Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ");
 			DialogStatus.setThreads(finalizedThreads);
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao processar os dados do repositórios "+repo);
@@ -84,9 +87,7 @@ public class SaveFile implements Runnable {
 
 			//Escrevendo o cabeçalho do arquivo
 			writeHeader(settings.getHeader());
-			int controlador=0;
 			for (DBObject dbObject : cursor) {
-				controlador ++;
 				String result = "";
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), repo,owner);
@@ -107,9 +108,6 @@ public class SaveFile implements Runnable {
 				if (!saveFile(result))
 					System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
 				DialogStatus.addsPullRequests();
-
-				if (controlador==3)
-					break;
 			}
 			finalizedThreads++;
 			return "success!";
@@ -154,6 +152,8 @@ public class SaveFile implements Runnable {
 			fw.write(header);
 			fw.write("\r\n");
 
+		} catch (FileNotFoundException fnfe){
+			JOptionPane.showMessageDialog(null, "Erro, o arquivo pode estar sendo utilizado por outro programa.");
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("erro na escrita do cabeçalho do arquivo.");
@@ -227,6 +227,18 @@ public class SaveFile implements Runnable {
 			result += ft.substring(1, ft.length()-1).replaceAll(", ", ",")+",";
 		}
 		return result;
+	}
+
+	public static String getTempo() {
+		return tempo;
+	}
+
+	public static void setTempo(String tempo) {
+		SaveFile.tempo = tempo;
+	}
+
+	public static void setFinalizedThreads(int finalizedThreads) {
+		SaveFile.finalizedThreads = finalizedThreads;
 	}
 
 }

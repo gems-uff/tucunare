@@ -31,6 +31,10 @@ public class Connect {
         return db;
 	}
 	
+	public static void resetConnection(){
+		instance = null;
+	}
+	
 	public void closeConnect(){
 		instance.close();
 	}

@@ -87,7 +87,7 @@ public class DialogStatus extends JDialog {
 			jLabel.setText("Concluído. ("+atual+" de "+totalRepositories+")");
 			txtOperaoFinalizada.setVisible(true);
 			btnSair.setVisible(true);
-			System.out.println("Tempo em segundos do fim da recuperação dos dados: "+SaveFile.tempo);
+			System.out.println("Tempo em segundos do fim da recuperação dos dados: "+SaveFile.getTempo());
 			try {
 				Connect.getInstance().close();
 			} catch (UnknownHostException e) {
@@ -107,5 +107,17 @@ public class DialogStatus extends JDialog {
 		jProgressBar.setValue(x);
 		jDialogStatic.setLocationRelativeTo(jFrameStatic);		
 		jDialogStatic.pack();
+	}
+
+	public static void setTotalRepositories(int totalRepositories) {
+		DialogStatus.totalRepositories = totalRepositories;
+	}
+
+	public static void setTotalPullRequests(int totalPullRequests) {
+		DialogStatus.totalPullRequests = totalPullRequests;
+	}
+
+	public static void setCurrentPR(int currentPR) {
+		DialogStatus.currentPR = currentPR;
 	}
 }
