@@ -8,8 +8,6 @@ import java.net.UnknownHostException;
 import model.Settings;
 import teste.DialogStatus;
 import util.Connect;
-import util.FormatDate;
-import view.RetrievePullRequest;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -31,7 +29,6 @@ public class SaveFileAuthor implements Runnable {
 	}
 
 	public void run() {
-		System.out.println("Processando dados do Pull Request "+ repo+"\nThread utilizada: "+ Thread.currentThread().getId());
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
 			saveFile(true, null);
@@ -65,11 +62,10 @@ public class SaveFileAuthor implements Runnable {
 				//Variváveis
 				String rep = dbObject.get("repo").toString();
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
-				String number = dbObject.get("number").toString();
+				String owner = dbObject.get("owner").toString();
+				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep, owner);
 				
-				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
 				if(dbObject!=null & !closed_by.equals(user)){// & !closed_by.equals(user)){
-					String owner = dbObject.get("owner").toString();
 //					String created = dbObject.get("created_at").toString();
 //					String followers = Users.getFollowersUser(user);
 //					String following = Users.getFollowingUser(user);
@@ -90,7 +86,6 @@ public class SaveFileAuthor implements Runnable {
 /*					int totalPullUser = Users.getPullUserTotal(user, created, rep, owner);
 					int mergedPullUser = Users.getPullUserMerged(user, created, rep, owner);
 					int closedPullUser = totalPullUser - mergedPullUser;
-
 					String rejectUser;
 					String acceptanceUser="";
 					if(totalPullUser==0){
@@ -111,7 +106,6 @@ public class SaveFileAuthor implements Runnable {
 					String assignee = "";
 					if(dbObject.get("assignee")!=null)
 						assignee = (String) ((BasicDBObject)dbObject.get("assignee")).get("login");
-
 					//comentários
 					int commentsPull = PullRequestsComments.getPullComments(number, rep); 
 					int commentsIssue = Issues.getIssueComments(number, dbObject.get("repo").toString());
@@ -121,7 +115,6 @@ public class SaveFileAuthor implements Runnable {
 					String filesPath = "";
 					filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()), Integer.parseInt(dbObject.get("changed_files").toString()));
 					String files="", authorMoreCommits="";
-					int commitsPorArquivos=0;
 					if(!filesPath.equals("")){
 						files = filesPath.substring(1, filesPath.length()-1);
 						//commitsNosArquivos na última semana.
@@ -162,7 +155,6 @@ public class SaveFileAuthor implements Runnable {
 					}else{
 						lifetime = ",,"; 
 					}
-
 					//Desenvolvedor que integrou ou rejeitou o código do pull request
 					if((dbObject.get("merged_by"))!=null)
 						merged_by = ((BasicDBObject)dbObject.get("merged_by")).get("login").toString();

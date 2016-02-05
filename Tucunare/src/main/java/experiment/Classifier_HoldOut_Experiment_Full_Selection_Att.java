@@ -5,14 +5,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import weka.attributeSelection.AttributeSelection;
 import weka.attributeSelection.CorrelationAttributeEval;
-import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -28,6 +26,7 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att {
 	//Variaveis est�ticas
 	static String [][] matrizProb = null;
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception{
 		//pasta com arquivos .arrf ou .csv
 		File f = new File("D:/ICMLA2015/files/coletados/MultivaluedAttributes/");

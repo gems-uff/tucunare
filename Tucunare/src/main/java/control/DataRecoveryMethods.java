@@ -66,7 +66,6 @@ public class DataRecoveryMethods {
 	}
 
 	private String getFirstCreateDate() {
-		System.out.println("FirstCreateDate");
 		BasicDBObject queryData = new BasicDBObject("repo", rep);
 		queryData.append("owner", owner);
 		BasicDBObject fields = new BasicDBObject();
@@ -129,7 +128,6 @@ public class DataRecoveryMethods {
 
 	private String getFollowingRelation() {
 		try {
-			System.out.println("FollowingRelation");
 			return Users.getCoreTeamFollowsRequester(user, closed_by)+",";
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Following Relation.");
@@ -141,7 +139,7 @@ public class DataRecoveryMethods {
 		String prior_evalution;
 		try {
 			prior_evalution = Issues.getPrior_Pull(user, created, firstCreateDate, rep,owner, listCoreTeam);
-			return prior_evalution.substring(1, prior_evalution.length()-1).replaceAll(", ", ",");
+			return prior_evalution.substring(1, prior_evalution.length()-1).replaceAll(", ", ",")+",";
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Prior Evaluation.");
 			return ",";
@@ -152,7 +150,7 @@ public class DataRecoveryMethods {
 		String recent_pull;
 		try {
 			recent_pull = Issues.getRecentPulls(rep,owner, created, firstCreateDate, 30, listCoreTeam);
-			return recent_pull.substring(1, recent_pull.length()-1).replaceAll(", ", ",");
+			return recent_pull.substring(1, recent_pull.length()-1).replaceAll(", ", ",")+",";
 			
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Recent Pulls.");
@@ -164,7 +162,7 @@ public class DataRecoveryMethods {
 		String evaluation_pull;
 		try {
 			evaluation_pull = Issues.getEvaluatePulls(rep,owner, created, firstCreateDate, listCoreTeam);
-			return evaluation_pull.substring(1, evaluation_pull.length()-1).replaceAll(", ", ",");
+			return evaluation_pull.substring(1, evaluation_pull.length()-1).replaceAll(", ", ",")+",";
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Evaluation Pulls.");
 			return ",";
@@ -175,7 +173,7 @@ public class DataRecoveryMethods {
 		String recent_evaluation;
 		try {
 			recent_evaluation = Issues.getRecentEvaluatePulls(user, rep,owner, created, firstCreateDate, 30, listCoreTeam);
-			return recent_evaluation.substring(1, recent_evaluation.length()-1).replaceAll(", ", ",");
+			return recent_evaluation.substring(1, recent_evaluation.length()-1).replaceAll(", ", ",")+",";
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Recent Evaluation.");
 			return ",";
@@ -186,7 +184,7 @@ public class DataRecoveryMethods {
 		String evaluate_time;
 		try {
 			evaluate_time = Issues.getEvaluateTime(rep,owner, created, firstCreateDate, 30, listCoreTeam);
-			return evaluate_time.substring(1, evaluate_time.length()-1).replaceAll(", ", ",");
+			return evaluate_time.substring(1, evaluate_time.length()-1).replaceAll(", ", ",")+",";
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Evaluate Time.");
 			return ",";
@@ -197,7 +195,7 @@ public class DataRecoveryMethods {
 		String latest_time;
 		try {
 			latest_time = Issues.getLatestTime(rep,owner, created, listCoreTeam);
-			return latest_time.substring(1, latest_time.length()-1).replaceAll(", ", ",");
+			return latest_time.substring(1, latest_time.length()-1).replaceAll(", ", ",")+",";
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Latest Time.");
 			return ",";
@@ -208,7 +206,7 @@ public class DataRecoveryMethods {
 		String first_time;
 		try {
 			first_time = Issues.getFirstTime(rep,owner, created, listCoreTeam);
-			return first_time.substring(1, first_time.length()-1).replaceAll(", ", ",");
+			return first_time.substring(1, first_time.length()-1).replaceAll(", ", ",")+",";
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar First Time.");
 			return ",";
@@ -219,8 +217,8 @@ public class DataRecoveryMethods {
 		String acceptanceRepo="";
 		int totalPullRepoClosed;
 		int mergedPullRepo;
-		totalPullRepoClosed = Repos.getPullRepoClosed(created, rep, owner);
-		mergedPullRepo = Repos.getPullRepoMerged(created, rep, owner);
+		totalPullRepoClosed = Repos.getPullRepoClosed(created, firstCreateDate, rep, owner);
+		mergedPullRepo = Repos.getPullRepoMerged(created, firstCreateDate, rep, owner);
 
 		if(totalPullRepoClosed==0)
 			acceptanceRepo = "0";
@@ -235,13 +233,21 @@ public class DataRecoveryMethods {
 	}
 
 	public String getAllPRData(){
+		/**
+		 * idPull,statePull,numberPull,title,commitHeadSha,commitBaseSha,createdDate,closedDate,mergedDate,lifetimeMinutes,"+
+		 * "closedBy,mergedBy,assignee,comments,commitsPull,files,authorMoreCommits,commitsbyFilesPull,"+
+					"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants
+		 * */
 		String result = 
+				getPRId() +
+				getPRState()+
 				getPRNumber() +
 				getPRTitle() +
 				getPRSHAs() +
 				getPRDates() +
-				getPRClosedMergedBy() +
 				getPRLifeTime() +
+				getPRClosedMergedBy() +
+				
 				getPRAssignee() +
 				getPRComments() +
 				getPRCommits() +
@@ -269,7 +275,7 @@ public class DataRecoveryMethods {
 		return result;
 	}
 
-	public String getId(){
+	public String getPRId(){
 		return dbObject.get("id")+",";
 	}
 
@@ -291,6 +297,11 @@ public class DataRecoveryMethods {
 
 	public String getPRDates(){
 		String result = created+",";
+		
+		String ano = created.substring(0, 4);
+		String mes = created.substring(5, 7);
+		
+		result += mes+ano+",";
 
 		if(dbObject.get("closed_at")!=null)
 			result += FormatDate.getDate(dbObject.get("closed_at").toString())+",";
@@ -307,6 +318,7 @@ public class DataRecoveryMethods {
 		String result = "";
 		try {
 			result = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep, owner)+",";
+			System.out.println("closedBy: "+result);
 		} catch (UnknownHostException e) {
 			result = ",";
 		}
@@ -322,8 +334,6 @@ public class DataRecoveryMethods {
 		String lifetime = "";
 		if((dbObject.get("closed_at")!=null))
 			lifetime = FormatDate.getLifetime(dbObject.get("closed_at").toString(), dbObject.get("created_at").toString());
-		else
-			lifetime = ",,"; 
 
 		return lifetime+",";
 	}
@@ -339,7 +349,7 @@ public class DataRecoveryMethods {
 	public String getPRComments(){
 		int commentsPull = 0, commentsIssue = 0;
 		try {
-			commentsPull = PullRequestsComments.getPullComments(dbObject.get("number").toString(), rep);
+			commentsPull = PullRequestsComments.getPullComments(dbObject.get("number").toString(), rep, owner);
 			commentsIssue = Issues.getIssueComments(dbObject.get("number").toString(), rep, owner);
 		} catch (UnknownHostException e) {
 			System.err.println("Error while trying to recover the PR comments.");
@@ -353,7 +363,7 @@ public class DataRecoveryMethods {
 		return dbObject.get("commits")+",";
 	}
 
-	//necessário realizar a chamada desse método caso sejam requisitados contributors, SHAs, PRFiles, 
+	//necessário realizar a chamada desse método caso sejam requisitados SHAs, PRFiles, 
 	public void getCommitsFilesPath(){
 		try {
 			filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()),Integer.parseInt(dbObject.get("changed_files").toString()));
@@ -452,7 +462,7 @@ public class DataRecoveryMethods {
 	public String getUserType(){
 		String typeDeveloper = "";
 		try {
-			typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
+			typeDeveloper = Commits.getTypeDeveloper3(user, rep, owner, created);
 		} catch (UnknownHostException e) {
 			System.err.println("Error while trying to recover the user developer type.");
 		}

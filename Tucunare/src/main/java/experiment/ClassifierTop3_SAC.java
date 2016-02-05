@@ -5,31 +5,21 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
 import java.util.Random;
 
 import weka.attributeSelection.AttributeSelection;
 import weka.attributeSelection.CorrelationAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
-import weka.classifiers.CostMatrix;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
-import weka.core.Attribute;
-import weka.core.AttributeStats;
 import weka.core.Instances;
-import weka.core.Utils;
-import weka.filters.Filter;
-import weka.filters.supervised.attribute.AddClassification;
 
 public class ClassifierTop3_SAC {
 	//Variaveis est�ticas

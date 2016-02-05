@@ -10,12 +10,13 @@ import org.json.JSONObject;
 public  class Settings {
 	private String header = "";
 	private JSONObject data;
-	private boolean allRepoData;
-	private boolean allAuthorData, prNumber, prState, title, prDates, prLifeTime, prClosedMergedBy, prShas, prAuthorMoreCommits, prCommitsByFiles; 
-	private boolean allPRData, prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prRootDirectory, prFiles, prParticipants;
+	private boolean allRepoData, repoAcceptance, repoWatchers;
+	
+	private boolean allAuthorData, prNumber, prStatus, title, prDates, prLifeTime, prClosedMergedBy, prShas, prAuthorMoreCommits, prCommitsByFiles; 
+	private boolean allPRData, prId, prAssignee, prComments, prCommits, prModifiedLines, prChangedFiles, prRootDirectory, prFiles, prParticipants;
 	private boolean user, userAge, userType, userPulls, userAverages, userFollowers, userFollowing, userLocation; 
 
-	private boolean allCoreDevRecData, follower_relation, following_relation, total_pulls, prior_evaluation, recent_evaluation, evaluate_pulls, recent_pulls, evaluate_time, latest_time, first_time, path_files;
+	private boolean allCoreDevRecData, follower_relation, following_relation, prior_evaluation, recent_evaluation, evaluate_pulls, recent_pulls, evaluate_time, latest_time, first_time;
 
 	private int prType = 0;
 	private int authorCommitsDays, commitsByFilesDays;
@@ -47,16 +48,13 @@ public  class Settings {
 		allCoreDevRecData = data.getBoolean("allcoredevrecdata");
 		follower_relation = data.getBoolean("followerrelation");
 		following_relation = data.getBoolean("followingrelation");
-		total_pulls = data.getBoolean("totalpulls");
 		prior_evaluation = data.getBoolean("priorevaluation");
-		System.out.println("PE true: " + data.getBoolean("priorevaluation"));
 		recent_evaluation = data.getBoolean("recentevaluation");
 		evaluate_pulls = data.getBoolean("evaluatepulls");
 		recent_pulls = data.getBoolean("recentpulls");
 		evaluate_time = data.getBoolean("evaluatetime");
 		latest_time = data.getBoolean("latesttime");
 		first_time = data.getBoolean("firsttime");
-		path_files = data.getBoolean("pathfiles");
 
 	}
 
@@ -89,12 +87,13 @@ public  class Settings {
 		prParticipants = data.getBoolean("participants");
 	}
 
-	//"number":"true","state":"true","title":"true","dates":"true","lifetime":"true","closedmergedby":"true","shas":"true","assignee":"true",
+	//"number":"true","status":"true","title":"true","dates":"true","lifetime":"true","closedmergedby":"true","shas":"true","assignee":"true",
 	private void tryParsePRCore() throws JSONException {
 		allPRData = data.getBoolean("allprdata");
+		prId = data.getBoolean("id");
 		prType = data.getInt("prtype");
 		prNumber = data.getBoolean("number");
-		prState = data.getBoolean("state");
+		prStatus = data.getBoolean("status");
 		title = data.getBoolean("title");
 		prDates = data.getBoolean("dates");
 		prLifeTime = data.getBoolean("lifetime");
@@ -108,6 +107,8 @@ public  class Settings {
 	//"repo":"true",
 	private void tryParseRepoData() throws JSONException {
 		allRepoData = data.getBoolean("allrepodata");
+		repoAcceptance = data.getBoolean("repoacceptance");
+		repoWatchers = data.getBoolean("repowatchers");
 	}
 
 	public void setDefaultValues(){
@@ -116,10 +117,15 @@ public  class Settings {
 		commitsByFilesDays = 7;
 
 		allAuthorData = true;
-		allPRData = true;
+		
 		allRepoData = true; 
+		repoAcceptance = true;
+		repoWatchers = true;
+		
+		allPRData = true;
+		prId = true;
 		prNumber = true; 
-		prState = true; 
+		prStatus = true; 
 		title = true; 
 		prDates = true; 
 		prLifeTime = true; 
@@ -144,7 +150,6 @@ public  class Settings {
 		allCoreDevRecData = true;
 		follower_relation = true;
 		following_relation  = true;
-		total_pulls  = true;
 		prior_evaluation = true;
 		recent_evaluation = true;
 		evaluate_pulls = true;
@@ -152,8 +157,6 @@ public  class Settings {
 		evaluate_time = true;
 		latest_time = true;
 		first_time = true;
-		path_files = true;
-
 	}
 
 	public String getHeader() {
@@ -189,20 +192,34 @@ public  class Settings {
 
 		if (allRepoData){
 			methods.add("getAllRepoData");
-			header += "owner/repo,ageRepo,stargazers_count,watchers_count,language,forks_count,open_issues_count,subscribers_count,has_wiki,acceptanceRepo,watchRepo,";
+			header += "owner/repo,ageRepo,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,repoAcceptance,repoWatchers,";
+		}else{
+			if (repoAcceptance){
+				methods.add("getRepoAcceptance");
+				header += "RepoAcceptance,";
+			}
+			if (repoWatchers){
+				methods.add("getRepoWatchers");
+				header += "RepoWatchers,";
+			}
 		}
 		//pelo menos o método de recuperação do id e o state do PR será executado.
-		methods.add("getId");
-		methods.add("getPRState");
-		header += "idPull,state,";
 
 		if (allPRData){
 			methods.add("getAllPRData");
-			header += "numberPull,title,commitHeadSha,commitBaseSha,createdDate,closedDate,mergedDate,closedBy,mergedBy,"+
-					"lifetimeDays,lifetimeHours,lifetimeMinutes,assignee,comments,commitsPull,files,authorMoreCommits,commitsbyFilesPull,"+
+			header += "idPull,statePull,numberPull,title,commitHeadSha,commitBaseSha,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"+
+					"assignee,comments,commitsPull,files,authorMoreCommits,commitsbyFilesPull,"+
 					"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants,";
 		}
 		else{
+			if (prId){
+				methods.add("getPRId");
+				header +="idPull,";
+			}
+			if (prStatus){
+				methods.add("getPRStatus");
+				header += "status,";
+			}
 			if (prNumber){
 				methods.add("getPRNumber");
 				header += "numberPull,";
@@ -217,16 +234,17 @@ public  class Settings {
 			}
 			if (prDates){
 				methods.add("getPRDates");
-				header += "createdDate,closedDate,mergedDate,";
+				header += "createdDate,mesAno,closedDate,mergedDate,";
+			}
+			if (prLifeTime){
+				methods.add("getPRLifeTime");
+				header += "lifetimeMinutes,";
 			}
 			if (prClosedMergedBy){
 				methods.add("getPRClosedMergedBy");
 				header += "closedBy,mergedBy,";
 			}
-			if (prLifeTime){
-				methods.add("getPRLifeTime");
-				header += "lifetimeDays,lifetimeHours,lifetimeMinutes,";
-			}
+			
 			if (prAssignee){
 				methods.add("getPRAssignee");
 				header += "assignee,";
@@ -346,8 +364,6 @@ public  class Settings {
 		return methods;
 	}
 
-	
-	
 	public boolean isPrior_evaluation() {
 		return prior_evaluation;
 	}
@@ -374,38 +390,6 @@ public  class Settings {
 
 	public boolean isFirst_time() {
 		return first_time;
-	}
-
-	@Override
-	public String toString() {
-		return "Settings [header=" + header + ", data=" + data
-				+ ", allRepoData=" + allRepoData 
-				+ ", allAuthorData=" + allAuthorData + ", prNumber=" + prNumber
-				+ ", prState=" + prState + ", title=" + title + ", prDates="
-				+ prDates + ", prLifeTime=" + prLifeTime
-				+ ", prClosedMergedBy=" + prClosedMergedBy + ", prShas="
-				+ prShas + ", prAuthorMoreCommits=" + prAuthorMoreCommits
-				+ ", prCommitsByFiles=" + prCommitsByFiles + ", allPRData="
-				+ allPRData + ", prAssignee=" + prAssignee + ", prComments="
-				+ prComments + ", prCommits=" + prCommits
-				+ ", prModifiedLines=" + prModifiedLines + ", prChangedFiles="
-				+ prChangedFiles + ", prRootDirectory=" + prRootDirectory
-				+ ", prFiles=" + prFiles + ", prParticipants=" + prParticipants
-				+ ", user=" + user + ", userAge=" + userAge + ", userType="
-				+ userType + ", userPulls=" + userPulls + ", userAverages="
-				+ userAverages + ", userFollowers=" + userFollowers
-				+ ", userFollowing=" + userFollowing + ", userLocation="
-				+ userLocation + ", allCoreDevRecData=" + allCoreDevRecData
-				+ ", follower_relation=" + follower_relation
-				+ ", following_relation=" + following_relation
-				+ ", total_pulls=" + total_pulls + ", prior_evaluation="
-				+ prior_evaluation + ", recent_evaluation=" + recent_evaluation
-				+ ", evaluate_pulls=" + evaluate_pulls + ", recent_pulls="
-				+ recent_pulls + ", evaluate_time=" + evaluate_time
-				+ ", latest_time=" + latest_time + ", first_time=" + first_time
-				+ ", path_files=" + path_files + ", prType=" + prType
-				+ ", authorCommitsDays=" + authorCommitsDays
-				+ ", commitsByFilesDays=" + commitsByFilesDays + "]";
 	}
 	
 }

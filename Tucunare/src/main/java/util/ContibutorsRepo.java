@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import control.Commits;
 //Classe para obter os contibuidores de um repositório
@@ -23,7 +21,6 @@ public class ContibutorsRepo {
 			for (int i = 0; i < list.length; i++) {
 				Object object = list[i];
 				fw.write("ght-retrieve-user "+object.toString()+"\n");
-				
 			} 
 			fw.close();
 		}catch(IOException ioe){

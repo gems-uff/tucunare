@@ -1,20 +1,8 @@
 package control;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import org.bson.BSONObject;
-
-import util.Connect;
-
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 
 public class TesteCommit {
 	/*test contributors
@@ -43,16 +31,16 @@ public class TesteCommit {
 	*/
 	
 	public static void main(String[] args) throws UnknownHostException {
-		DB db = Connect.getInstance().getDB("ghtorrent");
-		DBCollection dbc = db.getCollection("commits");
+		//DB db = Connect.getInstance().getDB("ghtorrent");
+		//DBCollection dbc = db.getCollection("commits");
 		BasicDBObject query = new BasicDBObject("author.login", "gdi"); //consulta com data menor que a data do pull request		
 		query.append("html_url", new BasicDBObject("$regex", "("+"angular/angular"+")"));
-		DBCursor o = dbc.find(query).limit(1);
-		String type="";
-		if (o.size()>0)
-			type = "core";
-		else 
-			type = "external";
+		//DBCursor o = dbc.find(query).limit(1);
+		//String type="";
+		//if (o.size()>0)
+			//type = "core";
+		//else 
+			//type = "external";
 //		System.out.println(o.size());
 //		System.out.println(type);
 	}

@@ -193,9 +193,9 @@ public class Issues {
 					if(((BasicDBObject)dbObject).get("created_at")!=null && ((BasicDBObject)dbObject).get("closed_at")!=null){
 						time += Double.parseDouble(FormatDate.getLifetime(dbObject.get("closed_at").toString(), dbObject.get("created_at").toString()));
 						count++;
-				}	
+					}	
 			}
-			
+
 			if(memberCount != 0)
 				time = time/count;
 			if(time == 0)
@@ -254,7 +254,7 @@ public class Issues {
 			BasicDBObject dbo = new BasicDBObject("closed_at",1);
 			DBObject issue = issues.findOne(query, fields, dbo);//.sort(new BasicDBObject("closed_at",-1)).limit(1);
 			if(issue != null && ((BasicDBObject)issue).get("closed_by")!=null)
-					time = Double.parseDouble(FormatDate.getLifetime(createDate, issue.get("closed_at").toString()));
+				time = Double.parseDouble(FormatDate.getLifetime(createDate, issue.get("closed_at").toString()));
 			if(time == 0)
 				list.add("");
 			else
@@ -262,7 +262,7 @@ public class Issues {
 		}
 		return list.toString();
 	}
-    //Total de pull requests	
+	//Total de pull requests	
 	public static int getTotalPull(String repo, String owner, String createDate, String firstCreateDate) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection issues = db.getCollection("issues");
@@ -277,5 +277,5 @@ public class Issues {
 		fields.put("_id", 0);
 		return issues.find(query).count();
 	}
-	
+
 }

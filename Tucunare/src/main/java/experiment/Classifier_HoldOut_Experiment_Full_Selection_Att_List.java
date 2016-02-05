@@ -8,11 +8,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import weka.attributeSelection.AttributeSelection;
 import weka.attributeSelection.CorrelationAttributeEval;
-import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
@@ -21,7 +19,6 @@ import weka.classifiers.functions.SMO;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
-import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 
@@ -29,6 +26,7 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att_List {
 	//Variaveis est�ticas
 	static String [][] matrizProb = null;
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception{
 		//pasta com arquivos .arrf ou .csv
 		File f = new File("D:/ICMLA2015/files/coletados/MultivaluedAttributes/temp/");

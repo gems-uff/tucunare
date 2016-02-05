@@ -11,11 +11,11 @@ import com.mongodb.DBCollection;
 import util.Connect;
 
 public class PullRequests extends Thread{
-	@SuppressWarnings("unchecked")
+//	Nome dos repositórios no formato owner+repo
 	public static List<String> getAllRepos() throws UnknownHostException{
-		
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
+		@SuppressWarnings("unchecked")
 		List<String> repos = dbcPullRequest.distinct("repo");
 		ArrayList<String> fullName = new ArrayList<>();
 		for (String string : repos) {
@@ -27,7 +27,6 @@ public class PullRequests extends Thread{
 		}
 		return fullName;
 	}
-	
 //	Quantidade de pull requests em um projeto
 	public static int getPulls(String repo, String owner, int prType) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
@@ -46,5 +45,4 @@ public class PullRequests extends Thread{
 		
 		return dbcPullRequest.find(query,fields).count();
 	}
-
 }

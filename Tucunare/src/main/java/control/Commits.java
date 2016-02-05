@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import util.Connect;
 import util.FormatDate;
+
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -187,6 +189,7 @@ public class Commits {
 		queryIssue.append("pull_request", new BasicDBObject("$exists", true));
 		queryIssue.append("owner", owner);
 		queryIssue.append("closed_by", new BasicDBObject("$not", new BasicDBObject("$type", 10)));
+		@SuppressWarnings("unchecked")
 		ArrayList<String> list = (ArrayList<String>) issueC.distinct("closed_by.login",queryIssue);
 		Collections.sort(list);
 		return list;

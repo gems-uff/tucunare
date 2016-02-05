@@ -9,7 +9,6 @@ import model.Settings;
 import teste.DialogStatus;
 import util.Connect;
 import util.FormatDate;
-import view.RetrievePullRequest;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -67,10 +66,10 @@ public class SaveFile2 implements Runnable {
 //				System.out.println("repo ok!");
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
 //				System.out.println("user login ok!");
-				String number = dbObject.get("number").toString();
+				//String number = dbObject.get("number").toString();
 //				System.out.println("number pull ok!"+number);
 				
-				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
+				//String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep);
 //				System.out.println("closedby issue ok!");
 //				System.out.println("laço ok!");
 				if(dbObject!=null){// & !closed_by.equals(user)){
@@ -86,8 +85,9 @@ public class SaveFile2 implements Runnable {
 					//Dados do projeto
 					String dataRepo = Repos.getRepoData(owner+"/"+rep);//ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 					String acceptanceRepo="";
-					int totalPullRepoClosed = Repos.getPullRepoClosed(created, rep, owner);
-					int mergedPullRepo = Repos.getPullRepoMerged(created, rep, owner);
+					//ERRO ao passar o argumento FirstCreatedDate <<<<<<<<<--------
+					int totalPullRepoClosed = Repos.getPullRepoClosed(created, "FIRSTCREATEDDATE",rep, owner);
+					int mergedPullRepo = Repos.getPullRepoMerged(created, "FIRSTCREATEDDATE", rep, owner);
 					if(totalPullRepoClosed==0)
 						acceptanceRepo = "0";
 					else
@@ -95,23 +95,23 @@ public class SaveFile2 implements Runnable {
 //					System.out.println("dados do projeto ok!");
 					//Dados do requester
 					int totalPullUser = Users.getPullUserTotal(user, created, rep, owner);
-					int mergedPullUser = Users.getPullUserMerged(user, created, rep, owner);
-					int closedPullUser = totalPullUser - mergedPullUser;
+					//int mergedPullUser = Users.getPullUserMerged(user, created, rep, owner);
+					//int closedPullUser = totalPullUser - mergedPullUser;
 
-					String rejectUser;
+					//String rejectUser;
 					String acceptanceUser="";
 					if(totalPullUser==0){
 						acceptanceUser = "0";
-						rejectUser = "0";
+						//rejectUser = "0";
 					}else{
-						acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
-						rejectUser = String.valueOf(((closedPullUser*100)/totalPullUser));
+						//acceptanceUser = String.valueOf(((mergedPullUser*100)/totalPullUser));
+						//rejectUser = String.valueOf(((closedPullUser*100)/totalPullUser));
 					}
-					String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
-					String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
+					//String contributors = Commits.getContributors(shaHead, rep, owner, settings.getContributorsMonths());
+					//String typeDeveloper = Commits.getTypeDeveloper(user, rep, owner);
 					
 					boolean watchRepo = Users.getWatcherRepo (user, created, rep, owner);
-					boolean followContributors = Users.getFollowersTeam(user, rep, owner);
+					//boolean followContributors = Users.getFollowersTeam(user, rep, owner);
 					String location = Users.getLocationUser(user);
 //					System.out.println("dados do requester ok!");
 					//Dados do Pull Request
@@ -120,9 +120,9 @@ public class SaveFile2 implements Runnable {
 						assignee = (String) ((BasicDBObject)dbObject.get("assignee")).get("login");
 
 					//comentários
-					int commentsPull = PullRequestsComments.getPullComments(number, rep); 
-					int commentsIssue = Issues.getIssueComments(number, dbObject.get("repo").toString());
-					long comments = commentsPull + commentsIssue;
+					//int commentsPull = PullRequestsComments.getPullComments(number, rep, owner); 
+					//int commentsIssue = Issues.getIssueComments(number, dbObject.get("repo").toString());
+					//long comments = commentsPull + commentsIssue;
 
 					//arquivos
 					String filesPath = "";
@@ -137,8 +137,8 @@ public class SaveFile2 implements Runnable {
 						authorMoreCommits = Commits.getAuthorCommits(files, shaBase, rep, settings.getAuthorCommitsDays());
 					}
 					
-					String participants = Users.getParticipants(number, rep);
-					participants = participants.substring(1, participants.length()-1).replaceAll(", ", "|");
+					//String participants = Users.getParticipants(number, rep);
+					//participants = participants.substring(1, participants.length()-1).replaceAll(", ", "|");
 					
 					//tratamento para caminho dos arquivos para buscar o último diretório
 					String dirFinal = "";
@@ -184,19 +184,19 @@ public class SaveFile2 implements Runnable {
 					//String enviada para o arquivo
 					String resultTemp = 
 							owner+"/"+rep+","+dataRepo+","+
-							contributors+","+
+							//contributors+","+
 							acceptanceRepo+","+
 							followers+","+
 							following+","+
 							ageUser+","+
-							typeDeveloper+","+
+							//typeDeveloper+","+
 							totalPullUser+","+
-							mergedPullUser+","+
-							closedPullUser+","+
-							rejectUser+","+
+							//mergedPullUser+","+
+							//closedPullUser+","+
+							//rejectUser+","+
 							acceptanceUser+","+
 							watchRepo+","+
-							followContributors+","+
+							//followContributors+","+
 							location.replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ').replace('/', ' ')+","+
 							(Integer) dbObject.get("id")+","+
 							(Integer) dbObject.get("number")+","+
@@ -207,16 +207,16 @@ public class SaveFile2 implements Runnable {
 							closedDate+","+
 							mergedDate+","+
 							lifetime+","+
-							closed_by+","+
+							//closed_by+","+
 							merged_by+","+
 							((BasicDBObject)dbObject.get("head")).get("sha")+","+
 							((BasicDBObject)dbObject.get("base")).get("sha")+","+
 							assignee+","+
-							comments+","+
+							//comments+","+
 							dbObject.get("commits")+","+
 							commitsPorArquivos+","+
 							authorMoreCommits+","+
-							participants+","+
+							//participants+","+
 							dbObject.get("additions")+","+
 							dbObject.get("deletions")+","+
 							(Integer.parseInt(dbObject.get("additions").toString())+Integer.parseInt(dbObject.get("deletions").toString()))+","+
@@ -227,8 +227,8 @@ public class SaveFile2 implements Runnable {
 					System.out.println((Integer) dbObject.get("number"));
 					if (!saveFile(false, resultTemp))
 						System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
-				}else
-					continue;
+				}//else
+					//continue;
 				DialogStatus.addsPullRequests();
 			}
 			finalizedThreads++;
