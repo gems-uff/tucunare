@@ -51,6 +51,7 @@ public class SaveFile implements Runnable {
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
 
 		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
+		query.append("owner", owner);
 
 		System.out.println("Valid settings: "+settings.tryParseValues(repo, owner));
 
@@ -83,20 +84,32 @@ public class SaveFile implements Runnable {
 
 			//Escrevendo o cabeçalho do arquivo
 			writeHeader(settings.getHeader());
-
+			int controlador=0;
 			for (DBObject dbObject : cursor) {
+				controlador ++;
 				String result = "";
+				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
+				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), repo,owner);
 
-				// Execução dos métodos.
-				drm = new DataRecoveryMethods(dbcPullRequest, dbObject, settings);
-				for (Method method : meth) {
-					result += method.invoke(drm);
+				if(!closed_by.equals("")){
+					if(dbObject!=null && !closed_by.equals(user)){
+						// Execução dos métodos.
+						drm = new DataRecoveryMethods(dbcPullRequest, dbObject, settings);
+						for (Method method : meth) {
+							result += method.invoke(drm);
+						}
+						result += "\r\n";
+					}
+
 				}
-				result += "\r\n";
+
 
 				if (!saveFile(result))
 					System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
 				DialogStatus.addsPullRequests();
+
+				if (controlador==3)
+					break;
 			}
 			finalizedThreads++;
 			return "success!";
@@ -111,7 +124,7 @@ public class SaveFile implements Runnable {
 	public boolean saveFile(String pullRequestData){
 		File fileTemp = new File(file+File.separator+repo+".csv");
 		FileWriter fw = null;
-		
+
 		try {
 			fw = new FileWriter(fileTemp, true);
 			fw.write(pullRequestData);

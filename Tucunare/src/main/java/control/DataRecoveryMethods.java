@@ -46,7 +46,7 @@ public class DataRecoveryMethods {
 		owner = dbObject.get("owner").toString();
 		rep = dbObject.get("repo").toString();
 		user = ((BasicDBObject)dbObject.get("user")).get("login")+"";
-		created = FormatDate.getDate(dbObject.get("created_at").toString());
+		created = dbObject.get("created_at").toString();
 		
 		try {
 			listCoreTeam = Commits.getCoreTeamPullList(rep,owner);
