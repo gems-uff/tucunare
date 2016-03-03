@@ -28,8 +28,10 @@ public class SaveFile implements Runnable {
 	private static int finalizedThreads = 0;
 	private static String tempo="";
 	private Settings settings;
+	private ProccessRepositories proccessRepos;
 
-	public SaveFile(String owner, String repo, String file, Settings settings) throws UnknownHostException{
+	public SaveFile(ProccessRepositories proccessRepos, String owner, String repo, String file, Settings settings) throws UnknownHostException{
+		this.proccessRepos = proccessRepos;
 		this.repo = repo; 
 		this.owner = owner;
 		this.file = file;
@@ -39,30 +41,37 @@ public class SaveFile implements Runnable {
 	public void run() {
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
-			retrieveData(settings);
-			setTempo(getTempo() + Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ");
-			DialogStatus.setThreads(finalizedThreads);
+			if (!retrieveData(settings)){
+				System.err.println("Erro ao executar a thread "+Thread.currentThread().getName());
+			}
 		} catch (UnknownHostException e) {
-			System.err.println("Erro ao processar os dados do repositórios "+repo);
 			e.printStackTrace();
 		}
+		setTempo(getTempo() + Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ");
+		DialogStatus.setThreads(finalizedThreads);
 	}
 
 	//Usar threads para recuperar os dados e salvar tudo o que foi armazenado na String em uma única escrita de arquivo.
-	public String retrieveData(Settings settings) throws UnknownHostException {
+	public boolean retrieveData(Settings settings) throws UnknownHostException {
 		DB db = Connect.getInstance().getDB("ghtorrent");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
 
-		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
+		BasicDBObject query = new BasicDBObject("repo",repo);
 		query.append("owner", owner);
 
-		System.out.println("Valid settings: "+settings.tryParseValues(repo, owner));
+		if (!settings.tryParseValues(repo, owner))
+			proccessRepos.setMessageOfTextArea("Erro ao carregar as configurações. Todos os dados serão recuperados.");
 
-		//query.append("number", new BasicDBObject("$gt", Integer.parseInt("1243")));//maiores que number
 		if (settings.getPrType() == 1)
 			query.append("state", "open"); //Apenas pull requests abertos
 		if (settings.getPrType() == 2)
 			query.append("state", "closed"); //Apenas pull requests encerrados
+
+		//mudar aqui a validação para utilizar a informação de closed_at
+		query.append("closed_at", new BasicDBObject("$ne", null));
+		query.append("closed_at", new BasicDBObject("$ne", "null"));
+		query.append("closed_at", new BasicDBObject("$ne", ""));
+
 		try{
 			DBCursor cursor = dbcPullRequest.find(query);//.sort(new BasicDBObject("number", -1));
 			cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
@@ -87,6 +96,8 @@ public class SaveFile implements Runnable {
 
 			//Escrevendo o cabeçalho do arquivo
 			writeHeader(settings.getHeader());
+
+			//O Loop abaixo percorre a coleção de PullRequests do repositório para recuperar as informações.
 			for (DBObject dbObject : cursor) {
 				String result = "";
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
@@ -100,24 +111,26 @@ public class SaveFile implements Runnable {
 							result += method.invoke(drm);
 						}
 						result += "\r\n";
+						DialogStatus.addsPullRequests();
 					}
-
 				}
-
-
 				if (!saveFile(result))
 					System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
-				DialogStatus.addsPullRequests();
+				
 			}
-			finalizedThreads++;
-			return "success!";
+			finalizaThread();
+			return true;
 		}catch(Exception ioe){
-			ioe.printStackTrace();
 			System.err.println("Exceção: "+ioe.getMessage());
-			finalizedThreads++;
-			return "Erro ao recuperar dados.";
+			finalizaThread();
+			return false;
 		}
 	}	
+
+	private void finalizaThread() {
+		finalizedThreads++;
+		proccessRepos.iniciaThreads(finalizedThreads);		
+	}
 
 	public boolean saveFile(String pullRequestData){
 		File fileTemp = new File(file+File.separator+repo+".csv");
@@ -126,17 +139,12 @@ public class SaveFile implements Runnable {
 		try {
 			fw = new FileWriter(fileTemp, true);
 			fw.write(pullRequestData);
+			fw.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("erro na escrita do arquivo.");
 			return false;
-		}
-		try {
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.err.println("erro ao tentar fechar a escrita do arquivo (2).");
 		}
 		return true;
 	}

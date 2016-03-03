@@ -43,6 +43,7 @@ import org.json.JSONObject;
 
 import teste.DialogStatus;
 import util.Connect;
+import control.ProccessRepositories;
 import control.PullRequests;
 import control.SaveFile;
 
@@ -123,7 +124,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 	private JList<String> repositoryList;
 	private static List<String> selectedRepositories = new ArrayList<String>();
-	public static int totalPullRequests=0;
 	//Menu
 	private JMenuBar menuBar;
 	private JMenu mnFile;
@@ -148,7 +148,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JPanel panel_10;
 	private JPanel panel_11;
 	private JPanel panel_12;
-	private static int threadAtual=0;
 	private static String file="";
 	private JCheckBox jcbPRParticipants;
 	private JLabel lblNewLabel;
@@ -156,14 +155,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private JCheckBox jcbRepoWatchers;
 	private JLabel label;
 	private JCheckBox jcbPRId;
-	
-	private DialogStatus ds;
-
 
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
 		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
-		jFrame.setBounds(100, 100, 1000, 480);
+		//jFrame.setBounds(100, 100, 1000, 480);
 
 		addTopPanel();
 		addCenterPanel();
@@ -251,10 +247,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	private void loadAllRepoData(boolean selected) {
 		jcbRepoAcceptance.setSelected(selected);
 		jcbRepoWatchers.setSelected(selected);
-		
+
 		jcbRepoAcceptance.setEnabled(!selected);
 		jcbRepoWatchers.setEnabled(!selected);
-		
+
 	}
 
 	public void actionPerformed(ActionEvent evt) {
@@ -270,19 +266,16 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					return;
 				}
 				else{
-					
-					file = jTxtFePath.getText();
-					
-					jTextArea.setText("Processando dados.");
-					
-					totalPullRequests=0;
-					settings = getSelectedFields();
-					
-					iniciaThreads(selectedRepositories, settings);
-					if (selectedRepositories.size()>0){
-						showStatusWindow();
 
-					}
+					file = jTxtFePath.getText();
+
+					jTextArea.setText("Processando dados.");
+
+					settings = getSelectedFields();
+					//realiza a limpeza do valor das variáveis státicas, utilizadas no controle das threads de recuperação dos dados;
+					loadData();
+					new ProccessRepositories(this, selectedRepositories, settings, file);
+					
 				}
 			}else
 				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informaÃ§ão para ser recuperada.");
@@ -294,10 +287,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 				int i= fileChooser.showSaveDialog(null);
 				if (i==1){
 					jTxtFePath.setText("");
-					return;
 				} else {
 					jTxtFePath.setText(fileChooser.getSelectedFile().toString());
-					return;
 				}
 			} else 
 				if (evt.getSource()==jButtonSelectAll)
@@ -320,84 +311,15 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		}	
 	}
 
-
-	private void iniciaThreads(List<String> selectedRepositories,
-			Settings settings) {
-
-		for (String repository : selectedRepositories) {
-			try {
-				String [] r = repository.split("/");
-				totalPullRequests += PullRequests.getPulls(r[1], r[0], settings.getPrType());
-			} catch (ArithmeticException e) {
-				System.err.println("Erro ao iniciar a contagem de pull requests dos repositórios selecionados.");
-			} catch(UnknownHostException e){
-				System.err.println("Não foi possível encontrar o host ao iniciar as threads.");
-			}catch(IllegalStateException ise){
-				System.err.println("Tentando criar nova conexão.");
-				Connect.resetConnection();
-				DialogStatus.setCurrentPR(0);
-				DialogStatus.setThreads(0);
-				DialogStatus.setTotalPullRequests(0);
-				DialogStatus.setTotalRepositories(0);
-				SaveFile.setFinalizedThreads(0);
-				SaveFile.setTempo("");
-				
-				try {
-					String [] r = repository.split("/");
-					totalPullRequests += PullRequests.getPulls(r[1], r[0], settings.getPrType());
-				} catch (UnknownHostException e) {
-					System.err.println("Erro na tentativa de executar novamente a aplicação.\n"+e.getMessage());
-				}
-			}
-		}
-
-		//caso sejam selecionados no máximo 3 repositórios, realiza a recuperação de todos ao mesmo tempo.
-		if (selectedRepositories.size() <=3){
-			for (String repository : selectedRepositories) {
-				try {
-					String[] aux = repository.split("/");
-					new Thread(new SaveFile(aux[0], aux[1], file, settings), "Thread-"+repository).start();	
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		else
-		{//Se forem selecionados mais de 3 repositórios, será iniciada a recuperação de 3, após isso ao final de cada thread uma nova é iniciada.
-			threadAtual +=3; 
-			for (int i=0; i<3; i++){
-				try {
-					String[] aux = selectedRepositories.get(i).split("/");
-					new Thread(new SaveFile(aux[0], aux[1], file, settings), "Thread-"+aux[1]).start();	
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				}
-			}
-
-		}
-
-	}
-
-	public static void iniciaThreads(){
-		if (threadAtual>3){
-			try {
-				String[] aux = selectedRepositories.get(threadAtual).split("/");
-				new Thread(new SaveFile(aux[0], aux[1], file, settings), "Thread-"+selectedRepositories.get(threadAtual)).start();
-				threadAtual++;
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-	private void showStatusWindow() {
-		System.out.println("Repositórios selecionados: "+selectedRepositories);
-		System.out.println("TotalPullRequests: "+totalPullRequests);
-		ds = new DialogStatus(jFrame, selectedRepositories.size() ,totalPullRequests);
-		ds.setLocationRelativeTo(jFrame);
-		ds.setModal(true);
-		ds.setVisible(true);
+	private void loadData() {
+		Connect.resetConnection();
+		ProccessRepositories.setThreadAtual(0);
+		SaveFile.setFinalizedThreads(0);
+		SaveFile.setTempo("");
+		DialogStatus.setCurrentPR(0);
+		DialogStatus.setTotalPullRequests(0);
+		DialogStatus.setTotalRepositories(0);
+			
 	}
 
 	public void addTopPanel(){
@@ -458,8 +380,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jButtonDeselectAll.addActionListener(this);
 		topPanel.add(jButtonDeselectAll);
 
-
-
 		jFrame.getContentPane().add(topPanel, BorderLayout.NORTH);
 
 	}
@@ -512,10 +432,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbAllRepoData.addItemListener(this);
 
 		centerPanelNorth.add(jcbAllRepoData);
-		
+
 		jcbRepoAcceptance = new JCheckBox("Repository Acceptance");
 		centerPanelNorth.add(jcbRepoAcceptance);
-		
+
 		jcbRepoWatchers = new JCheckBox("Repository Watchers");
 		centerPanelNorth.add(jcbRepoWatchers);
 		centerPanelNorth.add(new JLabel());
@@ -565,7 +485,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbPRType.setSelectedIndex(0);
 
 		panel.add(jcbPRType);
-		
+
 		jcbPRId = new JCheckBox("id");
 		centerPanelMidIn.add(jcbPRId);
 		centerPanelMidIn.add(jcbNumPR);
@@ -687,7 +607,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		centerPanel.add(centerPanelMid, BorderLayout.CENTER);
 		centerPanel.add(centerPanelNorth, BorderLayout.NORTH);
 		centerPanel.add(centerPanelSouth, BorderLayout.SOUTH);
-		
+
 		label = new JLabel("");
 		centerPanelSouth.add(label);
 
@@ -942,5 +862,21 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			System.err.println(e.getMessage());
 		}
 	}
-
+	
+	public void setMessageOfTextArea(String s){
+		jTextArea.append(s);
+		jFrame.repaint();
+	}
+	
+	public JFrame getJFrame(){
+		return jFrame;
+	}
+	
+	public static void setSelectedRepositories(List<String> reposistories){
+		selectedRepositories = reposistories;
+	}
+	
+	public static void setSettings(Settings s){
+		settings = s;
+	}
 }
