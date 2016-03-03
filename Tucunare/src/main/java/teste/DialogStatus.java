@@ -15,7 +15,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import control.SaveFile;
 import util.Connect;
 
 public class DialogStatus extends JDialog {

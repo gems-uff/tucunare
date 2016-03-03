@@ -198,7 +198,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					int i= fileChooser.showSaveDialog(null);
 					if (i!=1){
 						if (loadConfiguration(fileChooser.getSelectedFile().toString()))
-							jTextArea.append("Configurações carregadas com sucesso.");
+							jTextArea.setText("Configurações carregadas com sucesso.");
 					}
 				}
 			}
@@ -293,10 +293,10 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			setConfiguration(s);
 			br.close(); 
 		} catch (FileNotFoundException e) {
-			jTextArea.append("O arquivo de configuração não foi encontrado ou não está disponível para leitura.");
+			jTextArea.setText("O arquivo de configuração não foi encontrado ou não está disponível para leitura.");
 			return false;
 		} catch (IOException e) {
-			jTextArea.append("O arquivo de configuração não foi encontrado ou não está disponível para leitura.");
+			jTextArea.setText("O arquivo de configuração não foi encontrado ou não está disponível para leitura.");
 			return false;
 		} 
 
@@ -926,9 +926,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		jcbCommitsPR.setSelected(jo.getBoolean("commits"));
 
 		JSONArray arrayDays = jo.getJSONArray("commitsdays");
-		List<Integer> days = new ArrayList<Integer>();
-		days.add(arrayDays.getInt(0));
-		days.add(arrayDays.getInt(1));
+		jTxtAuthorMoreCommitsPR.setText(arrayDays.getInt(0)+"");
+		jTxtCommByFiles.setText(arrayDays.getInt(1)+"");
 
 		jcbChangedFilesPR.setSelected(jo.getBoolean("changedfiles"));
 		jcbFilesPR.setSelected(jo.getBoolean("files"));
@@ -1023,7 +1022,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	}
 
 	public void setMessageOfTextArea(String s){
-		jTextArea.append(s);
+		jTextArea.setText(s);
 		jFrame.repaint();
 	}
 

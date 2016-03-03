@@ -1,25 +1,25 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import javax.print.DocFlavor.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
-
-import java.awt.Font;
-
-import javax.swing.JTextField;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 public class AboutWindow extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public AboutWindow(){
 		setTitle("Sobre");
