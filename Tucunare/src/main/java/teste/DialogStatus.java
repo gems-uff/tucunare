@@ -63,7 +63,6 @@ public class DialogStatus extends JDialog {
 		jProgressBar.setMaximum(100);
 		jProgressBar.setStringPainted(true);//Faz aparecer o valor em porcentagem  
 		jProgressBar.setValue(0);
-		//jProgressBar.setIndeterminate(true);
 
 		panel_1 = new JPanel();
 		getContentPane().add(panel_1, BorderLayout.SOUTH);
@@ -98,7 +97,6 @@ public class DialogStatus extends JDialog {
 			jLabelRepositories.setText("Repositórios processados: "+atual+" de "+totalRepositories+".");
 			txtOperaoFinalizada.setVisible(true);
 			btnSair.setVisible(true);
-			System.out.println("Tempo em segundos do fim da recuperação dos dados: "+SaveFile.getTempo());
 			try {
 				Connect.getInstance().close();
 			} catch (UnknownHostException e) {
@@ -120,7 +118,6 @@ public class DialogStatus extends JDialog {
 	public static void addsPullRequests(){
 		currentPR++;
 		lblPullRequests.setText("Pull Requests: "+currentPR+" de "+totalPullRequests);
-		System.out.println("TotalPR: "+totalPullRequests);
 		int x = (100*currentPR)/totalPullRequests;
 		
 		jProgressBar.setValue(x);

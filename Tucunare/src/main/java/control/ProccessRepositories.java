@@ -147,8 +147,6 @@ public class ProccessRepositories {
 	}
 
 	private void showStatusWindow() {
-		System.out.println("Repositórios selecionados: "+selectedRepositories);
-		System.out.println("TotalPullRequests: " + totalPR);
 		ds = new DialogStatus(retrievePR.getJFrame(), selectedRepositories.size(), totalPR);
 		ds.setLocationRelativeTo(retrievePR.getJFrame());
 		ds.setModal(true);

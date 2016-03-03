@@ -392,4 +392,12 @@ public  class Settings {
 		return first_time;
 	}
 	
+	public JSONObject getData(){
+		return data;
+	}
+	
+	public void setData(JSONObject jo){
+		data = jo;
+	}
+	
 }

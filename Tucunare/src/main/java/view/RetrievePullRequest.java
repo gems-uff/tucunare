@@ -8,6 +8,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +41,11 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.Settings;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -178,9 +186,41 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		menuBar.add(mnFile);
 
 		mntmLoadConfiguration = new JMenuItem("Load configuration");
+		mntmLoadConfiguration.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (arg0.getSource() == mntmLoadConfiguration){
+					JFileChooser fileChooser = new JFileChooser("C:\\Users\\Lucas\\Documents"); 
+					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					FileNameExtensionFilter filter = new FileNameExtensionFilter(
+							"CFG Archives", "cfg");
+					fileChooser.setFileFilter(filter);
+
+					int i= fileChooser.showSaveDialog(null);
+					if (i!=1){
+						if (loadConfiguration(fileChooser.getSelectedFile().toString()))
+							jTextArea.append("Configurações carregadas com sucesso.");
+					}
+				}
+			}
+		});
 		mnFile.add(mntmLoadConfiguration);
 
-		mntmSave = new JMenuItem("Save");
+		mntmSave = new JMenuItem("Save configuration");
+		mntmSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (arg0.getSource() == mntmSave){
+					JFileChooser fileChooser = new JFileChooser("C:\\Users\\Lucas\\Documents"); 
+					fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					int i= fileChooser.showSaveDialog(null);
+					if (i!=1){
+						if (saveConfiguration(fileChooser.getSelectedFile().toString(), getConfiguration()))
+							jTextArea.setText("Arquivo de configuração salvo com sucesso.");
+						else
+							jTextArea.setText("Erro ao tentar salvar o arquivo de configuração.");
+					}
+				}
+			}
+		});
 		mnFile.add(mntmSave);
 
 		mntmExit = new JMenuItem("Exit");
@@ -198,13 +238,70 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		mntmSobre = new JMenuItem("Sobre");
 		mntmSobre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//Mostrar janela "Sobre".
+				AboutWindow aw = new AboutWindow();
+				aw.setVisible(true);
 			}
 		});
 		mnHelp.add(mntmSobre);
 
 	}
 
+	public String getConfiguration(){
+		return getSelectedFields().getData()+"";
+	}
+
+	public void setConfiguration(String s ){
+		JSONObject jo = new JSONObject(s);
+		setSelectedFields(jo);
+	}
+
+	private boolean saveConfiguration(String directory, String cfg) {
+		File fileTemp = new File(directory+File.separator+"configuration"+".cfg");
+		FileWriter fw = null;
+
+		try {
+			fw = new FileWriter(fileTemp);
+			fw.write(cfg);
+			fw.write("\r\n");
+
+		} catch (FileNotFoundException fnfe){
+			JOptionPane.showMessageDialog(null, "Erro, o arquivo pode estar sendo utilizado por outro programa.");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("erro na escrita do cabeçalho do arquivo.");
+			return false;
+		}
+		try {
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("erro ao tentar fechar a escrita do arquivo (2).");
+		}
+		return true;
+
+	}
+
+	public boolean loadConfiguration(String file){
+		BufferedReader br;
+		String s = "";
+		try {
+			br = new BufferedReader(new FileReader(file));
+			while(br.ready()){ 
+				String linha = br.readLine(); 
+				s += linha;
+			} 
+			setConfiguration(s);
+			br.close(); 
+		} catch (FileNotFoundException e) {
+			jTextArea.append("O arquivo de configuração não foi encontrado ou não está disponível para leitura.");
+			return false;
+		} catch (IOException e) {
+			jTextArea.append("O arquivo de configuração não foi encontrado ou não está disponível para leitura.");
+			return false;
+		} 
+
+		return true;
+	}
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource() == jcbCommitsByFilesPR){
 			boolean aux = jcbCommitsByFilesPR.isSelected();
@@ -275,7 +372,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					//realiza a limpeza do valor das variáveis státicas, utilizadas no controle das threads de recuperação dos dados;
 					loadData();
 					new ProccessRepositories(this, selectedRepositories, settings, file);
-					
+
 				}
 			}else
 				JOptionPane.showMessageDialog(null, "Escolha pelo menos uma informaÃ§ão para ser recuperada.");
@@ -318,8 +415,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		SaveFile.setTempo("");
 		DialogStatus.setCurrentPR(0);
 		DialogStatus.setTotalPullRequests(0);
-		DialogStatus.setTotalRepositories(0);
-			
+		DialogStatus.setTotalRepositories(0);			
 	}
 
 	public void addTopPanel(){
@@ -713,6 +809,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	}
 
 	public void loadCoreDevRecComponents(boolean value){
+		jcbAllCoreDevRecData.setSelected(value);
 		follower_relation.setSelected(value);
 		following_relation.setSelected(value);
 		prior_evaluation.setSelected(value);
@@ -724,6 +821,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		first_time.setSelected(value);
 		path_files.setSelected(value);
 
+		jcbAllCoreDevRecData.setEnabled(!value);
 		follower_relation.setEnabled(!value);
 		following_relation.setEnabled(!value);
 		prior_evaluation.setEnabled(!value);
@@ -803,6 +901,67 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		return s;
 	}
 
+	private void setSelectedFields(JSONObject jo) {
+		jcbAllRepoData.setSelected(jo.getBoolean("allrepodata"));
+		jcbRepoAcceptance.setSelected(jo.getBoolean("repoacceptance"));
+		jcbRepoWatchers.setSelected(jo.getBoolean("repowatchers"));
+
+		//dados core do PR
+		jcbAllPRData.setSelected(jo.getBoolean("allprdata"));	
+		jcbPRId.setSelected(jo.getBoolean("id"));
+		jcbNumPR.setSelected(jo.getBoolean("number"));
+		jcbStatusPR.setSelected(jo.getBoolean("status"));
+		jcbTitlePR.setSelected(jo.getBoolean("title"));
+		jcbShaHeadBasePR.setSelected(jo.getBoolean("shas"));
+		jcbDatesPR.setSelected(jo.getBoolean("dates"));
+		jcbClosedMergedByPR.setSelected(jo.getBoolean("closedmergedby"));
+		jcbLifetimePR.setSelected(jo.getBoolean("lifetime"));
+		jcbAssigneePR.setSelected(jo.getBoolean("assignee"));
+		jcbAuthorMoreCommitsPR.setSelected(jo.getBoolean("authormorecommits"));
+		jcbCommitsByFilesPR.setSelected(jo.getBoolean("commitsbyfiles"));
+		jcbPRParticipants.setSelected(jo.getBoolean("participants"));
+
+		//dados files PR
+		jcbCommentsPR.setSelected(jo.getBoolean("comments"));
+		jcbCommitsPR.setSelected(jo.getBoolean("commits"));
+
+		JSONArray arrayDays = jo.getJSONArray("commitsdays");
+		List<Integer> days = new ArrayList<Integer>();
+		days.add(arrayDays.getInt(0));
+		days.add(arrayDays.getInt(1));
+
+		jcbChangedFilesPR.setSelected(jo.getBoolean("changedfiles"));
+		jcbFilesPR.setSelected(jo.getBoolean("files"));
+		jcbRootDirectoryPR.setSelected(jo.getBoolean("dirfinal"));
+		jcbModifiedLinesPR.setSelected(jo.getBoolean("modifiedlines"));
+
+		//dados user
+		jcbAllAuthorData.setSelected(jo.getBoolean("allauthordata"));
+		jcbUser.setSelected(jo.getBoolean("user"));
+		jcbAgeUser.setSelected(jo.getBoolean("age"));
+		jcbUserType.setSelected(jo.getBoolean("type"));
+		jcbUserPulls.setSelected(jo.getBoolean("pullsuser"));
+		jcbUserAverages.setSelected(jo.getBoolean("averages"));
+		jcbUserFollowers.setSelected(jo.getBoolean("followers"));
+		jcbUserFollowing.setSelected(jo.getBoolean("following"));
+		jcbUserLocation.setSelected(jo.getBoolean("location"));
+		jcbPRType.setSelectedIndex(jo.getInt("prtype"));
+
+		//dados CoreDevRec
+		jcbAllCoreDevRecData.setSelected(jo.getBoolean("allcoredevrecdata"));
+		follower_relation.setSelected(jo.getBoolean("followerrelation"));
+		following_relation.setSelected(jo.getBoolean("followingrelation"));
+		prior_evaluation.setSelected(jo.getBoolean("priorevaluation"));
+		recent_evaluation.setSelected(jo.getBoolean("recentevaluation"));
+		evaluate_pulls.setSelected(jo.getBoolean("evaluatepulls"));
+		recent_pulls.setSelected(jo.getBoolean("recentpulls"));
+		evaluate_time.setSelected(jo.getBoolean("evaluatetime"));
+		latest_time.setSelected(jo.getBoolean("latesttime"));
+		first_time.setSelected(jo.getBoolean("firsttime"));
+		path_files.setSelected(jo.getBoolean("pathfiles"));
+
+	}
+
 	private List <Integer> getDaysValues() throws NumberFormatException {
 		List <Integer> result = new ArrayList<Integer>();
 		if (jcbAuthorMoreCommitsPR.isSelected())
@@ -862,20 +1021,20 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 			System.err.println(e.getMessage());
 		}
 	}
-	
+
 	public void setMessageOfTextArea(String s){
 		jTextArea.append(s);
 		jFrame.repaint();
 	}
-	
+
 	public JFrame getJFrame(){
 		return jFrame;
 	}
-	
+
 	public static void setSelectedRepositories(List<String> reposistories){
 		selectedRepositories = reposistories;
 	}
-	
+
 	public static void setSettings(Settings s){
 		settings = s;
 	}
