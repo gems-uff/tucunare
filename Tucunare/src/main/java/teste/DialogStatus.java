@@ -10,11 +10,13 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import control.SaveFile;
 import util.Connect;
 
 public class DialogStatus extends JDialog {
@@ -22,7 +24,6 @@ public class DialogStatus extends JDialog {
 
 	private static JDialog jDialogStatic;
 	private static JProgressBar jProgressBar;
-	private static JLabel jLabelRepositories;
 	private static int totalRepositories;
 	private static int totalPullRequests;
 	private static int currentPR=0;
@@ -33,24 +34,31 @@ public class DialogStatus extends JDialog {
 	private static JFrame jFrameStatic;
 	private JPanel panel_3;
 	private static JLabel lblPullRequests;
+	private static JButton btnVisualizar;
+	private static JButton btnCancelar;
 
 	@SuppressWarnings("static-access")
 	public DialogStatus(JFrame frame, int totalRepositories, int totalPullRequests){
 		super(frame);
 		jDialogStatic = this;
 		jFrameStatic = frame;
-		this.pack();
+		this.setSize(250, 130);
 		this.totalRepositories = totalRepositories;
 		this.totalPullRequests = totalPullRequests;
 		getContentPane().setLayout(new BorderLayout(0, 0));
 
-		JPanel panel = new JPanel();
-		getContentPane().add(panel);
-		jLabelRepositories = new JLabel("Repositórios... (0 de "+totalRepositories+")");
-		panel.add(jLabelRepositories);
+		panel_1 = new JPanel();
+		getContentPane().add(panel_1, BorderLayout.SOUTH);
+		panel_1.setLayout(new BorderLayout(0, 0));
+
+		txtOperaoFinalizada = new JTextField("Concluídos: 0 de "+totalRepositories);
+		panel_1.add(txtOperaoFinalizada, BorderLayout.NORTH);
+		txtOperaoFinalizada.setHorizontalAlignment(SwingConstants.CENTER);
+		txtOperaoFinalizada.setEditable(false);
+		txtOperaoFinalizada.setColumns(10);
 		
 		panel_3 = new JPanel();
-		panel.add(panel_3);
+		panel_1.add(panel_3, BorderLayout.CENTER);
 		panel_3.setLayout(new BorderLayout(0, 0));
 		
 		lblPullRequests = new JLabel("Pull Requests: 0 de "+totalPullRequests);
@@ -63,16 +71,6 @@ public class DialogStatus extends JDialog {
 		jProgressBar.setStringPainted(true);//Faz aparecer o valor em porcentagem  
 		jProgressBar.setValue(0);
 
-		panel_1 = new JPanel();
-		getContentPane().add(panel_1, BorderLayout.SOUTH);
-		panel_1.setLayout(new BorderLayout(0, 0));
-
-		txtOperaoFinalizada = new JTextField("Processando dados.");
-		panel_1.add(txtOperaoFinalizada);
-		txtOperaoFinalizada.setHorizontalAlignment(SwingConstants.CENTER);
-		txtOperaoFinalizada.setEditable(false);
-		txtOperaoFinalizada.setColumns(10);
-
 		panel_2 = new JPanel();
 		panel_1.add(panel_2, BorderLayout.SOUTH);
 		panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -84,18 +82,34 @@ public class DialogStatus extends JDialog {
 				dispose();
 			}
 		});
+		
+		btnVisualizar = new JButton("Visualizar arquivo");
+		btnVisualizar.setVisible(false);
+		
+		btnCancelar = new JButton("Cancelar");
+		btnCancelar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (arg0.getSource() == btnCancelar){
+					int i = JOptionPane.showConfirmDialog(null, "Você realmente deseja cancelar o processamento?", "Atenção:", JOptionPane.YES_NO_OPTION);
+					if (i!=1){
+						SaveFile.setCancelProcessing();
+						dispose();
+					}
+				}
+			}
+		});
+		panel_2.add(btnCancelar);
+		panel_2.add(btnVisualizar);
 		panel_2.add(btnSair);
 		jDialogStatic.setTitle("Processamento de Repositórios.");
-		this.pack();
 	}
 
 	public static void setThreads(int atual){
 		if (atual == totalRepositories){
-			//jProgressBar.setVisible(false);
-			txtOperaoFinalizada.setText("Operação finalizada.");
-			jLabelRepositories.setText("Repositórios processados: "+atual+" de "+totalRepositories+".");
-			txtOperaoFinalizada.setVisible(true);
+			txtOperaoFinalizada.setText("Concluídos: "+ atual +" de "+totalRepositories);
+			btnVisualizar.setVisible(true);
 			btnSair.setVisible(true);
+			btnCancelar.setVisible(false);
 			try {
 				Connect.getInstance().close();
 			} catch (UnknownHostException e) {
@@ -103,15 +117,11 @@ public class DialogStatus extends JDialog {
 				System.err.println("erro ao tentar finalizar a conexão com o banco de dados.");
 			}
 			jDialogStatic.setLocationRelativeTo(jFrameStatic);
-			jDialogStatic.pack();
 			
 		}else{
-			jDialogStatic.pack();
-			jLabelRepositories.setText("Repositório(s)... ("+atual+" de "+totalRepositories+")");
-			jDialogStatic.setLocationRelativeTo(jFrameStatic);
-						
+			txtOperaoFinalizada.setText("Concluídos: "+ atual +" de "+totalRepositories);
+			jDialogStatic.setLocationRelativeTo(jFrameStatic);				
 		}
-
 	}
 
 	public static void addsPullRequests(){
@@ -121,7 +131,6 @@ public class DialogStatus extends JDialog {
 		
 		jProgressBar.setValue(x);
 		jDialogStatic.setLocationRelativeTo(jFrameStatic);		
-		jDialogStatic.pack();
 	}
 
 	public static void setTotalRepositories(int totalRepositories) {

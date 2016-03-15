@@ -61,15 +61,20 @@ public class ProccessRepositories {
 		try {
 			db = Connect.getInstance().getDB("ghtorrent");
 			DBCollection dbcPullRequest = db.getCollection("pull_requests");
+			BasicDBObject fields = new BasicDBObject();
+			fields.put("state", 1);
+			fields.put("closed_at", 1);
+			fields.put("owner", 1);
+			fields.put("repo", 1);
+			fields.put("user", 1);
+			fields.put("number", 1);
+			
 			for (int i=0; i < owners.size(); i++){
 				String owner = owners.get(i);
 				String repo = repos.get(i);
-
+				
 				BasicDBObject query = new BasicDBObject("repo",repo);
 				query.append("owner", owner);
-
-				if (!settings.tryParseValues(repo, owner))
-					setMessageOfTextArea("Erro ao carregar as configurações. Todos os dados serão recuperados.");
 
 				if (settings.getPrType() == 1)
 					query.append("state", "open");
@@ -80,9 +85,8 @@ public class ProccessRepositories {
 				query.append("closed_at", new BasicDBObject("$ne", "null"));
 				query.append("closed_at", new BasicDBObject("$ne", ""));
 
-				DBCursor cursor = dbcPullRequest.find(query);
+				DBCursor cursor = dbcPullRequest.find(query, fields);
 				cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
-
 
 				try{
 					for (DBObject dbObject : cursor) {

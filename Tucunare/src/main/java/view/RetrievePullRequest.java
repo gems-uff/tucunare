@@ -396,11 +396,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 					else
 						if (evt.getSource() == jButtonRepositories){
 							JOptionPane.showMessageDialog(
-									null, new JScrollPane(repositoryList), "SeleÃ§ão de repositórios:", JOptionPane.PLAIN_MESSAGE);
+									null, new JScrollPane(repositoryList), "Seleção de repositórios:", JOptionPane.PLAIN_MESSAGE);
 							String result = "";
 							for (String s : selectedRepositories) {
 								result += s+"; ";
 							}
+							System.out.println(result);
 							jTextRepo.setText(result);
 						}
 		if(evt.getSource()==jButtonStop){

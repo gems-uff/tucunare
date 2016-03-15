@@ -29,6 +29,7 @@ public class SaveFile implements Runnable {
 	private static String tempo="";
 	private Settings settings;
 	private ProccessRepositories proccessRepos;
+	private static boolean cancelProcessing = false;
 
 	public SaveFile(ProccessRepositories proccessRepos, String owner, String repo, String file, Settings settings) throws UnknownHostException{
 		this.proccessRepos = proccessRepos;
@@ -96,13 +97,16 @@ public class SaveFile implements Runnable {
 
 			//Escrevendo o cabeçalho do arquivo
 			writeHeader(settings.getHeader());
-
+			
 			//O Loop abaixo percorre a coleção de PullRequests do repositório para recuperar as informações.
 			for (DBObject dbObject : cursor) {
 				String result = "";
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), repo,owner);
-
+				//Instrução para interromper o processamento das threads.
+				if (cancelProcessing)
+					break;
+				
 				if(!closed_by.equals("")){
 					if(dbObject!=null && !closed_by.equals(user)){
 						// Execução dos métodos.
@@ -235,6 +239,15 @@ public class SaveFile implements Runnable {
 			result += ft.substring(1, ft.length()-1).replaceAll(", ", ",")+",";
 		}
 		return result;
+	}
+
+	
+	public static void setCancelProcessing(){
+		cancelProcessing = true;
+	}
+	
+	public static boolean getCancelProcessing(){
+		return cancelProcessing;
 	}
 
 	public static String getTempo() {
