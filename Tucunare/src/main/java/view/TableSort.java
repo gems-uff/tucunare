@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -20,19 +21,24 @@ public class TableSort extends JDialog implements ActionListener{
 	private JButton btnCancelar;
 	private JTable table;
 	private List<String> selectedRepositories = new ArrayList<String>();;
+	private JScrollPane scrollPane;
 
 	public TableSort(Object[][] data) {
 		setTitle("Seleção de repositórios");
 		setLayout(new BorderLayout());
 		setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-		
-		table = new JTable(new MyTableModel(data));
+
+		table = new JTable();
+		table.setModel(new MyTableModel(data));
+
 		table.setFillsViewportHeight(true);
 		table.setAutoCreateRowSorter(true);
 
-		JScrollPane scrollPane = new JScrollPane(table);
 
+		scrollPane = new JScrollPane(table);
+		scrollPane.setPreferredSize(new Dimension(450, 150));
 		add(scrollPane);
+
 		btnSelecionar = new JButton("Selecionar");
 		btnSelecionar.addActionListener(this);
 
@@ -48,7 +54,7 @@ public class TableSort extends JDialog implements ActionListener{
 	class MyTableModel extends AbstractTableModel {
 
 		private static final long serialVersionUID = 1L;
-		private String[] columnNames = { "Number","Owner","Name","Total PR"};
+		private String[] columnNames = {"", "Number","Owner","Name","Total PR"};
 		private Object[][] data = {
 				{new Integer(1), "Akka","maria", new Long(10)},
 				{new Integer(2), "katello","jose", new Long(300)},
@@ -79,33 +85,58 @@ public class TableSort extends JDialog implements ActionListener{
 		}
 
 		public boolean isCellEditable(int row, int col) {
-			return false;
+			if (col == 0)
+				return true;
+			else
+				return false;
 		}
 
 		public void setValueAt(Object value, int row, int col) {
 			data[row][col] = value;
 		}
+
+		public void loadData(){
+			Object[][] object = this.data;
+			for (Object[] objects : object) {
+				if ((Boolean) objects[0])
+					selectedRepositories.add((String)objects[2]+"/"+(String)objects[3]);
+
+			}
+		}
 	}
 
 	public static void main(String[] args) {
 		Object[][] data = { 
-				{1, "bugpredict", "Limeira",10},
-				{2, "katello", "maria",200},
-				{3, "akka", "joao",50}};
+				{new Boolean(false),8, "akkaE", "5joao",50},
+				{new Boolean(false),9, "akkaF", "6joao",60},
+				{new Boolean(false),10, "akkaG", "7joao",70},
+				{new Boolean(false),11, "akkaH", "8joao",80},
+				{new Boolean(false),12, "akkaI", "9joao",90},
+				{new Boolean(false),13, "akkaJ", "10joao",10},
+				{new Boolean(false),14, "akkaK", "11joao",20},
+				{new Boolean(false),15, "akkaL", "12joao",20},
+				{new Boolean(false),16, "akkaM", "13joao",30}};
 
 		TableSort tsd = new TableSort(data);
 		tsd.setModal(true);
 		tsd.pack();
-		tsd.setVisible(true);
+		tsd.setLocationRelativeTo(null);
+		tsd.loadScrollPane();
 		
+		tsd.setVisible(true);
+
+	}
+
+	private void loadScrollPane() {
+		table.setPreferredSize(new Dimension(150, 600));		
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		selectedRepositories = new ArrayList<String>();
+		
 		if (e.getSource() == btnSelecionar){			
-			for (int i : table.getSelectedRows())
-				selectedRepositories.add(table.getValueAt(i, 1)+"/"+table.getValueAt(i, 2));
-
+			MyTableModel mtm = (MyTableModel) table.getModel();
+			mtm.loadData();
 			setVisible(false);	
 		}else
 			setVisible(false);

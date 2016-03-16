@@ -4,18 +4,18 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.Settings;
+import teste.DialogStatus;
+import util.Connect;
+import view.RetrievePullRequest;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-import model.Settings;
-import teste.DialogStatus;
-import util.Connect;
-import view.RetrievePullRequest;
-
-public class ProccessRepositories {
+public class ProccessRepositories implements Runnable {
 	private int totalPR;
 	private Settings settings;
 	private List<String> selectedRepositories;
@@ -25,27 +25,29 @@ public class ProccessRepositories {
 	private DialogStatus ds;
 	private List <String> repos;
 
-	public ProccessRepositories (RetrievePullRequest retrievePR, List<String> selectedRepositories, Settings settings, String file) {
+	public ProccessRepositories (RetrievePullRequest retrievePR, List<String> selectedRepositories, 
+			Settings settings, String file) {
 		this.retrievePR = retrievePR;
 		this.file = file;
 		this.settings = settings;
 		this.selectedRepositories = selectedRepositories;
 
-		try {
-			startProcessing();
-		} catch (UnknownHostException e) {
-			System.err.println("Erro ao iniciar o processamento dos repositórios.\n"+e.getMessage());
-		}
 	}
 
-	private void startProcessing() throws UnknownHostException {
+	@Override
+	public void run() {
 		totalPR = 0;
 		SaveFile.setCancelProcessing(false);
+		try {
+			iniciaThreads(selectedRepositories, settings);
+			if (selectedRepositories.size()>0){
+				showStatusWindow();
+			}
 
-		iniciaThreads(selectedRepositories, settings);
-		if (selectedRepositories.size()>0){
-			showStatusWindow();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
 		}
+
 	}
 
 	public int retrieveAmountOfPRs(){
@@ -70,11 +72,11 @@ public class ProccessRepositories {
 			fields.put("repo", 1);
 			fields.put("user", 1);
 			fields.put("number", 1);
-			
+
 			for (int i=0; i < owners.size(); i++){
 				String owner = owners.get(i);
 				String repo = repos.get(i);
-				
+
 				BasicDBObject query = new BasicDBObject("repo",repo);
 				query.append("owner", owner);
 
@@ -101,22 +103,14 @@ public class ProccessRepositories {
 						}
 					}
 				}catch(IllegalStateException ise){
-//					Connect.resetConnection();
-//					threadAtual=0;
-//					SaveFile.setFinalizedThreads(0);
-//					SaveFile.setTempo("");
-//					RetrievePullRequest.setSelectedRepositories(new ArrayList<String>());
-//					RetrievePullRequest.setSettings(new Settings());
-//					DialogStatus.setCurrentPR(0);
-//					DialogStatus.setThreads(0);
-//					DialogStatus.setTotalPullRequests(0);
-//					DialogStatus.setTotalRepositories(0);
+					System.err.println(ise.getMessage());
 				}
 			} 
 		}
 		catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar contar os PRs dos repositórios.");
 		}
+		retrievePR.getLw().getFrame().setVisible(false);
 		return totalPRs;
 	}
 
@@ -162,7 +156,7 @@ public class ProccessRepositories {
 	public void setMessageOfTextArea(String s){
 		retrievePR.setMessageOfTextArea(s);
 	}
-	
+
 	public static void setThreadAtual(int i){
 		threadAtual = i;
 	}

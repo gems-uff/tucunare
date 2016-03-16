@@ -159,10 +159,12 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 	private JLabel label;
 	private JCheckBox jcbPRId;
 
+	private LoadingWindow lw = new LoadingWindow();
+
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
-		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
 
+		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
 		addTopPanel();
 		addCenterPanel();
 		addBottomPanel();
@@ -171,6 +173,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 		jFrame.pack();
 		jFrame.setVisible(true);
+
 		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		menuBar = new JMenuBar();
@@ -365,7 +368,11 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 					settings = getSelectedFields();
 					//realiza a limpeza do valor das variáveis státicas, utilizadas no controle das threads de recuperação dos dados;
 					loadData();
-					new ProccessRepositories(this, selectedRepositories, settings, file);
+
+					lw.getFrame().setVisible(true);
+
+					ProccessRepositories pr = new ProccessRepositories(this, selectedRepositories, settings, file);
+					new Thread(pr).start();
 
 				}
 			}else
@@ -390,24 +397,22 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 					else
 						if (evt.getSource() == jButtonRepositories){
 
-							//							Object[][] data = { {"1", "bugpredict", "Limeira","10"},
-							//									{"2", "katello", "maria","200"},
-							//									{"3", "akka", "joao","50"}};
-
-							Object[][] data = new Object[repositoryList.size()][4];
+							Object[][] data = new Object[repositoryList.size()][5];
 							for (int i = 0; i < data.length; i++) {
-								data[i][0] = i+"";
+								data[i][0] = new Boolean(false);
+								data[i][1] = (i+1)+"";
 								Object[] aux = repositoryList.get(i).split("/");
-								data[i][1] = aux[0];
-								data[i][2] = aux[1];
-								data[i][3] = Long.parseLong((String) aux[2]);
+								data[i][2] = aux[0];
+								data[i][3] = aux[1];
+								data[i][4] = Long.parseLong((String) aux[2]);
 							}
 
 							TableSort tsd = new TableSort(data);
-							tsd.setModal(true);
 							tsd.pack();
 							tsd.setLocationRelativeTo(null);
+							tsd.setModal(true);
 							tsd.setVisible(true);
+							
 							selectedRepositories = tsd.getSelectedRepositories();
 
 							String result = "";
@@ -1043,5 +1048,13 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 	public static void setSettings(Settings s){
 		settings = s;
+	}
+
+	public LoadingWindow getLw() {
+		return lw;
+	}
+
+	public void setLw(LoadingWindow lw) {
+		this.lw = lw;
 	}
 }
