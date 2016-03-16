@@ -23,6 +23,7 @@ public class ProccessRepositories {
 	private static int threadAtual = 0;
 	private RetrievePullRequest retrievePR;
 	private DialogStatus ds;
+	private List <String> repos;
 
 	public ProccessRepositories (RetrievePullRequest retrievePR, List<String> selectedRepositories, Settings settings, String file) {
 		this.retrievePR = retrievePR;
@@ -39,6 +40,7 @@ public class ProccessRepositories {
 
 	private void startProcessing() throws UnknownHostException {
 		totalPR = 0;
+		SaveFile.setCancelProcessing(false);
 
 		iniciaThreads(selectedRepositories, settings);
 		if (selectedRepositories.size()>0){
@@ -48,7 +50,7 @@ public class ProccessRepositories {
 
 	public int retrieveAmountOfPRs(){
 		int totalPRs =0;
-		List <String> repos = new ArrayList<String>();
+		repos = new ArrayList<String>();
 		List <String> owners = new ArrayList<String>();
 
 		for (String repository : selectedRepositories) {
@@ -151,7 +153,7 @@ public class ProccessRepositories {
 	}
 
 	private void showStatusWindow() {
-		ds = new DialogStatus(retrievePR.getJFrame(), selectedRepositories.size(), totalPR);
+		ds = new DialogStatus(retrievePR.getJFrame(), selectedRepositories.size(), totalPR, file, repos);
 		ds.setLocationRelativeTo(retrievePR.getJFrame());
 		ds.setModal(true);
 		ds.setVisible(true);

@@ -30,7 +30,6 @@ public class PullRequests extends Thread{
 //	Quantidade de pull requests em um projeto
 	public static int getPulls(String repo, String owner, int prType) throws UnknownHostException{		
 		DB db = Connect.getInstance().getDB("ghtorrent");
-		System.out.println(Connect.getInstance() == null?"db é nulo":"db não é nulo");
 		DBCollection dbcPullRequest = db.getCollection("pull_requests");
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("number", 1);
@@ -44,5 +43,15 @@ public class PullRequests extends Thread{
 				query.append("state", "closed"); //Apenas pull requests encerrados
 		
 		return dbcPullRequest.find(query,fields).count();
+	}
+	
+	public static long getTotalPulls(String repo) throws UnknownHostException{
+		DB db = Connect.getInstance().getDB("ghtorrent");
+		DBCollection dbcPullRequest = db.getCollection("pull_requests");
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("number", 1);
+		fields.put("_id", 0);
+		BasicDBObject query = new BasicDBObject("repo",repo); //consulta com query
+		return dbcPullRequest.getCount(query, fields);
 	}
 }

@@ -240,14 +240,9 @@ public class SaveFile implements Runnable {
 		}
 		return result;
 	}
-
 	
-	public static void setCancelProcessing(){
-		cancelProcessing = true;
-	}
-	
-	public static boolean getCancelProcessing(){
-		return cancelProcessing;
+	public static void setCancelProcessing(boolean t){
+		cancelProcessing = t;
 	}
 
 	public static String getTempo() {

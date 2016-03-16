@@ -21,26 +21,21 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.Settings;
@@ -55,7 +50,7 @@ import control.ProccessRepositories;
 import control.PullRequests;
 import control.SaveFile;
 
-public class RetrievePullRequest implements ActionListener, ItemListener, ListSelectionListener {
+public class RetrievePullRequest implements ActionListener, ItemListener{
 
 	private static Settings settings;
 	private JPanel topPanel;
@@ -130,7 +125,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 
 	private JButton jButtonRepositories;
 
-	private JList<String> repositoryList;
+	private List<String> repositoryList = new ArrayList<String>();
 	private static List<String> selectedRepositories = new ArrayList<String>();
 	//Menu
 	private JMenuBar menuBar;
@@ -167,7 +162,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 	public RetrievePullRequest() throws UnknownHostException{
 		loadRepositories();
 		jFrame = new JFrame("Retrieve Pull Requests from MongoDB");
-		//jFrame.setBounds(100, 100, 1000, 480);
 
 		addTopPanel();
 		addCenterPanel();
@@ -395,13 +389,31 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 						loadComponents(false);
 					else
 						if (evt.getSource() == jButtonRepositories){
-							JOptionPane.showMessageDialog(
-									null, new JScrollPane(repositoryList), "Seleção de repositórios:", JOptionPane.PLAIN_MESSAGE);
+
+							//							Object[][] data = { {"1", "bugpredict", "Limeira","10"},
+							//									{"2", "katello", "maria","200"},
+							//									{"3", "akka", "joao","50"}};
+
+							Object[][] data = new Object[repositoryList.size()][4];
+							for (int i = 0; i < data.length; i++) {
+								data[i][0] = i+"";
+								Object[] aux = repositoryList.get(i).split("/");
+								data[i][1] = aux[0];
+								data[i][2] = aux[1];
+								data[i][3] = Long.parseLong((String) aux[2]);
+							}
+
+							TableSort tsd = new TableSort(data);
+							tsd.setModal(true);
+							tsd.pack();
+							tsd.setLocationRelativeTo(null);
+							tsd.setVisible(true);
+							selectedRepositories = tsd.getSelectedRepositories();
+
 							String result = "";
 							for (String s : selectedRepositories) {
 								result += s+"; ";
 							}
-							System.out.println(result);
 							jTextRepo.setText(result);
 						}
 		if(evt.getSource()==jButtonStop){
@@ -994,21 +1006,15 @@ public class RetrievePullRequest implements ActionListener, ItemListener, ListSe
 		return false;
 	}
 
-	public void loadRepositories() throws UnknownHostException{
-		DefaultListModel<String> listModel = new DefaultListModel<String>();
-		List<String> result = PullRequests.getAllRepos();
-		for (String s : result) {
-			listModel.addElement(s);
+	public void loadRepositories() throws UnknownHostException {
+		List<String> reposList;
+		reposList = PullRequests.getAllRepos();
+		for (int i = 0; i < reposList.size(); i++) {
+			String[] aux = reposList.get(i).split("/");
+			long totalPR = PullRequests.getTotalPulls(aux[1]);
+			repositoryList.add(aux[0]+"/"+aux[1]+"/"+totalPR);
 		}
-		repositoryList = new JList<String>(listModel);
-		repositoryList.addListSelectionListener(this);
 	}
-
-	public void valueChanged(ListSelectionEvent e) {
-		final List<String> selectedValuesList = repositoryList.getSelectedValuesList();
-		selectedRepositories = selectedValuesList;
-	}
-
 
 	public static void main(String[] args) {
 		RetrievePullRequest window;

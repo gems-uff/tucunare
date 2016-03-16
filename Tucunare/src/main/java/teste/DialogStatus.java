@@ -1,10 +1,14 @@
 package teste;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -19,7 +23,7 @@ import javax.swing.SwingConstants;
 import control.SaveFile;
 import util.Connect;
 
-public class DialogStatus extends JDialog {
+public class DialogStatus extends JDialog implements ActionListener{
 	private static final long serialVersionUID = 6446402150733028773L;
 
 	private static JDialog jDialogStatic;
@@ -36,13 +40,18 @@ public class DialogStatus extends JDialog {
 	private static JLabel lblPullRequests;
 	private static JButton btnVisualizar;
 	private static JButton btnCancelar;
+	private String file; 
+	private List<String> repositories;
 
 	@SuppressWarnings("static-access")
-	public DialogStatus(JFrame frame, int totalRepositories, int totalPullRequests){
+	public DialogStatus(JFrame frame, int totalRepositories, int totalPullRequests, String file, List<String> repositories){
 		super(frame);
 		jDialogStatic = this;
+		this.file = file;
+		this.repositories = repositories;
 		jFrameStatic = frame;
 		this.setSize(250, 130);
+		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		this.totalRepositories = totalRepositories;
 		this.totalPullRequests = totalPullRequests;
 		getContentPane().setLayout(new BorderLayout(0, 0));
@@ -77,13 +86,13 @@ public class DialogStatus extends JDialog {
 
 		btnSair = new JButton("Sair");
 		btnSair.setVisible(false);
-		btnSair.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				dispose();
-			}
-		});
+		btnSair.addActionListener(this);
 		
 		btnVisualizar = new JButton("Visualizar arquivo");
+		btnVisualizar.addActionListener(this);
+				
+		
+		
 		btnVisualizar.setVisible(false);
 		
 		btnCancelar = new JButton("Cancelar");
@@ -92,7 +101,7 @@ public class DialogStatus extends JDialog {
 				if (arg0.getSource() == btnCancelar){
 					int i = JOptionPane.showConfirmDialog(null, "Você realmente deseja cancelar o processamento?", "Atenção:", JOptionPane.YES_NO_OPTION);
 					if (i!=1){
-						SaveFile.setCancelProcessing();
+						SaveFile.setCancelProcessing(true);
 						dispose();
 					}
 				}
@@ -143,5 +152,23 @@ public class DialogStatus extends JDialog {
 
 	public static void setCurrentPR(int currentPR) {
 		DialogStatus.currentPR = currentPR;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == btnVisualizar){
+			Desktop desktop = Desktop.getDesktop();  
+			
+			for (int i = 0; i < repositories.size(); i++) {
+				File f = new File(file+"/"+repositories.get(i)+".csv");
+				try {
+					desktop.open(f);
+				} catch (IOException e1) {
+					System.err.println("Erro ao tentar abrir o(s) arquivo(s).");
+				}
+			}
+			
+		}else
+			dispose();
 	}
 }
