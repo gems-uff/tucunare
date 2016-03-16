@@ -16,7 +16,6 @@ import javax.swing.table.AbstractTableModel;
 public class TableSort extends JDialog implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
-	private boolean DEBUG = false;
 	private JButton btnSelecionar;
 	private JButton btnCancelar;
 	private JTable table;
@@ -28,7 +27,6 @@ public class TableSort extends JDialog implements ActionListener{
 		setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		
 		table = new JTable(new MyTableModel(data));
-		//table.setPreferredScrollableViewportSize(new Dimension(500, 70));
 		table.setFillsViewportHeight(true);
 		table.setAutoCreateRowSorter(true);
 
@@ -87,7 +85,6 @@ public class TableSort extends JDialog implements ActionListener{
 		public void setValueAt(Object value, int row, int col) {
 			data[row][col] = value;
 		}
-		//Recupera os repositórios selecionados no formato: "juniorlimeira/bugpredict; Katello/katello;" 
 	}
 
 	public static void main(String[] args) {
