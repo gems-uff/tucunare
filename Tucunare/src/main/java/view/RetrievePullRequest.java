@@ -232,7 +232,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 		mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
 
-		mntmSobre = new JMenuItem("Sobre");
+		mntmSobre = new JMenuItem("About");
 		mntmSobre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				AboutWindow aw = new AboutWindow();
@@ -500,7 +500,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 	public void addCenterPanel(){
 		centerPanel = new JPanel(new BorderLayout()); 
-		centerPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Selecione os dados a serem recuperados pela ferramenta: ", 
+		centerPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Select the data to be retrieved by the tool: ", 
 				TitledBorder.LEFT, TitledBorder.DEFAULT_POSITION));
 
 		//Painel de elementos CoreDevRec

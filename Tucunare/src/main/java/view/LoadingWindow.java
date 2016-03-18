@@ -1,15 +1,13 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
-import java.awt.Color;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 
 public class LoadingWindow{
