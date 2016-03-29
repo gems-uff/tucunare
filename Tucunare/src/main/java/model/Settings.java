@@ -8,7 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public  class Settings {
-	private String header = "";
+	private StringBuilder header = new StringBuilder("");
 	private JSONObject data;
 	private boolean allRepoData, repoAcceptance, repoWatchers;
 	
@@ -160,11 +160,11 @@ public  class Settings {
 	}
 
 	public String getHeader() {
-		return header;
+		return header.toString();
 	}
 	
 	public void setHeader(String data) {
-		header = data;
+		header.append(data);
 	}
 
 	public int getPrType(){
@@ -192,151 +192,150 @@ public  class Settings {
 
 		if (allRepoData){
 			methods.add("getAllRepoData");
-			header += "owner/repo,ageRepo,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,repoAcceptance,repoWatchers,";
+			header.append("owner/repo,ageRepo,stargazersCount,watchersCount,language,forksCount,openIssuesCount,subscribersCount,has_wiki,repoAcceptance,repoWatchers,");
 		}else{
 			if (repoAcceptance){
 				methods.add("getRepoAcceptance");
-				header += "RepoAcceptance,";
+				header.append("RepoAcceptance,");
 			}
 			if (repoWatchers){
 				methods.add("getRepoWatchers");
-				header += "RepoWatchers,";
+				header.append("RepoWatchers,");
 			}
 		}
 		//pelo menos o método de recuperação do id e o state do PR será executado.
-
 		if (allPRData){
 			methods.add("getAllPRData");
-			header += "idPull,statePull,numberPull,title,commitHeadSha,commitBaseSha,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"+
+			header.append("idPull,statePull,numberPull,title,commitHeadSha,commitBaseSha,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"+
 					"assignee,comments,commitsPull,files,authorMoreCommits,commitsbyFilesPull,"+
-					"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants,";
+					"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants,");
 		}
 		else{
 			if (prId){
 				methods.add("getPRId");
-				header +="idPull,";
+				header.append("idPull,");
 			}
 			if (prStatus){
 				methods.add("getPRStatus");
-				header += "status,";
+				header.append("status,");
 			}
 			if (prNumber){
 				methods.add("getPRNumber");
-				header += "numberPull,";
+				header.append("numberPull,");
 			}
 			if (title){
 				methods.add("getPRTitle");
-				header += "title,";
+				header.append("title,");
 			}
 			if (prShas){
 				methods.add("getPRSHAs");
-				header += "commitHeadSha,commitBaseSha,";
+				header.append("commitHeadSha,commitBaseSha,");
 			}
 			if (prDates){
 				methods.add("getPRDates");
-				header += "createdDate,mesAno,closedDate,mergedDate,";
+				header.append("createdDate,mesAno,closedDate,mergedDate,");
 			}
 			if (prLifeTime){
 				methods.add("getPRLifeTime");
-				header += "lifetimeMinutes,";
+				header.append("lifetimeMinutes,");
 			}
 			if (prClosedMergedBy){
 				methods.add("getPRClosedMergedBy");
-				header += "closedBy,mergedBy,";
+				header.append("closedBy,mergedBy,");
 			}
 			
 			if (prAssignee){
 				methods.add("getPRAssignee");
-				header += "assignee,";
+				header.append("assignee,");
 			}
 			if (prComments){
 				methods.add("getPRComments");
-				header += "comments,";
+				header.append("comments,");
 			}
 			if (prCommits){
 				methods.add("getPRCommits");
-				header += "commitsPull,";
+				header.append("commitsPull,");
 			}if (prFiles){
 				methods.add("getPRFiles");
-				header += "files,";
+				header.append("files,");
 			}
 			if(prAuthorMoreCommits){
 				methods.add("getPRAuthorMoreCommits");
-				header += "authorMoreCommits,";
+				header.append("authorMoreCommits,");
 			}
 			if (prCommitsByFiles){
 				methods.add("getPRCommitsByFiles");
-				header += "commitsbyFilesPull,";
+				header.append("commitsbyFilesPull,");
 			}
 			if (prChangedFiles){
 				methods.add("getPRChangedFiles");
-				header += "changedFiles,";
+				header.append("changedFiles,");
 			}
 			if (prRootDirectory){
 				methods.add("getPRRootDirectory");
-				header += "dirFinal,";
+				header.append("dirFinal,");
 			}
 			if (prModifiedLines){
 				methods.add("getPRModifiedLines");
-				header += "additionsLines,deletionsLines,totalLines,";
+				header.append("additionsLines,deletionsLines,totalLines,");
 			}
 			if (prParticipants){
 				methods.add("participants");
-				header += "participants,";
+				header.append("participants,");
 			}
 		}
 
 		if (allAuthorData){
 			methods.add("getAllAuthorData");
-			header += "login,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser, acceptanceUser,"+
-					"userFollowers,userFollowing,location,";
+			header.append("login,ageUser,typeDeveloper,totalPullDeveloper,mergedPullUser,closedPullUser,rejectUser, acceptanceUser,"+
+					"userFollowers,userFollowing,location,");
 		}else{
 			if (user){
 				methods.add("getUser");
-				header += "login,";
+				header.append("login,");
 			}
 			if (userAge){
 				methods.add("getUserAge");
-				header += "ageUser,";
+				header.append("ageUser,");
 			}
 			if (userType){
 				methods.add("getUserType");
-				header += "typeDeveloper,"; 
+				header.append("typeDeveloper,"); 
 			}
 			if (userPulls){
 				methods.add("getUserPulls");
-				header += "totalPullDeveloper,mergedPullUser,closedPullUser,";
+				header.append("totalPullDeveloper,mergedPullUser,closedPullUser,");
 			}
 			if (userAverages){
 				methods.add("getUserAverages");
-				header += "rejectUser, acceptanceUser,";
+				header.append("rejectUser, acceptanceUser,");
 			}
 			if (userFollowers){
 				methods.add("getUserFollowers");
-				header += "userFollowers,";
+				header.append("userFollowers,");
 			}
 			if (userFollowing){
 				methods.add("getUserFollowing");
-				header += "userFollowing,";
+				header.append("userFollowing,");
 			}
 			if (userLocation){
 				methods.add("getUserLocation");
-				header += "location,";
+				header.append("location,");
 			}
 		} 
 
 		if (allCoreDevRecData){
 			methods.add("getAllCoreDevRecData");
-			header += "requesterFollowsCoreTeam,coreTeamFollowsRequester,";
+			header.append("requesterFollowsCoreTeam,coreTeamFollowsRequester,");
 		}else
 		{
 			if (follower_relation){
 				methods.add("getFollowerRelation");
-				header += "requesterFollowsCoreTeam,";
+				header.append("requesterFollowsCoreTeam,");
 			}
 			if (following_relation){
 				methods.add("getFollowingRelation");
-				header += "coreTeamFollowsRequester,";
+				header.append("coreTeamFollowsRequester,");
 			}
 			if (prior_evaluation)
 				methods.add("getPriorEvaluation");

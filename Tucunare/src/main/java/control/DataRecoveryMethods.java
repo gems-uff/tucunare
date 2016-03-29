@@ -29,7 +29,7 @@ public class DataRecoveryMethods {
 	private DBCollection dbcPullRequest;
 	private String firstCreateDate;
 	private String closed_by;
-	
+
 	public DataRecoveryMethods(){
 	}
 
@@ -47,7 +47,7 @@ public class DataRecoveryMethods {
 		rep = dbObject.get("repo").toString();
 		user = ((BasicDBObject)dbObject.get("user")).get("login")+"";
 		created = dbObject.get("created_at").toString();
-		
+
 		try {
 			listCoreTeam = Commits.getCoreTeamPullList(rep,owner);
 		} catch (UnknownHostException e) {
@@ -55,13 +55,13 @@ public class DataRecoveryMethods {
 			listCoreTeam = new ArrayList<String>();
 		}
 		firstCreateDate = getFirstCreateDate();
-		
+
 		try {
 			closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), rep,owner);
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar closed_by");
 		}
-		
+
 		loadHeader();
 	}
 
@@ -74,7 +74,7 @@ public class DataRecoveryMethods {
 		BasicDBObject dbo = new BasicDBObject("created_at",1);
 		DBObject p = dbcPullRequest.findOne(queryData, fields, dbo);
 		return p.get("created_at").toString();
-		
+
 	}
 
 	private void loadHeader() {
@@ -86,35 +86,37 @@ public class DataRecoveryMethods {
 	}
 
 	public String getAllRepoData(){
-		String result = owner+"/"+rep+",";
+		StringBuilder result = new StringBuilder();
+		result.append("/"+rep+",");
 		try {
-			result += Repos.getRepoData(owner+"/"+rep)+","; //ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
-			result += getAcceptanceRepo()+",";
-			result += getWatchRepo();
+			result.append(Repos.getRepoData(owner+"/"+rep)+","); //ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
+			result.append(getAcceptanceRepo()+",");
+			result.append(getWatchRepo());
 		} catch (Exception e) {
 			System.err.println("Error while trying to recover the dataRepo.");
 		}
-		return result +",";
+		result.append(",");
+		return result.toString();
 	}
 
 	public String getAllCoreDevRecData(){
-		String result = "";
+		StringBuilder result = new StringBuilder("");
 		try{
-			result += getFollowerRelation();
-			result += getFollowingRelation();
-			result += getPriorEvaluation();
-			result += getRecentPulls();
-			result += getEvaluationPulls();
-			result += getRecentEvaluation();
-			result += getEvaluateTime();
-			result += getLatestTime();
-			result += getFirstTime();
+			result.append(getFollowerRelation());
+			result.append(getFollowingRelation());
+			result.append(getPriorEvaluation());
+			result.append(getRecentPulls());
+			result.append(getEvaluationPulls());
+			result.append(getRecentEvaluation());
+			result.append(getEvaluateTime());
+			result.append(getLatestTime());
+			result.append(getFirstTime());
 
 		}catch(Exception e){
 			System.err.println("Erro ao tentar executar os métodos de recuperação de dados CoreDevRec.");
-			return result;
+			return result.toString();
 		}
-		return result;
+		return result.toString();
 	}
 
 	private String getFollowerRelation() {
@@ -151,7 +153,7 @@ public class DataRecoveryMethods {
 		try {
 			recent_pull = Issues.getRecentPulls(rep,owner, created, firstCreateDate, 30, listCoreTeam);
 			return recent_pull.substring(1, recent_pull.length()-1).replaceAll(", ", ",")+",";
-			
+
 		} catch (UnknownHostException e) {
 			System.err.println("Erro ao tentar recuperar Recent Pulls.");
 			return ",";
@@ -247,7 +249,7 @@ public class DataRecoveryMethods {
 				getPRDates() +
 				getPRLifeTime() +
 				getPRClosedMergedBy() +
-				
+
 				getPRAssignee() +
 				getPRComments() +
 				getPRCommits() +
@@ -296,22 +298,22 @@ public class DataRecoveryMethods {
 	}
 
 	public String getPRDates(){
-		String result = created+",";
-		
-		String ano = created.substring(0, 4);
-		String mes = created.substring(5, 7);
-		
-		result += mes+ano+",";
+		StringBuilder result = new StringBuilder(created+",");
+
+		result.append(created.substring(0, 4));
+		result.append(created.substring(5, 7));
+		result.append(",");
 
 		if(dbObject.get("closed_at")!=null)
-			result += FormatDate.getDate(dbObject.get("closed_at").toString())+",";
+			result.append(FormatDate.getDate(dbObject.get("closed_at").toString())+",");
 		else
-			result += ",";
+			result.append(",");
 
 		if(dbObject.get("merged_at")!=null)
-			result += FormatDate.getDate(dbObject.get("merged_at").toString());
+			result.append(FormatDate.getDate(dbObject.get("merged_at").toString()));
 
-		return result+",";
+		result.append(",");
+		return result.toString();
 	}
 
 	public String getPRClosedMergedBy(){
@@ -404,26 +406,27 @@ public class DataRecoveryMethods {
 	}
 
 	public String getPRRootDirectory(){
-		String dirFinal = "";
+		StringBuilder dirFinal = new StringBuilder("");
 		String [] path = files.split(", ");
 		for(int x=0; x < path.length; x++){
 			int lastBarIndex = 0;
 			lastBarIndex = path[x].lastIndexOf("/");
 			if(lastBarIndex<0 && x == 0){
-				dirFinal += "root";
+				dirFinal.append("root");
 				continue;
 			}else 
 				if(lastBarIndex<0){
-					dirFinal += "|root";
+					dirFinal.append("|root");
 					continue;
 				}
 			String str = path[x].substring(0, lastBarIndex);
 			if (x>=1) 	
-				dirFinal += "|"+str;
+				dirFinal.append("|"+str);
 			else
-				dirFinal += str;
+				dirFinal.append(str);
 		}
-		return dirFinal+",";
+		dirFinal.append(",");
+		return dirFinal.toString();
 	}
 
 	public String getPRModifiedLines(){
@@ -529,5 +532,5 @@ public class DataRecoveryMethods {
 
 		return result+",";
 	}
-	
+
 }

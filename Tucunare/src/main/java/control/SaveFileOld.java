@@ -21,7 +21,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-public class SaveFile implements Runnable {
+public class SaveFileOld implements Runnable {
 	private String repo = ""; 
 	private String owner = "";
 	private String file;
@@ -31,7 +31,7 @@ public class SaveFile implements Runnable {
 	private ProccessRepositories proccessRepos;
 	private static boolean cancelProcessing = false;
 
-	public SaveFile(ProccessRepositories proccessRepos, String owner, String repo, String file, Settings settings) throws UnknownHostException{
+	public SaveFileOld(ProccessRepositories proccessRepos, String owner, String repo, String file, Settings settings) throws UnknownHostException{
 		this.proccessRepos = proccessRepos;
 		this.repo = repo; 
 		this.owner = owner;
@@ -98,34 +98,30 @@ public class SaveFile implements Runnable {
 			//Escrevendo o cabeçalho do arquivo
 			writeHeader(settings.getHeader());
 			
-			//String que armazena os dados de cada PR.
-			StringBuilder result = new StringBuilder("");
-			
 			//O Loop abaixo percorre a coleção de PullRequests do repositório para recuperar as informações.
 			for (DBObject dbObject : cursor) {
-				
+				String result = "";
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), repo,owner);
 				//Instrução para interromper o processamento das threads.
-				if (cancelProcessing){
-					saveFile(result);
+				if (cancelProcessing)
 					break;
-				}
 				
 				if(!closed_by.equals("")){
 					if(dbObject!=null && !closed_by.equals(user)){
 						// Execução dos métodos.
 						drm = new DataRecoveryMethods(dbcPullRequest, dbObject, settings);
 						for (Method method : meth) {
-							result.append(method.invoke(drm));
+							result += method.invoke(drm);
 						}
-						result.append("\r\n");
+						result += "\r\n";
 						DialogStatus.addsPullRequests();
 					}
-				}				
+				}
+				if (!saveFile(result))
+					System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
+				
 			}
-			if (!saveFile(result))
-				System.err.println("Não foi possível salvar o arquivo.");
 			finalizaThread();
 			return true;
 		}catch(Exception ioe){
@@ -140,14 +136,13 @@ public class SaveFile implements Runnable {
 		proccessRepos.iniciaThreads(finalizedThreads);		
 	}
 
-	public boolean saveFile(StringBuilder pullRequestData){
+	public boolean saveFile(String pullRequestData){
 		File fileTemp = new File(file+File.separator+repo+".csv");
 		FileWriter fw = null;
 
 		try {
 			fw = new FileWriter(fileTemp, true);
-			System.out.println("Imprimindo StringBuilder:\n"+pullRequestData);
-			fw.write(pullRequestData.toString());
+			fw.write(pullRequestData);
 			fw.close();
 
 		} catch (IOException e) {
@@ -186,14 +181,14 @@ public class SaveFile implements Runnable {
 	}
 
 	public String getCoreDevRecHeader() throws UnknownHostException{
-		StringBuilder result = new StringBuilder(""); 
+		String result = ""; 
 
 		if (settings.isPrior_evaluation()){
 			ArrayList<String> prior_evalutionList = Commits.getCoreTeamPullList(repo, owner);
 			for (int index = 0; index < prior_evalutionList.size(); index++)
 				prior_evalutionList.set(index, "pe_"+prior_evalutionList.get(index));
 			String pe = prior_evalutionList.toString();
-			result.append(pe.substring(1, pe.length()-1).replaceAll(", ", ",")+",");
+			result = pe.substring(1, pe.length()-1).replaceAll(", ", ",")+",";
 		}
 
 		if (settings.isRecent_pulls()){
@@ -201,7 +196,7 @@ public class SaveFile implements Runnable {
 			for (int index = 0; index < recent_pullList.size(); index++)
 				recent_pullList.set(index, "rp_"+recent_pullList.get(index));
 			String rp = recent_pullList.toString();
-			result.append(rp.substring(1, rp.length()-1).replaceAll(", ", ",")+",");
+			result += rp.substring(1, rp.length()-1).replaceAll(", ", ",")+",";
 		}
 
 		if (settings.isEvaluate_pulls()){
@@ -209,7 +204,7 @@ public class SaveFile implements Runnable {
 			for (int index = 0; index < evaluation_pullList.size(); index++)
 				evaluation_pullList.set(index, "ep_"+evaluation_pullList.get(index));
 			String ep = evaluation_pullList.toString();
-			result.append(ep.substring(1, ep.length()-1).replaceAll(", ", ",")+",");
+			result += ep.substring(1, ep.length()-1).replaceAll(", ", ",")+",";
 		}
 
 		if (settings.isRecent_evaluation()){
@@ -217,7 +212,7 @@ public class SaveFile implements Runnable {
 			for (int index = 0; index < recent_evaluationList.size(); index++)
 				recent_evaluationList.set(index, "re_"+recent_evaluationList.get(index));
 			String re = recent_evaluationList.toString();
-			result.append(re.substring(1, re.length()-1).replaceAll(", ", ",")+",");
+			result += re.substring(1, re.length()-1).replaceAll(", ", ",")+",";
 		}
 
 		if (settings.isEvaluate_time()){ 
@@ -225,7 +220,7 @@ public class SaveFile implements Runnable {
 			for (int index = 0; index < evaluate_timeList.size(); index++)
 				evaluate_timeList.set(index, "et_"+evaluate_timeList.get(index));
 			String et = evaluate_timeList.toString();
-			result.append(et.substring(1, et.length()-1).replaceAll(", ", ",")+",");
+			result += et.substring(1, et.length()-1).replaceAll(", ", ",")+",";
 		}
 
 		if (settings.isLatest_time()){
@@ -233,7 +228,7 @@ public class SaveFile implements Runnable {
 			for (int index = 0; index < latest_timeList.size(); index++)
 				latest_timeList.set(index, "lt_"+latest_timeList.get(index));
 			String lt = latest_timeList.toString();
-			result.append(lt.substring(1, lt.length()-1).replaceAll(", ", ",")+",");
+			result += lt.substring(1, lt.length()-1).replaceAll(", ", ",")+",";
 		}
 
 		if (settings.isFirst_time()){
@@ -241,9 +236,9 @@ public class SaveFile implements Runnable {
 			for (int index = 0; index < first_timeList.size(); index++)
 				first_timeList.set(index, "ft_"+first_timeList.get(index));
 			String ft = first_timeList.toString();
-			result.append(ft.substring(1, ft.length()-1).replaceAll(", ", ",")+",");
+			result += ft.substring(1, ft.length()-1).replaceAll(", ", ",")+",";
 		}
-		return result.toString();
+		return result;
 	}
 	
 	public static void setCancelProcessing(boolean t){
@@ -255,11 +250,11 @@ public class SaveFile implements Runnable {
 	}
 
 	public static void setTempo(String tempo) {
-		SaveFile.tempo = tempo;
+		SaveFileOld.tempo = tempo;
 	}
 
 	public static void setFinalizedThreads(int finalizedThreads) {
-		SaveFile.finalizedThreads = finalizedThreads;
+		SaveFileOld.finalizedThreads = finalizedThreads;
 	}
 
 }
