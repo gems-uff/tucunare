@@ -12,8 +12,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import model.Settings;
-import teste.DialogStatus;
 import util.Connect;
+import view.DialogStatus;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -133,7 +133,7 @@ public class SaveFileOld implements Runnable {
 
 	private void finalizaThread() {
 		finalizedThreads++;
-		proccessRepos.iniciaThreads(finalizedThreads);		
+		proccessRepos.iniciaThreads();		
 	}
 
 	public boolean saveFile(String pullRequestData){

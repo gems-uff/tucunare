@@ -206,7 +206,7 @@ public  class Settings {
 		//pelo menos o método de recuperação do id e o state do PR será executado.
 		if (allPRData){
 			methods.add("getAllPRData");
-			header.append("idPull,statePull,numberPull,title,commitHeadSha,commitBaseSha,createdDate,mesAno,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"+
+			header.append("idPull,statePull,numberPull,title,commitHeadSha,commitBaseSha,createdDate,anoMes,closedDate,mergedDate,lifetimeMinutes,closedBy,mergedBy,"+
 					"assignee,comments,commitsPull,files,authorMoreCommits,commitsbyFilesPull,"+
 					"changedFiles, dirFinal, additionsLines,deletionsLines,totalLines,participants,");
 		}
@@ -233,7 +233,7 @@ public  class Settings {
 			}
 			if (prDates){
 				methods.add("getPRDates");
-				header.append("createdDate,mesAno,closedDate,mergedDate,");
+				header.append("createdDate,anoMes,closedDate,mergedDate,");
 			}
 			if (prLifeTime){
 				methods.add("getPRLifeTime");

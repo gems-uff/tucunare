@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.Settings;
-import teste.DialogStatus;
 import util.Connect;
+import view.DialogStatus;
 import view.RetrievePullRequest;
 
 import com.mongodb.BasicDBObject;
@@ -20,7 +20,6 @@ public class ProccessRepositories implements Runnable {
 	private Settings settings;
 	private List<String> selectedRepositories;
 	private String file;
-	private static int threadAtual = 0;
 	private RetrievePullRequest retrievePR;
 	private DialogStatus ds;
 	private List <String> repos;
@@ -134,12 +133,13 @@ public class ProccessRepositories implements Runnable {
 	}
 
 
-	public void iniciaThreads(int finalizedThreads){
-		if (selectedRepositories.size() > 3 && finalizedThreads < selectedRepositories.size() ){
+	public void iniciaThreads(){
+		//Se a ferramenta for recuperar mais de 3 repositórios e
+		// se as threads iniciadas ainda n somarem o número máximo.
+		if (selectedRepositories.size() > 3 && SaveFile.inicializedThreads < selectedRepositories.size() ){
 			try {
-				threadAtual++;
-				String[] aux = selectedRepositories.get(threadAtual).split("/");
-				new Thread(new SaveFile(this, aux[0], aux[1], file, settings), "Thread-"+selectedRepositories.get(threadAtual)).start();
+				String[] aux = selectedRepositories.get(SaveFile.inicializedThreads).split("/");
+				new Thread(new SaveFile(this, aux[0], aux[1], file, settings), "Thread-"+selectedRepositories.get(SaveFile.inicializedThreads)).start();
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			}
@@ -157,7 +157,4 @@ public class ProccessRepositories implements Runnable {
 		retrievePR.setMessageOfTextArea(s);
 	}
 
-	public static void setThreadAtual(int i){
-		threadAtual = i;
-	}
 }

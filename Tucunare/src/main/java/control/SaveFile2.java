@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import model.Settings;
-import teste.DialogStatus;
 import util.Connect;
 import util.FormatDate;
+import view.DialogStatus;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;

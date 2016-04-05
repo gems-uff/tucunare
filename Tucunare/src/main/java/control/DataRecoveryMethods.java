@@ -87,7 +87,7 @@ public class DataRecoveryMethods {
 
 	public String getAllRepoData(){
 		StringBuilder result = new StringBuilder();
-		result.append("/"+rep+",");
+		result.append(owner+"/"+rep+",");
 		try {
 			result.append(Repos.getRepoData(owner+"/"+rep)+","); //ageRepo;stargazers_count;watchers_count;language;forks_count;open_issues_count;subscribers_count;has_wiki
 			result.append(getAcceptanceRepo()+",");

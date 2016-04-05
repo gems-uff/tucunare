@@ -1,4 +1,4 @@
-package teste;
+package view;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -88,7 +89,7 @@ public class DialogStatus extends JDialog implements ActionListener{
 		btnSair.setVisible(false);
 		btnSair.addActionListener(this);
 		
-		btnVisualizar = new JButton("Visualizar arquivo");
+		btnVisualizar = new JButton("Visualizar arquivo(s)");
 		btnVisualizar.addActionListener(this);
 				
 		
@@ -115,6 +116,9 @@ public class DialogStatus extends JDialog implements ActionListener{
 
 	public static void setThreads(int atual){
 		if (atual == totalRepositories){
+			GregorianCalendar gc = new GregorianCalendar();
+			System.out.println("Término do processamento: "+gc.get(GregorianCalendar.HOUR_OF_DAY)+":"+
+					gc.get(GregorianCalendar.MINUTE)+":"+gc.get(GregorianCalendar.SECOND));
 			txtOperaoFinalizada.setText("Concluídos: "+ atual +" de "+totalRepositories);
 			btnVisualizar.setVisible(true);
 			btnSair.setVisible(true);

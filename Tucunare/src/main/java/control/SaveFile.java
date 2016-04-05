@@ -12,8 +12,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import model.Settings;
-import teste.DialogStatus;
 import util.Connect;
+import view.DialogStatus;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -26,7 +26,7 @@ public class SaveFile implements Runnable {
 	private String owner = "";
 	private String file;
 	private static int finalizedThreads = 0;
-	private static String tempo="";
+	public static int inicializedThreads = 0;
 	private Settings settings;
 	private ProccessRepositories proccessRepos;
 	private static boolean cancelProcessing = false;
@@ -40,6 +40,7 @@ public class SaveFile implements Runnable {
 	}
 
 	public void run() {
+		inicializedThreads++;
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
 			if (!retrieveData(settings)){
@@ -48,7 +49,7 @@ public class SaveFile implements Runnable {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		setTempo(getTempo() + Thread.currentThread().getName()+": "+((System.currentTimeMillis() - tempoInicial)/1000)+" : ");
+		System.out.println(Thread.currentThread().getName()+" finalizada em "+((System.currentTimeMillis() - tempoInicial)/1000)+" segundos.");
 		DialogStatus.setThreads(finalizedThreads);
 	}
 
@@ -124,7 +125,7 @@ public class SaveFile implements Runnable {
 					}
 				}				
 			}
-			if (!saveFile(result))
+			if (!cancelProcessing && !saveFile(result))
 				System.err.println("Não foi possível salvar o arquivo.");
 			finalizaThread();
 			return true;
@@ -137,7 +138,7 @@ public class SaveFile implements Runnable {
 
 	private void finalizaThread() {
 		finalizedThreads++;
-		proccessRepos.iniciaThreads(finalizedThreads);		
+		proccessRepos.iniciaThreads();		
 	}
 
 	public boolean saveFile(StringBuilder pullRequestData){
@@ -146,7 +147,6 @@ public class SaveFile implements Runnable {
 
 		try {
 			fw = new FileWriter(fileTemp, true);
-			System.out.println("Imprimindo StringBuilder:\n"+pullRequestData);
 			fw.write(pullRequestData.toString());
 			fw.close();
 
@@ -248,14 +248,6 @@ public class SaveFile implements Runnable {
 	
 	public static void setCancelProcessing(boolean t){
 		cancelProcessing = t;
-	}
-
-	public static String getTempo() {
-		return tempo;
-	}
-
-	public static void setTempo(String tempo) {
-		SaveFile.tempo = tempo;
 	}
 
 	public static void setFinalizedThreads(int finalizedThreads) {

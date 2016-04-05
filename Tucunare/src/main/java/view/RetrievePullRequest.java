@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -44,7 +45,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import teste.DialogStatus;
 import util.Connect;
 import control.ProccessRepositories;
 import control.PullRequests;
@@ -364,7 +364,9 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 					file = jTxtFePath.getText();
 
 					jTextArea.setText("Processando dados.");
-
+					GregorianCalendar gc = new GregorianCalendar();
+					System.out.println("Início do processamento: "+gc.get(GregorianCalendar.HOUR_OF_DAY)+":"+
+							gc.get(GregorianCalendar.MINUTE)+":"+gc.get(GregorianCalendar.SECOND));
 					settings = getSelectedFields();
 					//realiza a limpeza do valor das variáveis státicas, utilizadas no controle das threads de recuperação dos dados;
 					loadData();
@@ -428,9 +430,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 	private void loadData() {
 		Connect.resetConnection();
-		ProccessRepositories.setThreadAtual(0);
 		SaveFile.setFinalizedThreads(0);
-		SaveFile.setTempo("");
 		DialogStatus.setCurrentPR(0);
 		DialogStatus.setTotalPullRequests(0);
 		DialogStatus.setTotalRepositories(0);			
