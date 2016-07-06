@@ -838,8 +838,6 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 		latest_time.setSelected(value);
 		first_time.setSelected(value);
 		path_files.setSelected(value);
-
-		jcbAllCoreDevRecData.setEnabled(!value);
 		follower_relation.setEnabled(!value);
 		following_relation.setEnabled(!value);
 		prior_evaluation.setEnabled(!value);

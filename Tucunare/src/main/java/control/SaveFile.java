@@ -81,6 +81,7 @@ public class SaveFile implements Runnable {
 			/**	
 			 *  Início da Recuperação dos métodos. 
 			 */
+			
 			Class<DataRecoveryMethods> drmClass = DataRecoveryMethods.class;
 			List<Method> meth = new ArrayList<Method>();
 			try {
@@ -89,8 +90,8 @@ public class SaveFile implements Runnable {
 			}catch(Exception e){
 				System.err.println("Método "+e.getMessage()+" não encontrado.");
 			}
-			//instância da classe que contém os métodos.
-			DataRecoveryMethods drm;
+			
+			DataRecoveryMethods drm;  //instância da classe que contém os métodos.
 
 			/** 
 			 *  Fim da Recuperação dos métodos 
