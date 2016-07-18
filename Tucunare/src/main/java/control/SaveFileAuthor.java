@@ -28,6 +28,7 @@ public class SaveFileAuthor implements Runnable {
 		this.settings = settings;
 	}
 
+	@Override
 	public void run() {
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
@@ -184,7 +185,7 @@ public class SaveFileAuthor implements Runnable {
 //							followContributors+","+
 //							location.replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ').replace('/', ' ')+","+
 //							(Integer) dbObject.get("id")+","+
-							(Integer) dbObject.get("number")+","+
+							dbObject.get("number")+","+
 //							((BasicDBObject)dbObject.get("user")).get("login")+","+
 //							dbObject.get("state")+","+
 //							dbObject.get("title").toString().replace('\n', ' ').replace(',', ' ').replace('\'', '´').replace('"', ' ').replace('%', ' ')+","+
@@ -209,9 +210,9 @@ public class SaveFileAuthor implements Runnable {
 //							dirFinal+","+
 //							files.replace(", ", "|");
 					resultTemp += "\r\n";
-					System.out.println((Integer) dbObject.get("number"));
+					System.out.println(dbObject.get("number"));
 					if (!saveFile(false, resultTemp))
-						System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
+						System.err.println("Erro ao tentar escrever o PR: "+dbObject.get("number")+", do repositório: "+repo);
 				}else
 					continue;
 				DialogStatus.addsPullRequests();

@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.WindowConstants;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -58,7 +59,7 @@ public class AboutWindow extends JFrame {
 		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
 		docTxtDesen.setParagraphAttributes(0, docTxtDesen.getLength(), center, false);
 		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(null);
 	}

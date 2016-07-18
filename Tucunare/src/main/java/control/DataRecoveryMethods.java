@@ -369,7 +369,7 @@ public class DataRecoveryMethods {
 		try {
 			filesPath = Commits.getCommitsFilesPath(shaHead, shaBase, Integer.parseInt(dbObject.get("commits").toString()),Integer.parseInt(dbObject.get("changed_files").toString()));
 		} catch (Exception e) {
-			System.err.println("Erro ao tentar recuperar o caminho dos arquivos do commit.");;
+			System.err.println("Erro ao tentar recuperar o caminho dos arquivos do commit.");
 		}
 	}
 
@@ -378,7 +378,8 @@ public class DataRecoveryMethods {
 		String result = "";
 		try {
 			result = Commits.getAuthorCommits(files, shaBase, owner+"/"+rep, settings.getAuthorCommitsDays());
-		} catch (UnknownHostException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println("Error while trying to get the PRAuthorMoreCommits");
 		}
 		return result+",";
@@ -389,7 +390,7 @@ public class DataRecoveryMethods {
 		String result = "";
 		try {
 			result = Commits.getCommitsByFiles(files, dbObject.get("created_at").toString(), owner+"/"+rep, settings.getCommitsByFilesDays())+"";
-		} catch (UnknownHostException e) {
+		} catch (Exception e) {
 			System.err.println("Error while trying to get PRCommitsByFiles");
 		}	
 		return result+",";
@@ -401,32 +402,45 @@ public class DataRecoveryMethods {
 
 	public String getPRFiles(){
 		getCommitsFilesPath();
-		files = filesPath.substring(1, filesPath.length()-1);
-		return files.replace(", ", "|")+",";
+		try{
+			files = filesPath.substring(1, filesPath.length()-1);
+			return files.replace(", ", "|")+",";
+		}catch(Exception e){
+			System.err.print("Erro while trying to recover the PR Files.\n"+
+							 "Repo: "+rep+", PRid: "+getPRId());
+			files=",";
+			return files;
+		}
 	}
 
 	public String getPRRootDirectory(){
+
 		StringBuilder dirFinal = new StringBuilder("");
-		String [] path = files.split(", ");
-		for(int x=0; x < path.length; x++){
-			int lastBarIndex = 0;
-			lastBarIndex = path[x].lastIndexOf("/");
-			if(lastBarIndex<0 && x == 0){
-				dirFinal.append("root");
-				continue;
-			}else 
-				if(lastBarIndex<0){
-					dirFinal.append("|root");
+		try{
+			String [] path = files.split(", ");
+			for(int x=0; x < path.length; x++){
+				int lastBarIndex = 0;
+				lastBarIndex = path[x].lastIndexOf("/");
+				if(lastBarIndex<0 && x == 0){
+					dirFinal.append("root");
 					continue;
-				}
-			String str = path[x].substring(0, lastBarIndex);
-			if (x>=1) 	
-				dirFinal.append("|"+str);
-			else
-				dirFinal.append(str);
+				}else 
+					if(lastBarIndex<0){
+						dirFinal.append("|root");
+						continue;
+					}
+				String str = path[x].substring(0, lastBarIndex);
+				if (x>=1) 	
+					dirFinal.append("|"+str);
+				else
+					dirFinal.append(str);
+			}
+			dirFinal.append(",");
+			return dirFinal.toString();
+		}catch(Exception e){
+			System.err.println("Error while trying to recover the PRRootDirectory.");			
+			return ",";
 		}
-		dirFinal.append(",");
-		return dirFinal.toString();
 	}
 
 	public String getPRModifiedLines(){

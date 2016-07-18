@@ -109,6 +109,7 @@ public class Old implements ActionListener, ItemListener{
 		jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	}
+	@Override
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource() == cbCommitsByFilesPR){
 			if (cbCommitsByFilesPR.isSelected()){
@@ -175,6 +176,7 @@ public class Old implements ActionListener, ItemListener{
 			}
 		}
 	}
+	@Override
 	public void actionPerformed(ActionEvent evt) {
 		getSelectedFields();
 		String file="";

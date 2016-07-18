@@ -38,7 +38,7 @@ public class Commits {
 				listCommit = (BasicDBList) commit.get("parents");
 				listFiles = (BasicDBList) commit.get("files");	
 				for (Object object : listFiles) {
-					if(!files.contains((String) ((BasicDBObject) object).get("filename")) && files.size() < filesPull)
+					if(!files.contains(((BasicDBObject) object).get("filename")) && files.size() < filesPull)
 						files.add((String) ((BasicDBObject) object).get("filename"));
 				}
 				if(listCommit.get("0")!=null)

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -39,18 +40,25 @@ public class SaveFile implements Runnable {
 		this.settings = settings;
 	}
 
+	@Override
 	public void run() {
 		inicializedThreads++;
 		long tempoInicial = System.currentTimeMillis(); 
+		GregorianCalendar gc = new GregorianCalendar();
+
+		String tempo = gc.get(GregorianCalendar.HOUR_OF_DAY)+":";
+		tempo += gc.get(GregorianCalendar.MINUTE) +":"+ gc.get(GregorianCalendar.SECOND)+"";
+
+		System.out.println(Thread.currentThread().getName()+" iniciada em "+tempo);
 		try {
 			if (!retrieveData(settings)){
 				System.err.println("Erro ao executar a thread "+Thread.currentThread().getName());
 			}
-		} catch (UnknownHostException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		System.out.println(Thread.currentThread().getName()+" finalizada em "+((System.currentTimeMillis() - tempoInicial)/1000)+" segundos.");
-		DialogStatus.setThreads(finalizedThreads);
+		DialogStatus.setThreadsFinalizadas(finalizedThreads);
 	}
 
 	//Usar threads para recuperar os dados e salvar tudo o que foi armazenado na String em uma única escrita de arquivo.
@@ -81,7 +89,7 @@ public class SaveFile implements Runnable {
 			/**	
 			 *  Início da Recuperação dos métodos. 
 			 */
-			
+
 			Class<DataRecoveryMethods> drmClass = DataRecoveryMethods.class;
 			List<Method> meth = new ArrayList<Method>();
 			try {
@@ -90,7 +98,7 @@ public class SaveFile implements Runnable {
 			}catch(Exception e){
 				System.err.println("Método "+e.getMessage()+" não encontrado.");
 			}
-			
+
 			DataRecoveryMethods drm;  //instância da classe que contém os métodos.
 
 			/** 
@@ -99,13 +107,12 @@ public class SaveFile implements Runnable {
 
 			//Escrevendo o cabeçalho do arquivo
 			writeHeader(settings.getHeader());
-			
+
 			//String que armazena os dados de cada PR.
 			StringBuilder result = new StringBuilder("");
 			
 			//O Loop abaixo percorre a coleção de PullRequests do repositório para recuperar as informações.
 			for (DBObject dbObject : cursor) {
-				
 				String user = ((BasicDBObject)dbObject.get("user")).get("login").toString();
 				String closed_by = Issues.getClosedbyPull((Integer) dbObject.get("number"), repo,owner);
 				//Instrução para interromper o processamento das threads.
@@ -113,15 +120,15 @@ public class SaveFile implements Runnable {
 					saveFile(result);
 					break;
 				}
-				
+
 				if(!closed_by.equals("")){
 					if(dbObject!=null && !closed_by.equals(user)){
 						// Execução dos métodos.
 						drm = new DataRecoveryMethods(dbcPullRequest, dbObject, settings);
-						for (Method method : meth) {
+						for (Method method : meth)
 							result.append(method.invoke(drm));
-						}
 						result.append("\r\n");
+						System.out.println(repo);
 						DialogStatus.addsPullRequests();
 					}
 				}				
@@ -131,7 +138,7 @@ public class SaveFile implements Runnable {
 			finalizaThread();
 			return true;
 		}catch(Exception ioe){
-			System.err.println("Exceção: "+ioe.getMessage());
+			ioe.printStackTrace();
 			finalizaThread();
 			return false;
 		}
@@ -246,7 +253,7 @@ public class SaveFile implements Runnable {
 		}
 		return result.toString();
 	}
-	
+
 	public static void setCancelProcessing(boolean t){
 		cancelProcessing = t;
 	}

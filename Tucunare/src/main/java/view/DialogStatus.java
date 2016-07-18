@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import control.SaveFile;
 import util.Connect;
@@ -43,6 +45,7 @@ public class DialogStatus extends JDialog implements ActionListener{
 	private static JButton btnCancelar;
 	private String file; 
 	private List<String> repositories;
+	private static int repoAtual;
 
 	@SuppressWarnings("static-access")
 	public DialogStatus(JFrame frame, int totalRepositories, int totalPullRequests, String file, List<String> repositories){
@@ -52,9 +55,9 @@ public class DialogStatus extends JDialog implements ActionListener{
 		this.repositories = repositories;
 		jFrameStatic = frame;
 		this.setSize(250, 130);
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		this.totalRepositories = totalRepositories;
-		this.totalPullRequests = totalPullRequests;
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		DialogStatus.totalRepositories = totalRepositories;
+		DialogStatus.totalPullRequests = totalPullRequests;
 		getContentPane().setLayout(new BorderLayout(0, 0));
 
 		panel_1 = new JPanel();
@@ -98,6 +101,7 @@ public class DialogStatus extends JDialog implements ActionListener{
 		
 		btnCancelar = new JButton("Cancelar");
 		btnCancelar.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (arg0.getSource() == btnCancelar){
 					int i = JOptionPane.showConfirmDialog(null, "Você realmente deseja cancelar o processamento?", "Atenção:", JOptionPane.YES_NO_OPTION);
@@ -114,12 +118,13 @@ public class DialogStatus extends JDialog implements ActionListener{
 		jDialogStatic.setTitle("Processamento de Repositórios.");
 	}
 
-	public static void setThreads(int atual){
-		if (atual == totalRepositories){
+	public static void setThreadsFinalizadas(int threadsFin){
+		repoAtual = threadsFin;
+		if (threadsFin == totalRepositories){
 			GregorianCalendar gc = new GregorianCalendar();
-			System.out.println("Término do processamento: "+gc.get(GregorianCalendar.HOUR_OF_DAY)+":"+
-					gc.get(GregorianCalendar.MINUTE)+":"+gc.get(GregorianCalendar.SECOND));
-			txtOperaoFinalizada.setText("Concluídos: "+ atual +" de "+totalRepositories);
+			System.out.println("Término do processamento: "+gc.get(Calendar.HOUR_OF_DAY)+":"+
+					gc.get(Calendar.MINUTE)+":"+gc.get(Calendar.SECOND));
+			txtOperaoFinalizada.setText("Concluídos: "+ threadsFin +" de "+totalRepositories);
 			btnVisualizar.setVisible(true);
 			btnSair.setVisible(true);
 			btnCancelar.setVisible(false);
@@ -132,7 +137,7 @@ public class DialogStatus extends JDialog implements ActionListener{
 			jDialogStatic.setLocationRelativeTo(jFrameStatic);
 			
 		}else{
-			txtOperaoFinalizada.setText("Concluídos: "+ atual +" de "+totalRepositories);
+			txtOperaoFinalizada.setText("Concluídos: "+ threadsFin +" de "+totalRepositories);
 			jDialogStatic.setLocationRelativeTo(jFrameStatic);				
 		}
 	}
@@ -141,7 +146,16 @@ public class DialogStatus extends JDialog implements ActionListener{
 		currentPR++;
 		lblPullRequests.setText("Pull Requests: "+currentPR+" de "+totalPullRequests);
 		int x = (100*currentPR)/totalPullRequests;
-		
+		if (x%10==0){
+			GregorianCalendar gc = new GregorianCalendar();
+			String tempo = gc.get(GregorianCalendar.HOUR_OF_DAY)+":";
+			tempo += gc.get(GregorianCalendar.MINUTE)+":";
+			tempo += gc.get(GregorianCalendar.SECOND)+"";
+			System.out.println("Repos: "+repoAtual+
+								", PR concluídos (%): "+x+
+								", Nº PR concluidos: "+currentPR+
+								", Tempo: "+tempo);
+		}
 		jProgressBar.setValue(x);
 		jDialogStatic.setLocationRelativeTo(jFrameStatic);		
 	}

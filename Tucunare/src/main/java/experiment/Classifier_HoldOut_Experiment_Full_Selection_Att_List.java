@@ -56,8 +56,8 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att_List {
 						double percentTrain = tr;
 						double percentTest = windowTest;
 
-						int windowTestSize = (int) (totalInstances * (w) / 100);
-						int trainSizeInicio = (int) (totalInstances * (w-tr) / 100);
+						int windowTestSize = totalInstances * (w) / 100;
+						int trainSizeInicio = totalInstances * (w-tr) / 100;
 
 						int trainSize = (int) (totalInstances * percentTrain / 100);
 						int testSize = (int) (totalInstances * percentTest / 100);
@@ -146,7 +146,7 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att_List {
 							//fim split========================================================================================
 							Arrays.sort(top); //ordena o vetor das quantidades para imprimir o ranking
 							//Imprime Acur�cias
-							acc1.add((double)(top[distClasses.length-1]*100)/test.numInstances());
+							acc1.add(top[distClasses.length-1]*100/test.numInstances());
 							//acc2.add((double)(top[distClasses.length-2]*100)/test.numInstances());
 							//acc3.add((double)(top[distClasses.length-3]*100)/test.numInstances());
 							//}
@@ -169,7 +169,7 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att_List {
 					}
 
 					double percentTrain = tr;int trainSize = (int) (totalInstances * percentTrain / 100);
-					int trainSizeInicio = (int) (totalInstances * (w-tr) / 100);
+					int trainSizeInicio = totalInstances * (w-tr) / 100;
 					Instances train = new Instances(instances, trainSizeInicio, trainSize);
 					AttributeSelection attSelectionPos = new AttributeSelection();
 					CorrelationAttributeEval eva = new CorrelationAttributeEval();
@@ -186,7 +186,7 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att_List {
 
 					//System.out.print(w);
 					for(int z=0;z<attributes.length-1;z++)
-						System.out.println(projects[0].toString()+","+w+","+train.attribute(attributes[z]).name()+","+String.valueOf(new DecimalFormat("0.###").format((double)ranked[z][1]).replace(',', '.')));
+						System.out.println(projects[0].toString()+","+w+","+train.attribute(attributes[z]).name()+","+String.valueOf(new DecimalFormat("0.###").format(ranked[z][1]).replace(',', '.')));
 					//System.out.println();
 					//System.out.println(String.valueOf(new DecimalFormat("0.##").format((double)temp[0]).replace(',', '.')));
 

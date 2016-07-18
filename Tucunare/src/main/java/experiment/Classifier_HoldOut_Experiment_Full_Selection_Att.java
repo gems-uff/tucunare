@@ -56,8 +56,8 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att {
 						double percentTrain = tr;
 						double percentTest = windowTest;
 
-						int windowTestSize = (int) (totalInstances * (w) / 100);
-						int trainSizeInicio = (int) (totalInstances * (w-tr) / 100);
+						int windowTestSize = totalInstances * (w) / 100;
+						int trainSizeInicio = totalInstances * (w-tr) / 100;
 
 						int trainSize = (int) (totalInstances * percentTrain / 100);
 						int testSize = (int) (totalInstances * percentTest / 100);
@@ -145,9 +145,9 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att {
 							//fim split========================================================================================
 							Arrays.sort(top); //ordena o vetor das quantidades para imprimir o ranking
 							//Imprime Acur�cias
-							acc1.add((double)(top[distClasses.length-1]*100)/test.numInstances());
-							acc2.add((double)(top[distClasses.length-2]*100)/test.numInstances());
-							acc3.add((double)(top[distClasses.length-3]*100)/test.numInstances());
+							acc1.add(top[distClasses.length-1]*100/test.numInstances());
+							acc2.add(top[distClasses.length-2]*100/test.numInstances());
+							acc3.add(top[distClasses.length-3]*100/test.numInstances());
 							//}
 
 						}//fim classificador
@@ -175,7 +175,7 @@ public class Classifier_HoldOut_Experiment_Full_Selection_Att {
 			}//Fim testes 10 at� 99
 			for(int c=1; c<=3; c++){
 				media[c-1] = soma[c-1]/90;
-				System.out.println(projects[0].toString()+","+4+","+10+","+windowTest+",RANDOM"+","+c+","+String.valueOf(new DecimalFormat("0.##").format((double)media[c-1]).replace(',', '.')));
+				System.out.println(projects[0].toString()+","+4+","+10+","+windowTest+",RANDOM"+","+c+","+String.valueOf(new DecimalFormat("0.##").format(media[c-1]).replace(',', '.')));
 			}
 			//double media = somaTop/90;
 			//System.out.println(projects[0].toString()+",1,"+"RANDOM+SA,1,"+String.valueOf(new DecimalFormat("0.##").format(media).replace(',', '.')));

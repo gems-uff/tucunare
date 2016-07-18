@@ -39,6 +39,7 @@ public class SaveFileOld implements Runnable {
 		this.settings = settings;
 	}
 
+	@Override
 	public void run() {
 		long tempoInicial = System.currentTimeMillis(); 
 		try {
@@ -119,7 +120,7 @@ public class SaveFileOld implements Runnable {
 					}
 				}
 				if (!saveFile(result))
-					System.err.println("Erro ao tentar escrever o PR: "+(Integer) dbObject.get("number")+", do repositório: "+repo);
+					System.err.println("Erro ao tentar escrever o PR: "+dbObject.get("number")+", do repositório: "+repo);
 				
 			}
 			finalizaThread();

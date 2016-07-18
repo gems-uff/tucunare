@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -184,6 +185,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 		mntmLoadConfiguration = new JMenuItem("Load configuration");
 		mntmLoadConfiguration.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (arg0.getSource() == mntmLoadConfiguration){
 					JFileChooser fileChooser = new JFileChooser("C:\\Users\\Lucas\\Documents"); 
@@ -204,6 +206,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 		mntmSave = new JMenuItem("Save configuration");
 		mntmSave.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (arg0.getSource() == mntmSave){
 					JFileChooser fileChooser = new JFileChooser("C:\\Users\\Lucas\\Documents"); 
@@ -222,6 +225,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 		mntmExit = new JMenuItem("Exit");
 		mntmExit.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				System.exit(0);
 			}
@@ -234,6 +238,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 		mntmSobre = new JMenuItem("About");
 		mntmSobre.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				AboutWindow aw = new AboutWindow();
 				aw.setVisible(true);
@@ -299,6 +304,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 		return true;
 	}
+	@Override
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource() == jcbCommitsByFilesPR){
 			boolean aux = jcbCommitsByFilesPR.isSelected();
@@ -347,6 +353,7 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent evt) {
 		file="";
 		if(evt.getSource()==jButtonSave){
@@ -365,8 +372,8 @@ public class RetrievePullRequest implements ActionListener, ItemListener{
 
 					jTextArea.setText("Processando dados.");
 					GregorianCalendar gc = new GregorianCalendar();
-					System.out.println("Início do processamento: "+gc.get(GregorianCalendar.HOUR_OF_DAY)+":"+
-							gc.get(GregorianCalendar.MINUTE)+":"+gc.get(GregorianCalendar.SECOND));
+					System.out.println("Início do processamento: "+gc.get(Calendar.HOUR_OF_DAY)+":"+
+							gc.get(Calendar.MINUTE)+":"+gc.get(Calendar.SECOND));
 					settings = getSelectedFields();
 					//realiza a limpeza do valor das variáveis státicas, utilizadas no controle das threads de recuperação dos dados;
 					loadData();

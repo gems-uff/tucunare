@@ -30,7 +30,6 @@ public class ProccessRepositories implements Runnable {
 		this.file = file;
 		this.settings = settings;
 		this.selectedRepositories = selectedRepositories;
-
 	}
 
 	@Override
@@ -115,7 +114,11 @@ public class ProccessRepositories implements Runnable {
 
 	private void iniciaThreads(List<String> selectedRepositories,
 			Settings settings) throws UnknownHostException {
-
+		System.out.println("Lista de repositórios: ");
+		for (int i = 0; i < selectedRepositories.size(); i++) {
+			System.out.print(selectedRepositories.get(i)+", ");
+		}
+		System.out.println();
 		totalPR = retrieveAmountOfPRs();
 		//caso sejam selecionados no máximo 3 repositórios, realiza a recuperação de todos ao mesmo tempo.
 		if (selectedRepositories.size() <=3){
@@ -136,11 +139,12 @@ public class ProccessRepositories implements Runnable {
 	public void iniciaThreads(){
 		//Se a ferramenta for recuperar mais de 3 repositórios e
 		// se as threads iniciadas ainda n somarem o número máximo.
+		System.out.println("IniThreads: " + SaveFile.inicializedThreads );
 		if (selectedRepositories.size() > 3 && SaveFile.inicializedThreads < selectedRepositories.size() ){
 			try {
 				String[] aux = selectedRepositories.get(SaveFile.inicializedThreads).split("/");
 				new Thread(new SaveFile(this, aux[0], aux[1], file, settings), "Thread-"+selectedRepositories.get(SaveFile.inicializedThreads)).start();
-			} catch (UnknownHostException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

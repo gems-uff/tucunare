@@ -12,6 +12,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 
 public class TableSort extends JDialog implements ActionListener{
@@ -26,7 +27,7 @@ public class TableSort extends JDialog implements ActionListener{
 	public TableSort(Object[][] data) {
 		setTitle("Seleção de repositórios");
 		setLayout(new BorderLayout());
-		setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
 		table = new JTable();
 		table.setModel(new MyTableModel(data));
@@ -63,27 +64,33 @@ public class TableSort extends JDialog implements ActionListener{
 		public MyTableModel (Object[][] data){
 			this.data = data;
 		}
+		@Override
 		public int getColumnCount() {
 			return columnNames.length;
 		}
 
+		@Override
 		public int getRowCount() {
 			return data.length;
 		}
 
+		@Override
 		public String getColumnName(int col) {
 			return columnNames[col];
 		}
 
+		@Override
 		public Object getValueAt(int row, int col) {
 			return data[row][col];
 		}
 
+		@Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Class getColumnClass(int c) {
 			return getValueAt(0, c).getClass();
 		}
 
+		@Override
 		public boolean isCellEditable(int row, int col) {
 			if (col == 0)
 				return true;
@@ -91,6 +98,7 @@ public class TableSort extends JDialog implements ActionListener{
 				return false;
 		}
 
+		@Override
 		public void setValueAt(Object value, int row, int col) {
 			data[row][col] = value;
 		}
@@ -131,6 +139,7 @@ public class TableSort extends JDialog implements ActionListener{
 		table.setPreferredSize(new Dimension(150, 600));		
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		selectedRepositories = new ArrayList<String>();
 		
